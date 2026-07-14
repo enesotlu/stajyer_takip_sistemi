@@ -169,7 +169,7 @@ a {
   padding: 1rem;
 }
 
-/* ---- Auth pages (login / register) ---- */
+/* ---- Auth pages (login / register): koyu kömür zemin + frosted glass ---- */
 
 .stk-auth-body {
   min-height: 100vh;
@@ -177,35 +177,17 @@ a {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, #f7fafd 0%, #edf2f8 100%);
-  padding: 2rem 1rem;
+  font-family: "Inter", "SF Pro Display", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background-color: #14161b;
+  background-image:
+    radial-gradient(900px 520px at 85% -10%, rgba(47, 111, 237, 0.16), transparent 60%),
+    radial-gradient(720px 460px at -10% 110%, rgba(47, 111, 237, 0.09), transparent 60%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 900' preserveAspectRatio='none'%3E%3Cpath d='M0 620 C 240 540 420 700 720 640 C 1020 580 1200 700 1440 620 L1440 900 L0 900 Z' fill='rgba(255,255,255,0.022)'/%3E%3Cpath d='M0 730 C 260 660 480 800 780 740 C 1080 680 1260 790 1440 730 L1440 900 L0 900 Z' fill='rgba(47,111,237,0.055)'/%3E%3Cpath d='M0 180 C 300 260 560 120 860 190 C 1160 260 1300 160 1440 210 L1440 0 L0 0 Z' fill='rgba(255,255,255,0.016)'/%3E%3C/svg%3E");
+  background-size: auto, auto, cover;
+  background-repeat: no-repeat;
+  padding: 2rem 1rem 4rem;
   position: relative;
   overflow: hidden;
-}
-
-/* Köşelerde, dikkat dağıtmayan çok hafif marka rengi vurguları */
-.stk-auth-body::before,
-.stk-auth-body::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.stk-auth-body::before {
-  width: 560px;
-  height: 560px;
-  top: -200px;
-  right: -160px;
-  background: radial-gradient(circle, rgba(47, 111, 237, 0.10), transparent 65%);
-}
-
-.stk-auth-body::after {
-  width: 480px;
-  height: 480px;
-  bottom: -180px;
-  left: -140px;
-  background: radial-gradient(circle, rgba(18, 40, 63, 0.08), transparent 65%);
 }
 
 .stk-auth-wrap {
@@ -219,14 +201,14 @@ a {
   align-items: center;
   gap: 0.9rem;
   margin-bottom: 1.5rem;
-  color: var(--stk-sidebar-bg);
+  color: #f4f7fb;
 }
 
 .stk-auth-logo {
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background-color: var(--stk-accent);
+  background: linear-gradient(180deg, #3d7bf0 0%, #2557cc 100%);
   color: #fff;
   font-weight: 700;
   font-size: 1.15rem;
@@ -234,61 +216,149 @@ a {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 8px 22px rgba(47, 111, 237, 0.45);
 }
 
 .stk-auth-title {
   font-size: 1.15rem;
   font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .stk-auth-subtitle {
   font-size: 0.8rem;
-  color: #6b7a8c;
+  color: rgba(244, 247, 251, 0.55);
 }
 
+/* Buzlu cam kart: yarı saydam yüzey + blur + ince mavi ışık konturu */
 .stk-auth-card {
-  background: #fff;
-  border: 1px solid var(--stk-card-border);
-  border-radius: 0.9rem;
-  padding: 2rem;
-  box-shadow: 0 12px 32px rgba(18, 40, 63, 0.08);
+  background: rgba(255, 255, 255, 0.055);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(126, 165, 255, 0.22);
+  border-radius: 1.1rem;
+  padding: 2.25rem 2rem;
+  box-shadow:
+    0 0 0 1px rgba(47, 111, 237, 0.10),
+    0 0 36px rgba(47, 111, 237, 0.13),
+    0 28px 60px rgba(0, 0, 0, 0.55);
 }
 
 .stk-auth-card h1 {
-  font-size: 1.35rem;
-  font-weight: 600;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffffff;
   margin-bottom: 0.35rem;
+  letter-spacing: 0.01em;
 }
 
 .stk-auth-card .stk-auth-lead {
-  color: #6b7a8c;
+  color: rgba(244, 247, 251, 0.55);
   font-size: 0.9rem;
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.stk-auth-card .form-label {
+  color: rgba(244, 247, 251, 0.78);
+  font-size: 0.82rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.4rem;
 }
 
 .stk-auth-card .form-control {
-  padding: 0.6rem 0.8rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.55rem;
+  color: #f2f5f9;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.stk-auth-card .form-control::placeholder {
+  color: rgba(244, 247, 251, 0.35);
+}
+
+.stk-auth-card .form-control:focus {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--stk-accent);
+  box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.28);
+  color: #ffffff;
+}
+
+.stk-auth-card .form-check-input {
+  width: 1.05em;
+  height: 1.05em;
+  background-color: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.stk-auth-card .form-check-input:checked {
+  background-color: var(--stk-accent);
+  border-color: var(--stk-accent);
+}
+
+.stk-auth-card .form-check-input:focus {
+  box-shadow: 0 0 0 3px rgba(47, 111, 237, 0.28);
+}
+
+.stk-auth-card .form-check-label {
+  color: rgba(244, 247, 251, 0.7);
+  font-size: 0.9rem;
 }
 
 .stk-auth-card .btn-primary {
   width: 100%;
-  padding: 0.6rem;
-  font-weight: 500;
+  padding: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: linear-gradient(180deg, #3d7bf0 0%, #2557cc 100%);
+  border: none;
+  border-radius: 0.6rem;
+  box-shadow: 0 8px 20px rgba(47, 111, 237, 0.35);
+  transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.stk-auth-card .btn-primary:hover,
+.stk-auth-card .btn-primary:focus {
+  background: linear-gradient(180deg, #5490ff 0%, #2f6fed 100%);
+  box-shadow: 0 10px 28px rgba(47, 111, 237, 0.5);
+  transform: translateY(-1px);
+}
+
+.stk-auth-card .text-danger {
+  color: #ff8b96 !important;
 }
 
 .stk-auth-alt {
   text-align: center;
-  margin-top: 1.1rem;
+  margin-top: 1.2rem;
   margin-bottom: 0;
   font-size: 0.9rem;
-  color: #6b7a8c;
+  color: rgba(244, 247, 251, 0.5);
+}
+
+.stk-auth-alt a {
+  color: #7fb0ff;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.stk-auth-alt a:hover {
+  color: #a9c9ff;
+  text-decoration: underline;
 }
 
 .stk-auth-footer {
+  position: fixed;
+  bottom: 1.1rem;
+  left: 0;
+  right: 0;
   text-align: center;
-  color: #9aa7b5;
-  font-size: 0.8rem;
-  margin-top: 1.5rem;
+  color: rgba(244, 247, 251, 0.32);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  pointer-events: none;
 }
 
 @media (max-width: 767.98px) {
