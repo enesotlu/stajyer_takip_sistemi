@@ -45,6 +45,7 @@ builder.Services.AddScoped<IMentorService, MentorService>();
 builder.Services.AddScoped<IStajyerService, StajyerService>();
 builder.Services.AddScoped<IGorevService, GorevService>();
 builder.Services.AddScoped<IDevamService, DevamService>();
+builder.Services.AddScoped<IKullaniciYonetimService, KullaniciYonetimService>();
 
 var app = builder.Build();
 

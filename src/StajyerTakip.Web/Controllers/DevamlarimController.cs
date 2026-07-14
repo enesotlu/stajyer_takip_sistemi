@@ -26,6 +26,7 @@ public class DevamlarimController : Controller
     public async Task<IActionResult> Index()
     {
         var stajyer = await BenimStajyerimAsync();
+        ViewBag.ProfilYok = stajyer is null;
         if (stajyer is null)
         {
             return View(new List<Devam>());
@@ -38,8 +39,15 @@ public class DevamlarimController : Controller
         return View(kayitlar.OrderByDescending(d => d.Tarih).ToList());
     }
 
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        var stajyer = await BenimStajyerimAsync();
+        if (stajyer is null)
+        {
+            TempData["HataMesaji"] = "Devam kaydı girebilmen için önce bir Stajyer profilin olması gerekiyor. Yöneticinle iletişime geç.";
+            return RedirectToAction(nameof(Index));
+        }
+
         return View(new DevamCreateViewModel());
     }
 

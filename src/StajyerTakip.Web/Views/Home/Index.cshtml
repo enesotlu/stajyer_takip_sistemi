@@ -1,9 +1,107 @@
-﻿@{
+@{
     ViewData["Title"] = "Ana Sayfa";
+    bool girisYapmis = User.Identity != null && User.Identity.IsAuthenticated;
+    bool rolVar = User.IsInRole(Roller.Yonetici) || User.IsInRole(Roller.Mentor) || User.IsInRole(Roller.Stajyer);
 }
 
-<div class="text-center">
-    <h1 class="display-4">Stajyer Takip Sistemi</h1>
-    <p class="lead">Cumhurbaşkanlığı Yazılım Daire Başkanlığı - Üniversite Stajyerleri Eğitim Programı</p>
-    <p>İskelet proje ayakta. Sıradaki adım: veritabanı ve Entity Framework Core.</p>
-</div>
+@if (!girisYapmis)
+{
+    <div class="p-5 mb-4 bg-white rounded-3 border">
+        <h1 class="display-5">Stajyer Takip Sistemi</h1>
+        <p class="lead">Cumhurbaşkanlığı Yazılım Daire Başkanlığı - Üniversite Stajyerleri Eğitim Programı</p>
+        <p>Stajyer, mentör ve yönetici süreçlerinin tek bir yerden yürütüldüğü web uygulaması.</p>
+        <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Giriş Yap</a>
+        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-secondary">Kayıt Ol</a>
+    </div>
+}
+else if (!rolVar)
+{
+    <div class="alert alert-warning">
+        <h4 class="alert-heading">Hesabın onay bekliyor</h4>
+        <p>Kayıt oldun ama henüz bir rolün (Mentör / Stajyer) yok. Yönetici hesabını inceleyip sana uygun rolü verdiğinde
+        bu sayfada ilgili ekranlar görünecek.</p>
+    </div>
+}
+else
+{
+    <div class="p-4 mb-4 bg-white rounded-3 border">
+        <h1 class="h3">Hoş geldin, @User.Identity!.Name</h1>
+        <p class="text-muted mb-0">Aşağıdan sana açık ekranlara hızlıca ulaşabilirsin.</p>
+    </div>
+
+    <div class="row row-cols-1 row-cols-md-3 g-3">
+        @if (User.IsInRole(Roller.Yonetici))
+        {
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="OnayBekleyenler" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Onay Bekleyenler</h5>
+                        <p class="card-text text-muted">Yeni kayıt olan kullanıcılara rol ver.</p>
+                    </div></div>
+                </a>
+            </div>
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="Departman" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Departmanlar</h5>
+                        <p class="card-text text-muted">Departman kayıtlarını yönet.</p>
+                    </div></div>
+                </a>
+            </div>
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="Mentor" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Mentörler</h5>
+                        <p class="card-text text-muted">Mentör kayıtlarını yönet.</p>
+                    </div></div>
+                </a>
+            </div>
+        }
+        @if (User.IsInRole(Roller.Yonetici) || User.IsInRole(Roller.Mentor))
+        {
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="Stajyer" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Stajyerler</h5>
+                        <p class="card-text text-muted">Stajyer listesini görüntüle.</p>
+                    </div></div>
+                </a>
+            </div>
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="Gorev" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Görevler</h5>
+                        <p class="card-text text-muted">Görev ata, geri gönder.</p>
+                    </div></div>
+                </a>
+            </div>
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="Devam" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Devam Onayı</h5>
+                        <p class="card-text text-muted">Bekleyen puantaj kayıtlarını onayla.</p>
+                    </div></div>
+                </a>
+            </div>
+        }
+        @if (User.IsInRole(Roller.Stajyer))
+        {
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="Gorevlerim" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Görevlerim</h5>
+                        <p class="card-text text-muted">Sana atanan görevleri gör, durumunu güncelle.</p>
+                    </div></div>
+                </a>
+            </div>
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="Devamlarim" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Devam Kayıtlarım</h5>
+                        <p class="card-text text-muted">Giriş/çıkış kaydı gir, aylık özetini gör.</p>
+                    </div></div>
+                </a>
+            </div>
+        }
+    </div>
+}

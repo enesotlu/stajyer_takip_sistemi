@@ -76,14 +76,16 @@ public class AccountController : Controller
             UserName = model.Email,
             Email = model.Email,
             AdSoyad = model.AdSoyad,
-            EmailConfirmed = true
+            EmailConfirmed = true,
+            KayitTarihi = DateTime.UtcNow
         };
 
         var sonuc = await _userManager.CreateAsync(kullanici, model.Sifre);
 
         if (sonuc.Succeeded)
         {
-            await _userManager.AddToRoleAsync(kullanici, Roller.Stajyer);
+            // Bilinçli olarak rol atamıyoruz: hesap "onay bekliyor" durumunda kalır,
+            // Yönetici bunu Mentör veya Stajyer olarak onaylayana kadar hiçbir ekrana erişemez.
             await _signInManager.SignInAsync(kullanici, isPersistent: false);
             return RedirectToAction("Index", "Home");
         }

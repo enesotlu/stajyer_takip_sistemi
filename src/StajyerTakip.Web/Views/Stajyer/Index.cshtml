@@ -10,13 +10,16 @@
     <a asp-action="Create" class="btn btn-primary">Yeni Stajyer</a>
 </p>
 
-<table class="table table-striped">
+<div class="table-wrap">
+<table class="table table-striped mb-0">
     <thead>
         <tr>
+            <th>Ad Soyad</th>
             <th>Okul</th>
             <th>Bölüm</th>
             <th>Başlangıç</th>
             <th>Bitiş</th>
+            <th>Durum</th>
             <th>Mentör</th>
             <th>Departman</th>
             <th></th>
@@ -25,11 +28,23 @@
     <tbody>
         @foreach (var stajyer in Model)
         {
+            bool aktif = stajyer.BaslangicTarihi.Date <= DateTime.Today && DateTime.Today <= stajyer.BitisTarihi.Date;
             <tr>
+                <td>@stajyer.Kullanici.AdSoyad</td>
                 <td>@stajyer.Okul</td>
                 <td>@stajyer.Bolum</td>
                 <td>@stajyer.BaslangicTarihi.ToString("dd.MM.yyyy")</td>
                 <td>@stajyer.BitisTarihi.ToString("dd.MM.yyyy")</td>
+                <td>
+                    @if (aktif)
+                    {
+                        <span class="badge bg-success">Aktif</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Pasif</span>
+                    }
+                </td>
                 <td>@stajyer.Mentor.Unvan</td>
                 <td>@stajyer.Departman.Ad</td>
                 <td>
@@ -40,3 +55,4 @@
         }
     </tbody>
 </table>
+</div>

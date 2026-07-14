@@ -57,17 +57,53 @@ public class StajyerService : IStajyerService
             throw new InvalidOperationException($"Kullanıcı hesabı oluşturulamadı: {hatalar}");
         }
 
+        await RolVeProfilOlusturAsync(
+            kullanici.Id, istek.Okul, istek.Bolum, istek.BaslangicTarihi, istek.BitisTarihi,
+            istek.MentorId, istek.DepartmanId);
+    }
+
+    public async Task AtaAsync(
+        string kullaniciId, string okul, string bolum, DateTime baslangicTarihi, DateTime bitisTarihi,
+        int mentorId, int departmanId)
+    {
+        if (baslangicTarihi >= bitisTarihi)
+        {
+            throw new InvalidOperationException("Başlangıç tarihi, bitiş tarihinden önce olmalıdır.");
+        }
+
+        var kullanici = await _userManager.FindByIdAsync(kullaniciId);
+        if (kullanici is null)
+        {
+            throw new InvalidOperationException("Kullanıcı bulunamadı.");
+        }
+
+        var mevcutRoller = await _userManager.GetRolesAsync(kullanici);
+        if (mevcutRoller.Count > 0)
+        {
+            throw new InvalidOperationException("Bu kullanıcının zaten bir rolü var.");
+        }
+
+        await RolVeProfilOlusturAsync(kullaniciId, okul, bolum, baslangicTarihi, bitisTarihi, mentorId, departmanId);
+    }
+
+    private async Task RolVeProfilOlusturAsync(
+        string kullaniciId, string okul, string bolum, DateTime baslangicTarihi, DateTime bitisTarihi,
+        int mentorId, int departmanId)
+    {
+        var kullanici = await _userManager.FindByIdAsync(kullaniciId)
+            ?? throw new InvalidOperationException("Kullanıcı bulunamadı.");
+
         await _userManager.AddToRoleAsync(kullanici, Roller.Stajyer);
 
         var stajyer = new Stajyer
         {
-            KullaniciId = kullanici.Id,
-            Okul = istek.Okul,
-            Bolum = istek.Bolum,
-            BaslangicTarihi = istek.BaslangicTarihi,
-            BitisTarihi = istek.BitisTarihi,
-            MentorId = istek.MentorId,
-            DepartmanId = istek.DepartmanId
+            KullaniciId = kullaniciId,
+            Okul = okul,
+            Bolum = bolum,
+            BaslangicTarihi = baslangicTarihi,
+            BitisTarihi = bitisTarihi,
+            MentorId = mentorId,
+            DepartmanId = departmanId
         };
 
         await _unitOfWork.Stajyerler.AddAsync(stajyer);

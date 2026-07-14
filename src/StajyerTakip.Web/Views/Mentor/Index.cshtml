@@ -18,6 +18,7 @@
 <table class="table table-striped">
     <thead>
         <tr>
+            <th>Ad Soyad</th>
             <th>Unvan</th>
             <th>Departman</th>
             <th></th>
@@ -27,6 +28,7 @@
         @foreach (var mentor in Model)
         {
             <tr>
+                <td>@mentor.Kullanici.AdSoyad</td>
                 <td>@mentor.Unvan</td>
                 <td>@mentor.Departman.Ad</td>
                 <td>

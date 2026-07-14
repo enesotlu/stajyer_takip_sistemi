@@ -1,0 +1,41 @@
+@using StajyerTakip.Core.Identity
+@model List<ApplicationUser>
+
+@{
+    ViewData["Title"] = "Onay Bekleyen Kullanıcılar";
+}
+
+<h1>Onay Bekleyen Kullanıcılar</h1>
+<p class="text-muted">Bu kullanıcılar kayıt oldu ama henüz hiçbir role sahip değil. Onlara Mentör veya Stajyer rolü ver.</p>
+
+@if (!Model.Any())
+{
+    <p>Onay bekleyen kullanıcı yok.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Ad Soyad</th>
+                <th>E-posta</th>
+                <th>Kayıt Tarihi</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var kullanici in Model)
+            {
+                <tr>
+                    <td>@kullanici.AdSoyad</td>
+                    <td>@kullanici.Email</td>
+                    <td>@kullanici.KayitTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>
+                        <a asp-action="MentorYap" asp-route-id="@kullanici.Id" class="btn btn-sm btn-outline-primary">Mentör Yap</a>
+                        <a asp-action="StajyerYap" asp-route-id="@kullanici.Id" class="btn btn-sm btn-outline-success">Stajyer Yap</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

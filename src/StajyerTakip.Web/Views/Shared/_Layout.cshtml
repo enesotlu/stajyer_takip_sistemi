@@ -1,98 +1,86 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+@{
+    string Aktif(string controller) =>
+        string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), controller, StringComparison.OrdinalIgnoreCase)
+            ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="tr">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - StajyerTakip.Web</title>
+    <title>@ViewData["Title"] - Stajyer Takip Sistemi</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/StajyerTakip.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">StajyerTakip.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        @if (User.IsInRole(Roller.Yonetici))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Departman" asp-action="Index">Departmanlar</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Mentor" asp-action="Index">Mentörler</a>
-                            </li>
-                        }
-                        @if (User.IsInRole(Roller.Yonetici) || User.IsInRole(Roller.Mentor))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Stajyer" asp-action="Index">Stajyerler</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Gorev" asp-action="Index">Görevler</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Devam" asp-action="Index">Devam Onayı</a>
-                            </li>
-                        }
-                        @if (User.IsInRole(Roller.Stajyer))
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Gorevlerim" asp-action="Index">Görevlerim</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Devamlarim" asp-action="Index">Devam Kayıtlarım</a>
-                            </li>
-                        }
-                    </ul>
-                    <ul class="navbar-nav">
-                        @if (User.Identity != null && User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
-                                <span class="nav-link text-dark">Merhaba, @User.Identity.Name</span>
-                            </li>
-                            <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post">
-                                    <button type="submit" class="nav-link btn btn-link text-dark">Çıkış Yap</button>
-                                </form>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Giriş Yap</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Kayıt Ol</a>
-                            </li>
-                        }
-                    </ul>
-                </div>
+    <div class="app-shell">
+        <aside class="stk-sidebar">
+            <a class="stk-sidebar-brand" asp-controller="Home" asp-action="Index">Stajyer Takip Sistemi</a>
+
+            <nav class="stk-sidebar-nav" id="sidebarNav">
+                <a class="@Aktif("Home")" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+
+                @if (User.IsInRole(Roller.Yonetici))
+                {
+                    <div class="stk-nav-section">Yönetim</div>
+                    <a class="@Aktif("OnayBekleyenler")" asp-controller="OnayBekleyenler" asp-action="Index">Onay Bekleyenler</a>
+                    <a class="@Aktif("Departman")" asp-controller="Departman" asp-action="Index">Departmanlar</a>
+                    <a class="@Aktif("Mentor")" asp-controller="Mentor" asp-action="Index">Mentörler</a>
+                }
+
+                @if (User.IsInRole(Roller.Yonetici) || User.IsInRole(Roller.Mentor))
+                {
+                    <div class="stk-nav-section">Staj Takibi</div>
+                    <a class="@Aktif("Stajyer")" asp-controller="Stajyer" asp-action="Index">Stajyerler</a>
+                    <a class="@Aktif("Gorev")" asp-controller="Gorev" asp-action="Index">Görevler</a>
+                    <a class="@Aktif("Devam")" asp-controller="Devam" asp-action="Index">Devam Onayı</a>
+                }
+
+                @if (User.IsInRole(Roller.Stajyer))
+                {
+                    <div class="stk-nav-section">Benim Sayfalarım</div>
+                    <a class="@Aktif("Gorevlerim")" asp-controller="Gorevlerim" asp-action="Index">Görevlerim</a>
+                    <a class="@Aktif("Devamlarim")" asp-controller="Devamlarim" asp-action="Index">Devam Kayıtlarım</a>
+                }
+            </nav>
+
+            <div class="stk-sidebar-user">
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <span class="stk-user-name">@User.Identity.Name</span>
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        <button type="submit" class="btn btn-link">Çıkış Yap</button>
+                    </form>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="d-block mb-1">Giriş Yap</a>
+                    <a asp-controller="Account" asp-action="Register" class="d-block">Kayıt Ol</a>
+                }
             </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
+        </aside>
+
+        <div class="stk-main">
+            <div class="stk-topbar">
+                <button type="button" id="sidebarToggle" class="btn btn-outline-secondary btn-sm">Menü</button>
+                <span>@ViewData["Title"]</span>
+            </div>
+
+            <main role="main" class="stk-content">
+                @RenderBody()
+            </main>
+        </div>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - StajyerTakip.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-        </div>
-    </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script>
+        document.getElementById('sidebarToggle')?.addEventListener('click', function () {
+            document.getElementById('sidebarNav').classList.toggle('stk-open');
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

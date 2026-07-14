@@ -22,6 +22,12 @@ public class MentorService : IMentorService
 
     public Task<Mentor?> GetByIdAsync(int id) => _unitOfWork.Mentorler.GetByIdAsync(id);
 
+    public async Task<Mentor?> GetByKullaniciIdAsync(string kullaniciId)
+    {
+        var eslesenler = await _unitOfWork.Mentorler.FindAsync(m => m.KullaniciId == kullaniciId);
+        return eslesenler.SingleOrDefault();
+    }
+
     public async Task CreateAsync(YeniMentorIstegi istek)
     {
         var mevcutKullanici = await _userManager.FindByEmailAsync(istek.Email);
@@ -45,13 +51,38 @@ public class MentorService : IMentorService
             throw new InvalidOperationException($"Kullanıcı hesabı oluşturulamadı: {hatalar}");
         }
 
+        await RolVeProfilOlusturAsync(kullanici.Id, istek.Unvan, istek.DepartmanId);
+    }
+
+    public async Task AtaAsync(string kullaniciId, string unvan, int departmanId)
+    {
+        var kullanici = await _userManager.FindByIdAsync(kullaniciId);
+        if (kullanici is null)
+        {
+            throw new InvalidOperationException("Kullanıcı bulunamadı.");
+        }
+
+        var mevcutRoller = await _userManager.GetRolesAsync(kullanici);
+        if (mevcutRoller.Count > 0)
+        {
+            throw new InvalidOperationException("Bu kullanıcının zaten bir rolü var.");
+        }
+
+        await RolVeProfilOlusturAsync(kullaniciId, unvan, departmanId);
+    }
+
+    private async Task RolVeProfilOlusturAsync(string kullaniciId, string unvan, int departmanId)
+    {
+        var kullanici = await _userManager.FindByIdAsync(kullaniciId)
+            ?? throw new InvalidOperationException("Kullanıcı bulunamadı.");
+
         await _userManager.AddToRoleAsync(kullanici, Roller.Mentor);
 
         var mentor = new Mentor
         {
-            KullaniciId = kullanici.Id,
-            Unvan = istek.Unvan,
-            DepartmanId = istek.DepartmanId
+            KullaniciId = kullaniciId,
+            Unvan = unvan,
+            DepartmanId = departmanId
         };
 
         await _unitOfWork.Mentorler.AddAsync(mentor);

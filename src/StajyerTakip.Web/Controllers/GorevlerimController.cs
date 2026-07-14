@@ -26,6 +26,7 @@ public class GorevlerimController : Controller
     {
         var kullaniciId = _userManager.GetUserId(User);
         var stajyer = kullaniciId is null ? null : await _stajyerService.GetByKullaniciIdAsync(kullaniciId);
+        ViewBag.ProfilYok = stajyer is null;
         if (stajyer is null)
         {
             return View(new List<Gorev>());

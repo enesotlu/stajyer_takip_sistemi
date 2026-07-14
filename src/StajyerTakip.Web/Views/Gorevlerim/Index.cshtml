@@ -11,7 +11,14 @@
     <div class="alert alert-danger">@TempData["HataMesaji"]</div>
 }
 
-@if (!Model.Any())
+@if ((bool)ViewBag.ProfilYok)
+{
+    <div class="alert alert-warning">
+        Hesabına bağlı bir Stajyer profili bulunamadı. Görev görebilmen için Yöneticinin seni
+        Stajyer olarak eklemesi (Okul/Bölüm/Mentör/Departman bilgilerinle) gerekiyor.
+    </div>
+}
+else if (!Model.Any())
 {
     <p>Henüz sana atanmış bir görev yok.</p>
 }

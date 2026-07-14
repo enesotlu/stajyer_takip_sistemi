@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using StajyerTakip.Business.Interfaces;
@@ -15,15 +16,18 @@ public class StajyerController : Controller
     private readonly IStajyerService _stajyerService;
     private readonly IMentorService _mentorService;
     private readonly IDepartmanService _departmanService;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     public StajyerController(
         IStajyerService stajyerService,
         IMentorService mentorService,
-        IDepartmanService departmanService)
+        IDepartmanService departmanService,
+        UserManager<ApplicationUser> userManager)
     {
         _stajyerService = stajyerService;
         _mentorService = mentorService;
         _departmanService = departmanService;
+        _userManager = userManager;
     }
 
     public async Task<IActionResult> Index()
@@ -34,17 +38,36 @@ public class StajyerController : Controller
 
     public async Task<IActionResult> Create()
     {
-        await PopulateDropdownlarAsync();
-        return View();
+        var girenMentor = await GirisYapanMentorAsync();
+        await PopulateDropdownlarAsync(girenMentor?.Id);
+        ViewBag.MentorSabit = girenMentor is not null;
+
+        var model = new StajyerCreateViewModel();
+        if (girenMentor is not null)
+        {
+            model.MentorId = girenMentor.Id;
+            model.DepartmanId = girenMentor.DepartmanId;
+        }
+
+        return View(model);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(StajyerCreateViewModel model)
     {
+        // Bir Mentör stajyer eklerken, Mentör alanı ne gönderilirse gönderilsin
+        // her zaman kendisi olur - başka bir mentöre stajyer atayamaz.
+        var girenMentor = await GirisYapanMentorAsync();
+        if (girenMentor is not null)
+        {
+            model.MentorId = girenMentor.Id;
+        }
+
         if (!ModelState.IsValid)
         {
             await PopulateDropdownlarAsync(model.MentorId, model.DepartmanId);
+            ViewBag.MentorSabit = girenMentor is not null;
             return View(model);
         }
 
@@ -59,8 +82,20 @@ public class StajyerController : Controller
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             await PopulateDropdownlarAsync(model.MentorId, model.DepartmanId);
+            ViewBag.MentorSabit = girenMentor is not null;
             return View(model);
         }
+    }
+
+    private async Task<Mentor?> GirisYapanMentorAsync()
+    {
+        if (User.IsInRole(Roller.Yonetici))
+        {
+            return null;
+        }
+
+        var kullaniciId = _userManager.GetUserId(User);
+        return kullaniciId is null ? null : await _mentorService.GetByKullaniciIdAsync(kullaniciId);
     }
 
     public async Task<IActionResult> Edit(int id)
@@ -127,7 +162,8 @@ public class StajyerController : Controller
         var mentorler = await _mentorService.GetAllAsync();
         var departmanlar = await _departmanService.GetAllAsync();
 
-        ViewBag.MentorId = new SelectList(mentorler, "Id", "Unvan", seciliMentorId);
+        var mentorSecenekleri = mentorler.Select(m => new { m.Id, Ad = $"{m.Kullanici.AdSoyad} ({m.Unvan})" });
+        ViewBag.MentorId = new SelectList(mentorSecenekleri, "Id", "Ad", seciliMentorId);
         ViewBag.DepartmanId = new SelectList(departmanlar, "Id", "Ad", seciliDepartmanId);
     }
 }
