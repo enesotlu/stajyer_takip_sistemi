@@ -2,12 +2,14 @@
 
 @{
     ViewData["Title"] = "Kayıt Ol";
+    Layout = "_AuthLayout";
 }
 
 <h1>Kayıt Ol</h1>
+<p class="stk-auth-lead">Hesabını oluştur; Yönetici onayladığında rolüne uygun ekranlar açılır.</p>
 
-<form asp-action="Register" method="post" class="col-md-4">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<form asp-action="Register" method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
     <div class="mb-3">
         <label asp-for="AdSoyad" class="form-label"></label>
@@ -17,24 +19,25 @@
 
     <div class="mb-3">
         <label asp-for="Email" class="form-label"></label>
-        <input asp-for="Email" class="form-control" />
+        <input asp-for="Email" class="form-control" autocomplete="username" />
         <span asp-validation-for="Email" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label asp-for="Sifre" class="form-label"></label>
-        <input asp-for="Sifre" class="form-control" />
+        <input asp-for="Sifre" class="form-control" autocomplete="new-password" />
         <span asp-validation-for="Sifre" class="text-danger"></span>
     </div>
 
     <div class="mb-3">
         <label asp-for="SifreTekrar" class="form-label"></label>
-        <input asp-for="SifreTekrar" class="form-control" />
+        <input asp-for="SifreTekrar" class="form-control" autocomplete="new-password" />
         <span asp-validation-for="SifreTekrar" class="text-danger"></span>
     </div>
 
     <button type="submit" class="btn btn-primary">Kayıt Ol</button>
-    <a asp-action="Login" class="btn btn-link">Zaten hesabın var mı? Giriş yap</a>
+
+    <p class="stk-auth-alt">Zaten hesabın var mı? <a asp-action="Login">Giriş yap</a></p>
 </form>
 
 @section Scripts {

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Stajyer Takip Sistemi</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="stk-auth-body">
+    <div class="stk-auth-wrap">
+        <div class="stk-auth-brand">
+            <span class="stk-auth-logo">ST</span>
+            <div>
+                <div class="stk-auth-title">Stajyer Takip Sistemi</div>
+                <div class="stk-auth-subtitle">Cumhurbaşkanlığı Yazılım Daire Başkanlığı</div>
+            </div>
+        </div>
+
+        <div class="stk-auth-card">
+            @RenderBody()
+        </div>
+
+        <div class="stk-auth-footer">&copy; 2026 Stajyer Takip Sistemi</div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

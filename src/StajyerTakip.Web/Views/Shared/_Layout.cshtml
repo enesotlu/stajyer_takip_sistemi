@@ -2,6 +2,12 @@
     string Aktif(string controller) =>
         string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), controller, StringComparison.OrdinalIgnoreCase)
             ? "active" : "";
+
+    string adSoyad = User.FindFirst("AdSoyad")?.Value ?? User.Identity?.Name ?? "";
+    string rolEtiketi = User.IsInRole(Roller.Yonetici) ? "Yönetici"
+        : User.IsInRole(Roller.Mentor) ? "Mentör"
+        : User.IsInRole(Roller.Stajyer) ? "Stajyer"
+        : "Onay Bekliyor";
 }
 <!DOCTYPE html>
 <html lang="tr">
@@ -39,16 +45,23 @@
 
                 @if (User.IsInRole(Roller.Stajyer))
                 {
-                    <div class="stk-nav-section">Benim Sayfalarım</div>
+                    <div class="stk-nav-section">Staj İşlemlerim</div>
                     <a class="@Aktif("Gorevlerim")" asp-controller="Gorevlerim" asp-action="Index">Görevlerim</a>
                     <a class="@Aktif("Devamlarim")" asp-controller="Devamlarim" asp-action="Index">Devam Kayıtlarım</a>
+                }
+
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <div class="stk-nav-section">Hesap</div>
+                    <a class="@Aktif("Profil")" asp-controller="Profil" asp-action="Index">Profilim</a>
                 }
             </nav>
 
             <div class="stk-sidebar-user">
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
-                    <span class="stk-user-name">@User.Identity.Name</span>
+                    <span class="stk-user-name">@adSoyad</span>
+                    <span class="badge bg-primary mb-2">@rolEtiketi</span>
                     <form asp-controller="Account" asp-action="Logout" method="post">
                         <button type="submit" class="btn btn-link">Çıkış Yap</button>
                     </form>

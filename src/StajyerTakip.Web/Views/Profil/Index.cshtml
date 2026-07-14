@@ -1,0 +1,91 @@
+@model ProfilViewModel
+
+@{
+    ViewData["Title"] = "Profilim";
+}
+
+<h1>Profilim</h1>
+
+<div class="row g-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Hesap Bilgileri</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Ad Soyad</dt>
+                    <dd class="col-sm-8">@Model.AdSoyad</dd>
+
+                    <dt class="col-sm-4">E-posta</dt>
+                    <dd class="col-sm-8">@Model.Email</dd>
+
+                    <dt class="col-sm-4">Rol</dt>
+                    <dd class="col-sm-8"><span class="badge bg-primary">@Model.Rol</span></dd>
+
+                    <dt class="col-sm-4">Kayıt Tarihi</dt>
+                    <dd class="col-sm-8">
+                        @(Model.KayitTarihi == default ? "-" : Model.KayitTarihi.ToLocalTime().ToString("dd.MM.yyyy"))
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.StajyerProfili is not null)
+    {
+        var s = Model.StajyerProfili;
+        bool aktif = s.BaslangicTarihi.Date <= DateTime.Today && DateTime.Today <= s.BitisTarihi.Date;
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Staj Bilgileri</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Okul</dt>
+                        <dd class="col-sm-8">@s.Okul</dd>
+
+                        <dt class="col-sm-4">Bölüm</dt>
+                        <dd class="col-sm-8">@s.Bolum</dd>
+
+                        <dt class="col-sm-4">Staj Dönemi</dt>
+                        <dd class="col-sm-8">@s.BaslangicTarihi.ToString("dd.MM.yyyy") - @s.BitisTarihi.ToString("dd.MM.yyyy")</dd>
+
+                        <dt class="col-sm-4">Durum</dt>
+                        <dd class="col-sm-8">
+                            @if (aktif)
+                            {
+                                <span class="badge bg-success">Aktif</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Pasif</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4">Mentör</dt>
+                        <dd class="col-sm-8">@Model.MentorAdSoyad (@s.Mentor.Unvan)</dd>
+
+                        <dt class="col-sm-4">Departman</dt>
+                        <dd class="col-sm-8">@s.Departman.Ad</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    }
+    else if (Model.MentorProfili is not null)
+    {
+        var m = Model.MentorProfili;
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Mentörlük Bilgileri</div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Unvan</dt>
+                        <dd class="col-sm-8">@m.Unvan</dd>
+
+                        <dt class="col-sm-4">Departman</dt>
+                        <dd class="col-sm-8">@m.Departman.Ad</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    }
+</div>
