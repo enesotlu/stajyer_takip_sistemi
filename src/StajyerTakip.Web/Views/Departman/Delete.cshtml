@@ -1,0 +1,24 @@
+@model Departman
+
+@{
+    ViewData["Title"] = "Departman Sil";
+}
+
+<h1>Departmanı sil</h1>
+
+<div class="alert alert-warning">
+    <strong>@Model.Ad</strong> departmanını silmek istediğine emin misin?
+</div>
+
+<dl class="row">
+    <dt class="col-sm-2">Ad</dt>
+    <dd class="col-sm-10">@Model.Ad</dd>
+    <dt class="col-sm-2">Açıklama</dt>
+    <dd class="col-sm-10">@Model.Aciklama</dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Sil</button>
+    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+</form>

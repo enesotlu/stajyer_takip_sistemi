@@ -1,0 +1,39 @@
+@model List<Departman>
+
+@{
+    ViewData["Title"] = "Departmanlar";
+}
+
+<h1>Departmanlar</h1>
+
+@if (TempData["HataMesaji"] != null)
+{
+    <div class="alert alert-danger">@TempData["HataMesaji"]</div>
+}
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Yeni Departman</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Ad</th>
+            <th>Açıklama</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var departman in Model)
+        {
+            <tr>
+                <td>@departman.Ad</td>
+                <td>@departman.Aciklama</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@departman.Id" class="btn btn-sm btn-outline-secondary">Düzenle</a>
+                    <a asp-action="Delete" asp-route-id="@departman.Id" class="btn btn-sm btn-outline-danger">Sil</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -1,4 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using StajyerTakip.Business.Interfaces;
+using StajyerTakip.Business.Services;
+using StajyerTakip.Core.Interfaces;
+using StajyerTakip.DataAccess;
 using StajyerTakip.DataAccess.Context;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +12,9 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IDepartmanService, DepartmanService>();
 
 var app = builder.Build();
 
