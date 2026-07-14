@@ -1,13 +1,32 @@
-@model Mentor
+@model MentorCreateViewModel
 
 @{
     ViewData["Title"] = "Yeni Mentör";
 }
 
 <h1>Yeni Mentör</h1>
+<p class="text-muted">Bu form hem mentörün giriş yapacağı kullanıcı hesabını hem de mentör profilini birlikte oluşturur.</p>
 
 <form asp-action="Create" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="AdSoyad" class="form-label"></label>
+        <input asp-for="AdSoyad" class="form-control" />
+        <span asp-validation-for="AdSoyad" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Email" class="form-label"></label>
+        <input asp-for="Email" class="form-control" />
+        <span asp-validation-for="Email" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Sifre" class="form-label"></label>
+        <input asp-for="Sifre" class="form-control" />
+        <span asp-validation-for="Sifre" class="text-danger"></span>
+    </div>
 
     <div class="mb-3">
         <label asp-for="Unvan" class="form-label"></label>

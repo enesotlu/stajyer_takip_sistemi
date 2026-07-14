@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using StajyerTakip.Business.Interfaces;
+using StajyerTakip.Business.Models;
 using StajyerTakip.Core.Entities;
+using StajyerTakip.Core.Identity;
 using StajyerTakip.Core.Interfaces;
 
 namespace StajyerTakip.Business.Services;
@@ -7,10 +10,12 @@ namespace StajyerTakip.Business.Services;
 public class StajyerService : IStajyerService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public StajyerService(IUnitOfWork unitOfWork)
+    public StajyerService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
     {
         _unitOfWork = unitOfWork;
+        _userManager = userManager;
     }
 
     public Task<List<Stajyer>> GetAllAsync() =>
@@ -18,11 +23,46 @@ public class StajyerService : IStajyerService
 
     public Task<Stajyer?> GetByIdAsync(int id) => _unitOfWork.Stajyerler.GetByIdAsync(id);
 
-    public async Task CreateAsync(Stajyer stajyer)
+    public async Task CreateAsync(YeniStajyerIstegi istek)
     {
-        EnsureTarihlerGecerli(stajyer);
+        if (istek.BaslangicTarihi >= istek.BitisTarihi)
+        {
+            throw new InvalidOperationException("Başlangıç tarihi, bitiş tarihinden önce olmalıdır.");
+        }
 
-        stajyer.KullaniciId = Guid.NewGuid().ToString();
+        var mevcutKullanici = await _userManager.FindByEmailAsync(istek.Email);
+        if (mevcutKullanici is not null)
+        {
+            throw new InvalidOperationException($"\"{istek.Email}\" e-postası zaten kullanımda.");
+        }
+
+        var kullanici = new ApplicationUser
+        {
+            UserName = istek.Email,
+            Email = istek.Email,
+            AdSoyad = istek.AdSoyad,
+            EmailConfirmed = true
+        };
+
+        var kullaniciSonucu = await _userManager.CreateAsync(kullanici, istek.Sifre);
+        if (!kullaniciSonucu.Succeeded)
+        {
+            var hatalar = string.Join(" ", kullaniciSonucu.Errors.Select(e => e.Description));
+            throw new InvalidOperationException($"Kullanıcı hesabı oluşturulamadı: {hatalar}");
+        }
+
+        await _userManager.AddToRoleAsync(kullanici, Roller.Stajyer);
+
+        var stajyer = new Stajyer
+        {
+            KullaniciId = kullanici.Id,
+            Okul = istek.Okul,
+            Bolum = istek.Bolum,
+            BaslangicTarihi = istek.BaslangicTarihi,
+            BitisTarihi = istek.BitisTarihi,
+            MentorId = istek.MentorId,
+            DepartmanId = istek.DepartmanId
+        };
 
         await _unitOfWork.Stajyerler.AddAsync(stajyer);
         await _unitOfWork.SaveChangesAsync();

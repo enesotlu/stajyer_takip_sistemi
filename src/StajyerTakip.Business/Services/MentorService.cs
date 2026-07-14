@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using StajyerTakip.Business.Interfaces;
+using StajyerTakip.Business.Models;
 using StajyerTakip.Core.Entities;
+using StajyerTakip.Core.Identity;
 using StajyerTakip.Core.Interfaces;
 
 namespace StajyerTakip.Business.Services;
@@ -7,20 +10,49 @@ namespace StajyerTakip.Business.Services;
 public class MentorService : IMentorService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public MentorService(IUnitOfWork unitOfWork)
+    public MentorService(IUnitOfWork unitOfWork, UserManager<ApplicationUser> userManager)
     {
         _unitOfWork = unitOfWork;
+        _userManager = userManager;
     }
 
     public Task<List<Mentor>> GetAllAsync() => _unitOfWork.Mentorler.GetAllAsync(m => m.Departman);
 
     public Task<Mentor?> GetByIdAsync(int id) => _unitOfWork.Mentorler.GetByIdAsync(id);
 
-    public async Task CreateAsync(Mentor mentor)
+    public async Task CreateAsync(YeniMentorIstegi istek)
     {
-        // 3. Hafta'da Identity gelene kadar geçici bir kimlik ataması.
-        mentor.KullaniciId = Guid.NewGuid().ToString();
+        var mevcutKullanici = await _userManager.FindByEmailAsync(istek.Email);
+        if (mevcutKullanici is not null)
+        {
+            throw new InvalidOperationException($"\"{istek.Email}\" e-postası zaten kullanımda.");
+        }
+
+        var kullanici = new ApplicationUser
+        {
+            UserName = istek.Email,
+            Email = istek.Email,
+            AdSoyad = istek.AdSoyad,
+            EmailConfirmed = true
+        };
+
+        var kullaniciSonucu = await _userManager.CreateAsync(kullanici, istek.Sifre);
+        if (!kullaniciSonucu.Succeeded)
+        {
+            var hatalar = string.Join(" ", kullaniciSonucu.Errors.Select(e => e.Description));
+            throw new InvalidOperationException($"Kullanıcı hesabı oluşturulamadı: {hatalar}");
+        }
+
+        await _userManager.AddToRoleAsync(kullanici, Roller.Mentor);
+
+        var mentor = new Mentor
+        {
+            KullaniciId = kullanici.Id,
+            Unvan = istek.Unvan,
+            DepartmanId = istek.DepartmanId
+        };
 
         await _unitOfWork.Mentorler.AddAsync(mentor);
         await _unitOfWork.SaveChangesAsync();

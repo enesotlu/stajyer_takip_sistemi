@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using StajyerTakip.Business.Interfaces;
+using StajyerTakip.Business.Models;
 using StajyerTakip.Core.Entities;
 using StajyerTakip.Core.Identity;
+using StajyerTakip.Web.Models;
 
 namespace StajyerTakip.Web.Controllers;
 
@@ -33,16 +35,26 @@ public class MentorController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Mentor mentor)
+    public async Task<IActionResult> Create(MentorCreateViewModel model)
     {
         if (!ModelState.IsValid)
         {
-            await PopulateDepartmanListesiAsync(mentor.DepartmanId);
-            return View(mentor);
+            await PopulateDepartmanListesiAsync(model.DepartmanId);
+            return View(model);
         }
 
-        await _mentorService.CreateAsync(mentor);
-        return RedirectToAction(nameof(Index));
+        try
+        {
+            await _mentorService.CreateAsync(new YeniMentorIstegi(
+                model.AdSoyad, model.Email, model.Sifre, model.Unvan, model.DepartmanId));
+            return RedirectToAction(nameof(Index));
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            await PopulateDepartmanListesiAsync(model.DepartmanId);
+            return View(model);
+        }
     }
 
     public async Task<IActionResult> Edit(int id)

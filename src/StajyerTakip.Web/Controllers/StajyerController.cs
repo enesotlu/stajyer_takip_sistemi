@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using StajyerTakip.Business.Interfaces;
+using StajyerTakip.Business.Models;
 using StajyerTakip.Core.Entities;
 using StajyerTakip.Core.Identity;
+using StajyerTakip.Web.Models;
 
 namespace StajyerTakip.Web.Controllers;
 
@@ -38,24 +40,26 @@ public class StajyerController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Stajyer stajyer)
+    public async Task<IActionResult> Create(StajyerCreateViewModel model)
     {
         if (!ModelState.IsValid)
         {
-            await PopulateDropdownlarAsync(stajyer.MentorId, stajyer.DepartmanId);
-            return View(stajyer);
+            await PopulateDropdownlarAsync(model.MentorId, model.DepartmanId);
+            return View(model);
         }
 
         try
         {
-            await _stajyerService.CreateAsync(stajyer);
+            await _stajyerService.CreateAsync(new YeniStajyerIstegi(
+                model.AdSoyad, model.Email, model.Sifre, model.Okul, model.Bolum,
+                model.BaslangicTarihi, model.BitisTarihi, model.MentorId, model.DepartmanId));
             return RedirectToAction(nameof(Index));
         }
         catch (InvalidOperationException ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
-            await PopulateDropdownlarAsync(stajyer.MentorId, stajyer.DepartmanId);
-            return View(stajyer);
+            await PopulateDropdownlarAsync(model.MentorId, model.DepartmanId);
+            return View(model);
         }
     }
 
