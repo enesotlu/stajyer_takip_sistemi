@@ -5,39 +5,49 @@
     Layout = "_AuthLayout";
 }
 
-<h1>Kayıt Ol</h1>
-<p class="stk-auth-lead">Hesabını oluştur; Yönetici onayladığında rolüne uygun ekranlar açılır.</p>
+<h1>Kayıt</h1>
+<p class="stk-auth-lead">Hesabınızı oluşturun; Yönetici onayladığında rolünüz aktifleşir.</p>
 
 <form asp-action="Register" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <div asp-validation-summary="ModelOnly" class="text-danger text-center mb-3"></div>
 
-    <div class="mb-3">
-        <label asp-for="AdSoyad" class="form-label"></label>
-        <input asp-for="AdSoyad" class="form-control" />
-        <span asp-validation-for="AdSoyad" class="text-danger"></span>
+    <div class="stk-input-grup mb-1">
+        <label asp-for="AdSoyad" class="visually-hidden"></label>
+        <svg class="stk-input-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+        <input asp-for="AdSoyad" class="form-control" placeholder="Ad Soyad" />
     </div>
+    <span asp-validation-for="AdSoyad" class="text-danger d-block mb-2"></span>
 
-    <div class="mb-3">
-        <label asp-for="Email" class="form-label"></label>
-        <input asp-for="Email" class="form-control" autocomplete="username" />
-        <span asp-validation-for="Email" class="text-danger"></span>
+    <div class="stk-input-grup mb-1">
+        <label asp-for="Email" class="visually-hidden"></label>
+        <svg class="stk-input-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        <input asp-for="Email" class="form-control" placeholder="E-posta" autocomplete="username" />
     </div>
+    <span asp-validation-for="Email" class="text-danger d-block mb-2"></span>
 
-    <div class="mb-3">
-        <label asp-for="Sifre" class="form-label"></label>
-        <input asp-for="Sifre" class="form-control" autocomplete="new-password" />
-        <span asp-validation-for="Sifre" class="text-danger"></span>
+    <div class="stk-input-grup mb-1">
+        <label asp-for="Sifre" class="visually-hidden"></label>
+        <svg class="stk-input-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <input asp-for="Sifre" class="form-control stk-parola-alani" placeholder="Şifre" autocomplete="new-password" />
+        <button type="button" class="stk-parola-goster" aria-label="Şifreyi göster veya gizle">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
     </div>
+    <span asp-validation-for="Sifre" class="text-danger d-block mb-2"></span>
 
-    <div class="mb-3">
-        <label asp-for="SifreTekrar" class="form-label"></label>
-        <input asp-for="SifreTekrar" class="form-control" autocomplete="new-password" />
-        <span asp-validation-for="SifreTekrar" class="text-danger"></span>
+    <div class="stk-input-grup mb-1">
+        <label asp-for="SifreTekrar" class="visually-hidden"></label>
+        <svg class="stk-input-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        <input asp-for="SifreTekrar" class="form-control stk-parola-alani" placeholder="Şifre (Tekrar)" autocomplete="new-password" />
+        <button type="button" class="stk-parola-goster" aria-label="Şifreyi göster veya gizle">
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
     </div>
+    <span asp-validation-for="SifreTekrar" class="text-danger d-block mb-3"></span>
 
     <button type="submit" class="btn btn-primary">Kayıt Ol</button>
 
-    <p class="stk-auth-alt">Zaten hesabın var mı? <a asp-action="Login">Giriş yap</a></p>
+    <p class="stk-auth-alt">Zaten hesabınız var mı? <a asp-action="Login">Giriş yapın.</a></p>
 </form>
 
 @section Scripts {

@@ -12,15 +12,13 @@
 </head>
 <body class="stk-auth-body">
     <div class="stk-auth-wrap">
-        <div class="stk-auth-brand">
-            <span class="stk-auth-logo">ST</span>
-            <div>
+        <div class="stk-auth-card">
+            <div class="stk-auth-brand">
+                <span class="stk-auth-logo">ST</span>
                 <div class="stk-auth-title">Stajyer Takip Sistemi</div>
                 <div class="stk-auth-subtitle">Cumhurbaşkanlığı Yazılım Daire Başkanlığı</div>
             </div>
-        </div>
 
-        <div class="stk-auth-card">
             @RenderBody()
         </div>
 
@@ -29,6 +27,14 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.querySelectorAll('.stk-parola-goster').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = btn.closest('.stk-input-grup').querySelector('input');
+                input.type = input.type === 'password' ? 'text' : 'password';
+            });
+        });
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
