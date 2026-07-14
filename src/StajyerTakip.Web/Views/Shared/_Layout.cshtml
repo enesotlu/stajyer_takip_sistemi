@@ -36,6 +36,21 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="Stajyer" asp-action="Index">Stajyerler</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Gorev" asp-action="Index">Görevler</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Devam" asp-action="Index">Devam Onayı</a>
+                            </li>
+                        }
+                        @if (User.IsInRole(Roller.Stajyer))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Gorevlerim" asp-action="Index">Görevlerim</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Devamlarim" asp-action="Index">Devam Kayıtlarım</a>
+                            </li>
                         }
                     </ul>
                     <ul class="navbar-nav">

@@ -19,9 +19,15 @@ public class StajyerService : IStajyerService
     }
 
     public Task<List<Stajyer>> GetAllAsync() =>
-        _unitOfWork.Stajyerler.GetAllAsync(s => s.Mentor, s => s.Departman);
+        _unitOfWork.Stajyerler.GetAllAsync(s => s.Mentor, s => s.Departman, s => s.Kullanici);
 
     public Task<Stajyer?> GetByIdAsync(int id) => _unitOfWork.Stajyerler.GetByIdAsync(id);
+
+    public async Task<Stajyer?> GetByKullaniciIdAsync(string kullaniciId)
+    {
+        var eslesenler = await _unitOfWork.Stajyerler.FindAsync(s => s.KullaniciId == kullaniciId);
+        return eslesenler.SingleOrDefault();
+    }
 
     public async Task CreateAsync(YeniStajyerIstegi istek)
     {

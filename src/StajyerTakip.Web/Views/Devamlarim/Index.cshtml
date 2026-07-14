@@ -1,0 +1,40 @@
+@using StajyerTakip.Business.Models
+@model List<Devam>
+
+@{
+    ViewData["Title"] = "Devam Kayıtlarım";
+    var ozet = (AylikDevamOzeti)ViewBag.AylikOzet;
+}
+
+<h1>Devam Kayıtlarım</h1>
+
+<div class="alert alert-info">
+    <strong>@ozet.Ay.ToString("00")/@ozet.Yil özeti:</strong>
+    Toplam @ozet.ToplamGun gün — Onaylanan @ozet.OnaylananGun, Bekleyen @ozet.BekleyenGun, Reddedilen @ozet.ReddedilenGun
+</div>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Bugün İçin Kayıt Gir</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Tarih</th>
+            <th>Giriş</th>
+            <th>Çıkış</th>
+            <th>Durum</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var devam in Model)
+        {
+            <tr>
+                <td>@devam.Tarih.ToString("dd.MM.yyyy")</td>
+                <td>@devam.GirisSaati</td>
+                <td>@devam.CikisSaati</td>
+                <td>@devam.OnayDurumu</td>
+            </tr>
+        }
+    </tbody>
+</table>

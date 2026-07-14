@@ -43,6 +43,8 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDepartmanService, DepartmanService>();
 builder.Services.AddScoped<IMentorService, MentorService>();
 builder.Services.AddScoped<IStajyerService, StajyerService>();
+builder.Services.AddScoped<IGorevService, GorevService>();
+builder.Services.AddScoped<IDevamService, DevamService>();
 
 var app = builder.Build();
 

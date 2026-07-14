@@ -18,7 +18,7 @@ public class MentorService : IMentorService
         _userManager = userManager;
     }
 
-    public Task<List<Mentor>> GetAllAsync() => _unitOfWork.Mentorler.GetAllAsync(m => m.Departman);
+    public Task<List<Mentor>> GetAllAsync() => _unitOfWork.Mentorler.GetAllAsync(m => m.Departman, m => m.Kullanici);
 
     public Task<Mentor?> GetByIdAsync(int id) => _unitOfWork.Mentorler.GetByIdAsync(id);
 

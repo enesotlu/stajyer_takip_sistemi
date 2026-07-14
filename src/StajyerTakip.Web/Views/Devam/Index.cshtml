@@ -1,0 +1,43 @@
+@model List<Devam>
+
+@{
+    ViewData["Title"] = "Devam / Puantaj Onayı";
+}
+
+<h1>Devam / Puantaj Onayı</h1>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Stajyer</th>
+            <th>Tarih</th>
+            <th>Giriş</th>
+            <th>Çıkış</th>
+            <th>Durum</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var devam in Model)
+        {
+            <tr>
+                <td>@devam.Stajyer.Okul / @devam.Stajyer.Bolum</td>
+                <td>@devam.Tarih.ToString("dd.MM.yyyy")</td>
+                <td>@devam.GirisSaati</td>
+                <td>@devam.CikisSaati</td>
+                <td>@devam.OnayDurumu</td>
+                <td>
+                    @if (devam.OnayDurumu == OnayDurumu.Bekliyor)
+                    {
+                        <form asp-action="Onayla" asp-route-id="@devam.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-success">Onayla</button>
+                        </form>
+                        <form asp-action="Reddet" asp-route-id="@devam.Id" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Reddet</button>
+                        </form>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

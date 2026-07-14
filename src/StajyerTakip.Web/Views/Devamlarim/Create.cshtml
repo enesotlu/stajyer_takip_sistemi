@@ -1,0 +1,36 @@
+@model DevamCreateViewModel
+
+@{
+    ViewData["Title"] = "Devam Kaydı Gir";
+}
+
+<h1>Devam Kaydı Gir</h1>
+
+<form asp-action="Create" method="post" class="col-md-4">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Tarih" class="form-label"></label>
+        <input asp-for="Tarih" class="form-control" />
+        <span asp-validation-for="Tarih" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="GirisSaati" class="form-label"></label>
+        <input asp-for="GirisSaati" type="time" class="form-control" />
+        <span asp-validation-for="GirisSaati" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CikisSaati" class="form-label"></label>
+        <input asp-for="CikisSaati" type="time" class="form-control" />
+        <span asp-validation-for="CikisSaati" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -1,14 +1,29 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace StajyerTakip.Core.Entities;
 
 public class Gorev
 {
     public int Id { get; set; }
 
+    [Display(Name = "Stajyer")]
     public int StajyerId { get; set; }
     public Stajyer Stajyer { get; set; } = null!;
 
+    [Required(ErrorMessage = "Başlık zorunludur.")]
+    [StringLength(200)]
+    [Display(Name = "Başlık")]
     public string Baslik { get; set; } = string.Empty;
+
+    [StringLength(1000)]
+    [Display(Name = "Açıklama")]
     public string? Aciklama { get; set; }
+
+    [Required]
+    [DataType(DataType.Date)]
+    [Display(Name = "Teslim Tarihi")]
     public DateTime TeslimTarihi { get; set; }
+
+    [Display(Name = "Durum")]
     public GorevDurumu Durum { get; set; } = GorevDurumu.Baslamadi;
 }
