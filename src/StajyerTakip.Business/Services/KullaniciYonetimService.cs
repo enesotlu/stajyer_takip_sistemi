@@ -49,30 +49,49 @@ public class KullaniciYonetimService : IKullaniciYonetimService
             .ToList();
     }
 
-    public async Task YoneticiYapAsync(string kullaniciId)
+    public async Task YoneticiDevretAsync(string hedefKullaniciId, string devredenKullaniciId)
     {
-        var kullanici = await _userManager.FindByIdAsync(kullaniciId)
-            ?? throw new InvalidOperationException("Kullanıcı bulunamadı.");
-
-        if (await _userManager.IsLockedOutAsync(kullanici))
+        if (hedefKullaniciId == devredenKullaniciId)
         {
-            throw new InvalidOperationException("Pasif bir hesap Yönetici yapılamaz. Önce hesabı aktifleştirin.");
+            throw new InvalidOperationException("Yetkiyi kendine devredemezsin.");
         }
 
-        var roller = await _userManager.GetRolesAsync(kullanici);
-        if (roller.Contains(Roller.Yonetici))
+        var hedef = await _userManager.FindByIdAsync(hedefKullaniciId)
+            ?? throw new InvalidOperationException("Kullanıcı bulunamadı.");
+
+        if (await _userManager.IsLockedOutAsync(hedef))
+        {
+            throw new InvalidOperationException("Pasif bir hesaba yetki devredilemez. Önce hesabı aktifleştirin.");
+        }
+
+        var hedefRolleri = await _userManager.GetRolesAsync(hedef);
+        if (hedefRolleri.Contains(Roller.Stajyer))
+        {
+            throw new InvalidOperationException("Stajyerler Yönetici yapılamaz.");
+        }
+
+        if (hedefRolleri.Contains(Roller.Yonetici))
         {
             throw new InvalidOperationException("Bu kullanıcı zaten Yönetici.");
         }
 
-        await _userManager.AddToRoleAsync(kullanici, Roller.Yonetici);
+        await _userManager.AddToRoleAsync(hedef, Roller.Yonetici);
+
+        // Devir teslim: devreden yöneticinin rolü alınır ve hesabı kapatılır.
+        // Böylece sistemde her an tek aktif Yönetici bulunur.
+        var devreden = await _userManager.FindByIdAsync(devredenKullaniciId);
+        if (devreden is not null)
+        {
+            await _userManager.RemoveFromRoleAsync(devreden, Roller.Yonetici);
+            await KilitleAsync(devreden);
+        }
     }
 
     public async Task PasiflestirAsync(string kullaniciId, string islemiYapanKullaniciId)
     {
         if (kullaniciId == islemiYapanKullaniciId)
         {
-            throw new InvalidOperationException("Kendi hesabını pasifleştiremezsin - sistem yöneticisiz kalabilir.");
+            throw new InvalidOperationException("Kendi hesabını pasifleştiremezsin.");
         }
 
         var kullanici = await _userManager.FindByIdAsync(kullaniciId)
@@ -81,22 +100,15 @@ public class KullaniciYonetimService : IKullaniciYonetimService
         var roller = await _userManager.GetRolesAsync(kullanici);
         if (roller.Contains(Roller.Yonetici))
         {
-            var yoneticiler = await _userManager.GetUsersInRoleAsync(Roller.Yonetici);
-            var aktifYoneticiSayisi = 0;
-            foreach (var yonetici in yoneticiler)
-            {
-                if (!await _userManager.IsLockedOutAsync(yonetici))
-                {
-                    aktifYoneticiSayisi++;
-                }
-            }
-
-            if (aktifYoneticiSayisi <= 1)
-            {
-                throw new InvalidOperationException("Sistemdeki son aktif Yönetici pasifleştirilemez.");
-            }
+            throw new InvalidOperationException(
+                "Yönetici hesabı pasifleştirilemez. Yönetici hesabı yalnızca yetki devriyle kapanır.");
         }
 
+        await KilitleAsync(kullanici);
+    }
+
+    private async Task KilitleAsync(ApplicationUser kullanici)
+    {
         // Kilitleme mekanizmasıyla girişi kapatıyoruz; hesabı silmiyoruz ki
         // kullanıcının geçmiş işlemlerinin kaydı denetim için korunmuş kalsın.
         await _userManager.SetLockoutEnabledAsync(kullanici, true);

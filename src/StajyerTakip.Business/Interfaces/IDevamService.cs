@@ -6,6 +6,7 @@ namespace StajyerTakip.Business.Interfaces;
 public interface IDevamService
 {
     Task<List<Devam>> GetAllAsync();
+    Task<Devam?> GetByIdAsync(int id);
     Task<List<Devam>> GetByStajyerIdAsync(int stajyerId);
     Task CreateAsync(string kullaniciId, DateTime tarih, TimeSpan girisSaati, TimeSpan cikisSaati);
     Task OnaylaAsync(int id);

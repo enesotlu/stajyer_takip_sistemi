@@ -16,6 +16,8 @@ public class DevamService : IDevamService
 
     public Task<List<Devam>> GetAllAsync() => _unitOfWork.DevamKayitlari.GetAllAsync(d => d.Stajyer);
 
+    public Task<Devam?> GetByIdAsync(int id) => _unitOfWork.DevamKayitlari.GetByIdAsync(id);
+
     public Task<List<Devam>> GetByStajyerIdAsync(int stajyerId) =>
         _unitOfWork.DevamKayitlari.FindAsync(d => d.StajyerId == stajyerId);
 

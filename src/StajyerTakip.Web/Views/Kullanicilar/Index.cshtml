@@ -15,7 +15,10 @@
 }
 
 <h1>Kullanıcı Yönetimi</h1>
-<p class="text-muted">Yetki devri (Yönetici Yap) ve hesap pasifleştirme/aktifleştirme buradan yapılır. Pasif hesaplar silinmez; giriş yapamazlar ama işlem geçmişleri korunur.</p>
+<p class="text-muted">
+    <strong>Yetkiyi Devret:</strong> Yönetici yetkisini seçtiğin kullanıcıya aktarır; kendi hesabın otomatik kapanır (sistemde her an tek Yönetici bulunur, Stajyerlere devredilemez).
+    <strong>Pasifleştir:</strong> hesabı silmeden girişini kapatır; işlem geçmişi korunur.
+</p>
 
 @if (TempData["BasariMesaji"] != null)
 {
@@ -72,14 +75,14 @@
                     }
                 </td>
                 <td class="text-nowrap">
-                    @if (!ozet.Roller.Contains(Roller.Yonetici) && !ozet.Pasif)
+                    @if (!ozet.Roller.Contains(Roller.Yonetici) && !ozet.Roller.Contains(Roller.Stajyer) && !ozet.Pasif)
                     {
-                        <form asp-action="YoneticiYap" asp-route-id="@k.Id" method="post" class="d-inline"
-                              onsubmit="return confirm('@k.AdSoyad kullanıcısına Yönetici yetkisi verilecek. Emin misin?');">
-                            <button type="submit" class="btn btn-sm btn-outline-primary">Yönetici Yap</button>
+                        <form asp-action="YoneticiDevret" asp-route-id="@k.Id" method="post" class="d-inline"
+                              onsubmit="return confirm('DİKKAT: Yönetici yetkisi @k.AdSoyad kullanıcısına DEVREDİLECEK ve SENİN hesabın otomatik KAPATILACAK. Emin misin?');">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Yetkiyi Devret</button>
                         </form>
                     }
-                    @if (!ben)
+                    @if (!ben && !ozet.Roller.Contains(Roller.Yonetici))
                     {
                         @if (ozet.Pasif)
                         {

@@ -33,6 +33,15 @@ public class StajyerController : Controller
     public async Task<IActionResult> Index()
     {
         var stajyerler = await _stajyerService.GetAllAsync();
+
+        // Rapor gereği: Mentör tüm stajyerleri değil, yalnızca KENDİ
+        // stajyerlerini görür. Yönetici tümünü görür.
+        var girenMentor = await GirisYapanMentorAsync();
+        if (girenMentor is not null)
+        {
+            stajyerler = stajyerler.Where(s => s.MentorId == girenMentor.Id).ToList();
+        }
+
         return View(stajyerler);
     }
 
@@ -106,6 +115,11 @@ public class StajyerController : Controller
             return NotFound();
         }
 
+        if (!await BuStajyerBanaMiAitAsync(stajyer))
+        {
+            return Forbid();
+        }
+
         await PopulateDropdownlarAsync(stajyer.MentorId, stajyer.DepartmanId);
         return View(stajyer);
     }
@@ -117,6 +131,24 @@ public class StajyerController : Controller
         if (id != stajyer.Id)
         {
             return NotFound();
+        }
+
+        var mevcut = await _stajyerService.GetByIdAsync(id);
+        if (mevcut is null)
+        {
+            return NotFound();
+        }
+
+        if (!await BuStajyerBanaMiAitAsync(mevcut))
+        {
+            return Forbid();
+        }
+
+        // Mentör, düzenlerken stajyeri başka bir mentöre devredemez.
+        var girenMentor = await GirisYapanMentorAsync();
+        if (girenMentor is not null)
+        {
+            stajyer.MentorId = girenMentor.Id;
         }
 
         if (!ModelState.IsValid)
@@ -146,6 +178,11 @@ public class StajyerController : Controller
             return NotFound();
         }
 
+        if (!await BuStajyerBanaMiAitAsync(stajyer))
+        {
+            return Forbid();
+        }
+
         return View(stajyer);
     }
 
@@ -153,8 +190,27 @@ public class StajyerController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
+        var stajyer = await _stajyerService.GetByIdAsync(id);
+        if (stajyer is null)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!await BuStajyerBanaMiAitAsync(stajyer))
+        {
+            return Forbid();
+        }
+
         await _stajyerService.DeleteAsync(id);
         return RedirectToAction(nameof(Index));
+    }
+
+    // Yönetici için her stajyer "kendisine ait" sayılır; Mentör içinse
+    // yalnızca MentorId'si kendisi olan kayıtlar.
+    private async Task<bool> BuStajyerBanaMiAitAsync(Stajyer stajyer)
+    {
+        var girenMentor = await GirisYapanMentorAsync();
+        return girenMentor is null || stajyer.MentorId == girenMentor.Id;
     }
 
     private async Task PopulateDropdownlarAsync(int? seciliMentorId = null, int? seciliDepartmanId = null)

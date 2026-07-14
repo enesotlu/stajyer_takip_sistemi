@@ -13,13 +13,16 @@ public class KullanicilarController : Controller
 {
     private readonly IKullaniciYonetimService _kullaniciYonetimService;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly SignInManager<ApplicationUser> _signInManager;
 
     public KullanicilarController(
         IKullaniciYonetimService kullaniciYonetimService,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager)
     {
         _kullaniciYonetimService = kullaniciYonetimService;
         _userManager = userManager;
+        _signInManager = signInManager;
     }
 
     public async Task<IActionResult> Index()
@@ -31,19 +34,24 @@ public class KullanicilarController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> YoneticiYap(string id)
+    public async Task<IActionResult> YoneticiDevret(string id)
     {
         try
         {
-            await _kullaniciYonetimService.YoneticiYapAsync(id);
-            TempData["BasariMesaji"] = "Kullanıcı Yönetici yapıldı. Yeni yetkileri bir sonraki girişinde etkinleşir.";
+            var benimId = _userManager.GetUserId(User) ?? string.Empty;
+            await _kullaniciYonetimService.YoneticiDevretAsync(id, benimId);
+
+            // Devir tamamlandı: bu hesabın rolü alındı ve kilitlendi,
+            // açık oturumu da hemen sonlandırıyoruz.
+            await _signInManager.SignOutAsync();
+            TempData["BasariMesaji"] = "Yönetici yetkisi devredildi ve hesabın kapatıldı. Yeni Yönetici artık giriş yapabilir.";
+            return RedirectToAction("Login", "Account");
         }
         catch (InvalidOperationException ex)
         {
             TempData["HataMesaji"] = ex.Message;
+            return RedirectToAction(nameof(Index));
         }
-
-        return RedirectToAction(nameof(Index));
     }
 
     [HttpPost]

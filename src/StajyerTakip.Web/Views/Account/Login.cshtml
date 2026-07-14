@@ -8,6 +8,11 @@
 <h1>Giriş</h1>
 <p class="stk-auth-lead">Hesabınıza giriş yapın.</p>
 
+@if (TempData["BasariMesaji"] != null)
+{
+    <div class="alert alert-success text-center">@TempData["BasariMesaji"]</div>
+}
+
 <form asp-action="Login" method="post">
     <input type="hidden" asp-for="ReturnUrl" />
     <div asp-validation-summary="ModelOnly" class="text-danger text-center mb-3"></div>

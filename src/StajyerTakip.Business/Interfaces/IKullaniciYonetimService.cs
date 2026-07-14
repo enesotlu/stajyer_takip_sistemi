@@ -12,8 +12,10 @@ public interface IKullaniciYonetimService
     // Tüm kullanıcılar, rolleri ve aktif/pasif durumlarıyla.
     Task<List<KullaniciOzeti>> GetTumKullanicilarAsync();
 
-    // Devir teslim: mevcut bir kullanıcıya Yönetici rolü verir.
-    Task YoneticiYapAsync(string kullaniciId);
+    // Devir teslim: Yönetici yetkisini hedef kullanıcıya devreder.
+    // Devreden yöneticinin rolü alınır ve hesabı otomatik kapatılır -
+    // sistemde her an tek aktif Yönetici bulunur. Stajyerler devralamaz.
+    Task YoneticiDevretAsync(string hedefKullaniciId, string devredenKullaniciId);
 
     // Hesabı kilitler (silmez - işlem geçmişi denetim için korunur).
     Task PasiflestirAsync(string kullaniciId, string islemiYapanKullaniciId);
