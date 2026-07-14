@@ -1,0 +1,42 @@
+@model List<Stajyer>
+
+@{
+    ViewData["Title"] = "Stajyerler";
+}
+
+<h1>Stajyerler</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Yeni Stajyer</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Okul</th>
+            <th>Bölüm</th>
+            <th>Başlangıç</th>
+            <th>Bitiş</th>
+            <th>Mentör</th>
+            <th>Departman</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var stajyer in Model)
+        {
+            <tr>
+                <td>@stajyer.Okul</td>
+                <td>@stajyer.Bolum</td>
+                <td>@stajyer.BaslangicTarihi.ToString("dd.MM.yyyy")</td>
+                <td>@stajyer.BitisTarihi.ToString("dd.MM.yyyy")</td>
+                <td>@stajyer.Mentor.Unvan</td>
+                <td>@stajyer.Departman.Ad</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@stajyer.Id" class="btn btn-sm btn-outline-secondary">Düzenle</a>
+                    <a asp-action="Delete" asp-route-id="@stajyer.Id" class="btn btn-sm btn-outline-danger">Sil</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

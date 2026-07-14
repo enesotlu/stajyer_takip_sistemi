@@ -1,0 +1,39 @@
+@model List<Mentor>
+
+@{
+    ViewData["Title"] = "Mentörler";
+}
+
+<h1>Mentörler</h1>
+
+@if (TempData["HataMesaji"] != null)
+{
+    <div class="alert alert-danger">@TempData["HataMesaji"]</div>
+}
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Yeni Mentör</a>
+</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Unvan</th>
+            <th>Departman</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var mentor in Model)
+        {
+            <tr>
+                <td>@mentor.Unvan</td>
+                <td>@mentor.Departman.Ad</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@mentor.Id" class="btn btn-sm btn-outline-secondary">Düzenle</a>
+                    <a asp-action="Delete" asp-route-id="@mentor.Id" class="btn btn-sm btn-outline-danger">Sil</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

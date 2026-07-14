@@ -1,0 +1,17 @@
+@model Stajyer
+
+@{
+    ViewData["Title"] = "Stajyer Sil";
+}
+
+<h1>Stajyeri sil</h1>
+
+<div class="alert alert-warning">
+    <strong>@Model.Okul</strong> / @Model.Bolum stajyerini silmek istediğine emin misin? Bu stajyere ait görev, devam ve değerlendirme kayıtları da silinecek.
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Sil</button>
+    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+</form>

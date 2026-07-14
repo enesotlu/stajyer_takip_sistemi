@@ -1,0 +1,33 @@
+@model Mentor
+
+@{
+    ViewData["Title"] = "Mentör Düzenle";
+}
+
+<h1>Mentör Düzenle</h1>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label asp-for="Unvan" class="form-label"></label>
+        <input asp-for="Unvan" class="form-control" />
+        <span asp-validation-for="Unvan" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="DepartmanId" class="form-label"></label>
+        <select asp-for="DepartmanId" asp-items="ViewBag.DepartmanId" class="form-select">
+            <option value="">-- Seçiniz --</option>
+        </select>
+        <span asp-validation-for="DepartmanId" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

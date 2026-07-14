@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace StajyerTakip.Core.Entities;
 
 public class Stajyer
@@ -6,14 +8,31 @@ public class Stajyer
 
     public string KullaniciId { get; set; } = string.Empty;
 
+    [Required(ErrorMessage = "Okul zorunludur.")]
+    [StringLength(150)]
+    [Display(Name = "Okul")]
     public string Okul { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Bölüm zorunludur.")]
+    [StringLength(150)]
+    [Display(Name = "Bölüm")]
     public string Bolum { get; set; } = string.Empty;
+
+    [Required]
+    [DataType(DataType.Date)]
+    [Display(Name = "Başlangıç Tarihi")]
     public DateTime BaslangicTarihi { get; set; }
+
+    [Required]
+    [DataType(DataType.Date)]
+    [Display(Name = "Bitiş Tarihi")]
     public DateTime BitisTarihi { get; set; }
 
+    [Display(Name = "Mentör")]
     public int MentorId { get; set; }
     public Mentor Mentor { get; set; } = null!;
 
+    [Display(Name = "Departman")]
     public int DepartmanId { get; set; }
     public Departman Departman { get; set; } = null!;
 

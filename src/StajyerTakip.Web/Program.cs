@@ -8,13 +8,20 @@ using StajyerTakip.DataAccess.Context;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+// Entity'lerdeki "Departman Departman { get; set; } = null!;" gibi navigation
+// property'ler nullable olmayan referans tipleri olduğu için, MVC bunları
+// varsayılan olarak zorunlu (required) sayar. Formda sadece DepartmanId
+// gönderdiğimizden bu, görünmeyen bir doğrulama hatasına yol açar. Kapatıyoruz.
+builder.Services.AddControllersWithViews()
+    .AddMvcOptions(options => options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes = true);
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDepartmanService, DepartmanService>();
+builder.Services.AddScoped<IMentorService, MentorService>();
+builder.Services.AddScoped<IStajyerService, StajyerService>();
 
 var app = builder.Build();
 
