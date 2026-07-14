@@ -19,6 +19,11 @@ public class AccountController : Controller
     [HttpGet]
     public IActionResult Login(string? returnUrl = null)
     {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
         return View(new LoginViewModel { ReturnUrl = returnUrl });
     }
 

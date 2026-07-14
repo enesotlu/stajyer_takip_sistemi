@@ -15,6 +15,13 @@ public class HomeController : Controller
 
     public IActionResult Index()
     {
+        // Giriş yapmamış kullanıcıyı ara sayfayla oyalamadan doğrudan
+        // login ekranına gönderiyoruz.
+        if (User.Identity is null || !User.Identity.IsAuthenticated)
+        {
+            return RedirectToAction("Login", "Account");
+        }
+
         return View();
     }
 
