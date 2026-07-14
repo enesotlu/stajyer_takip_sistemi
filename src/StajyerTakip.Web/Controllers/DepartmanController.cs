@@ -1,9 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StajyerTakip.Business.Interfaces;
 using StajyerTakip.Core.Entities;
+using StajyerTakip.Core.Identity;
 
 namespace StajyerTakip.Web.Controllers;
 
+[Authorize(Roles = Roller.Yonetici)]
 public class DepartmanController : Controller
 {
     private readonly IDepartmanService _departmanService;

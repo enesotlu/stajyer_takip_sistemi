@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using StajyerTakip.Core.Entities;
+using StajyerTakip.Core.Identity;
 
 namespace StajyerTakip.DataAccess.Context;
 
-public class ApplicationDbContext : DbContext
+public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
         : base(options)
@@ -46,6 +48,18 @@ public class ApplicationDbContext : DbContext
             .HasOne(d => d.Mentor)
             .WithMany()
             .HasForeignKey(d => d.MentorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Mentor>()
+            .HasOne(m => m.Kullanici)
+            .WithMany()
+            .HasForeignKey(m => m.KullaniciId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Stajyer>()
+            .HasOne(s => s.Kullanici)
+            .WithMany()
+            .HasForeignKey(s => s.KullaniciId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Gorev>().Property(g => g.Durum).HasConversion<string>();

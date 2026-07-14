@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using StajyerTakip.Core.Identity;
 
 namespace StajyerTakip.Core.Entities;
 
@@ -7,6 +8,7 @@ public class Stajyer
     public int Id { get; set; }
 
     public string KullaniciId { get; set; } = string.Empty;
+    public ApplicationUser Kullanici { get; set; } = null!;
 
     [Required(ErrorMessage = "Okul zorunludur.")]
     [StringLength(150)]

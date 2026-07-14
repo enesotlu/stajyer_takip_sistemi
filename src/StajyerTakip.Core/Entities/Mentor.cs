@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using StajyerTakip.Core.Identity;
 
 namespace StajyerTakip.Core.Entities;
 
@@ -6,9 +7,8 @@ public class Mentor
 {
     public int Id { get; set; }
 
-    // 3. Hafta'da ASP.NET Core Identity eklenince AspNetUsers tablosundaki
-    // kullanıcıya bağlanacak. Şimdilik sade bir metin alanı, formda gösterilmiyor.
     public string KullaniciId { get; set; } = string.Empty;
+    public ApplicationUser Kullanici { get; set; } = null!;
 
     [Required(ErrorMessage = "Unvan zorunludur.")]
     [StringLength(100)]

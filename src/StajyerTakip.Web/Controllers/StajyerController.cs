@@ -1,10 +1,13 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using StajyerTakip.Business.Interfaces;
 using StajyerTakip.Core.Entities;
+using StajyerTakip.Core.Identity;
 
 namespace StajyerTakip.Web.Controllers;
 
+[Authorize(Roles = Roller.Yonetici + "," + Roller.Mentor)]
 public class StajyerController : Controller
 {
     private readonly IStajyerService _stajyerService;
