@@ -1,0 +1,103 @@
+@using StajyerTakip.Business.Models
+@model List<KullaniciOzeti>
+
+@{
+    ViewData["Title"] = "Kullanıcı Yönetimi";
+    string benimId = ViewBag.BenimId;
+
+    string RolAdi(string rol) => rol switch
+    {
+        Roller.Yonetici => "Yönetici",
+        Roller.Mentor => "Mentör",
+        Roller.Stajyer => "Stajyer",
+        _ => rol
+    };
+}
+
+<h1>Kullanıcı Yönetimi</h1>
+<p class="text-muted">Yetki devri (Yönetici Yap) ve hesap pasifleştirme/aktifleştirme buradan yapılır. Pasif hesaplar silinmez; giriş yapamazlar ama işlem geçmişleri korunur.</p>
+
+@if (TempData["BasariMesaji"] != null)
+{
+    <div class="alert alert-success">@TempData["BasariMesaji"]</div>
+}
+@if (TempData["HataMesaji"] != null)
+{
+    <div class="alert alert-danger">@TempData["HataMesaji"]</div>
+}
+
+<div class="table-wrap">
+<table class="table table-striped mb-0">
+    <thead>
+        <tr>
+            <th>Ad Soyad</th>
+            <th>E-posta</th>
+            <th>Roller</th>
+            <th>Durum</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ozet in Model)
+        {
+            var k = ozet.Kullanici;
+            bool ben = k.Id == benimId;
+            <tr>
+                <td>
+                    @k.AdSoyad
+                    @if (ben)
+                    {
+                        <span class="badge bg-info text-dark">Sen</span>
+                    }
+                </td>
+                <td>@k.Email</td>
+                <td>
+                    @if (!ozet.Roller.Any())
+                    {
+                        <span class="badge bg-warning text-dark">Onay Bekliyor</span>
+                    }
+                    @foreach (var rol in ozet.Roller)
+                    {
+                        <span class="badge bg-primary">@RolAdi(rol)</span>
+                    }
+                </td>
+                <td>
+                    @if (ozet.Pasif)
+                    {
+                        <span class="badge bg-secondary">Pasif</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-success">Aktif</span>
+                    }
+                </td>
+                <td class="text-nowrap">
+                    @if (!ozet.Roller.Contains(Roller.Yonetici) && !ozet.Pasif)
+                    {
+                        <form asp-action="YoneticiYap" asp-route-id="@k.Id" method="post" class="d-inline"
+                              onsubmit="return confirm('@k.AdSoyad kullanıcısına Yönetici yetkisi verilecek. Emin misin?');">
+                            <button type="submit" class="btn btn-sm btn-outline-primary">Yönetici Yap</button>
+                        </form>
+                    }
+                    @if (!ben)
+                    {
+                        @if (ozet.Pasif)
+                        {
+                            <form asp-action="Aktiflestir" asp-route-id="@k.Id" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-success">Aktifleştir</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-action="Pasiflestir" asp-route-id="@k.Id" method="post" class="d-inline"
+                                  onsubmit="return confirm('@k.AdSoyad kullanıcısının hesabı kapatılacak (giriş yapamayacak). Emin misin?');">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Pasifleştir</button>
+                            </form>
+                        }
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+</div>

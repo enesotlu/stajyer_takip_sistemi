@@ -46,7 +46,7 @@ public class AccountController : Controller
 
         if (sonuc.IsLockedOut)
         {
-            ModelState.AddModelError(string.Empty, "Hesabınız çok fazla başarısız girişten dolayı kilitlendi. Lütfen birkaç dakika sonra tekrar deneyin.");
+            ModelState.AddModelError(string.Empty, "Hesabınız kilitli veya pasifleştirilmiş durumda. Yöneticinizle iletişime geçin.");
         }
         else
         {
