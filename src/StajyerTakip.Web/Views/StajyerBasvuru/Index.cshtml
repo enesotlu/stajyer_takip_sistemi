@@ -2,11 +2,11 @@
 @model List<ApplicationUser>
 
 @{
-    ViewData["Title"] = "Mentör Başvuruları";
+    ViewData["Title"] = "Stajyer Başvuruları";
 }
 
-<h1>Mentör Başvuruları</h1>
-<p class="text-muted">Mentör olarak başvuran kullanıcıları onaylayın veya reddedin.</p>
+<h1>Stajyer Başvuruları</h1>
+<p class="text-muted">Departmanınıza yapılan stajyer başvurularını onaylayın veya reddedin.</p>
 
 @if (TempData["BilgiMesaji"] != null)
 {
@@ -19,7 +19,7 @@
 
 @if (!Model.Any())
 {
-    <div class="alert alert-info">Bekleyen mentör başvurusu yok.</div>
+    <div class="alert alert-info">Departmanınıza bekleyen stajyer başvurusu yok.</div>
 }
 else
 {
@@ -29,8 +29,7 @@ else
             <tr>
                 <th>Ad Soyad</th>
                 <th>E-posta</th>
-                <th>Talep Edilen Departman</th>
-                <th>Kayıt Tarihi</th>
+                <th>Başvuru Tarihi</th>
                 <th></th>
             </tr>
         </thead>
@@ -40,10 +39,9 @@ else
                 <tr>
                     <td>@kullanici.AdSoyad</td>
                     <td>@kullanici.Email</td>
-                    <td>@(kullanici.TalepEdilenDepartmanId?.ToString() ?? "—")</td>
                     <td>@kullanici.KayitTarihi.ToString("dd.MM.yyyy HH:mm")</td>
                     <td class="d-flex gap-2">
-                        <a asp-action="MentorOnayla" asp-route-id="@kullanici.Id"
+                        <a asp-action="Onayla" asp-route-id="@kullanici.Id"
                            class="btn btn-sm btn-outline-primary">Onayla</a>
                         <form asp-action="Reddet" asp-route-id="@kullanici.Id" method="post"
                               onsubmit="return confirm('Bu başvuruyu reddetmek istediğinize emin misiniz?')">

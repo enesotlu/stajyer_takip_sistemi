@@ -6,9 +6,6 @@
 
 <h1>Stajyerler</h1>
 
-<p>
-    <a asp-action="Create" class="btn btn-primary">Yeni Stajyer</a>
-</p>
 
 <div class="table-wrap">
 <table class="table table-striped mb-0">
@@ -45,7 +42,7 @@
                         <span class="badge bg-secondary">Pasif</span>
                     }
                 </td>
-                <td>@stajyer.Mentor.Unvan</td>
+                <td>@(stajyer.Mentor?.Kullanici?.AdSoyad ?? stajyer.Mentor?.Unvan ?? "—")</td>
                 <td>@stajyer.Departman.Ad</td>
                 <td>
                     <a asp-action="Edit" asp-route-id="@stajyer.Id" class="btn btn-sm btn-outline-secondary">Düzenle</a>

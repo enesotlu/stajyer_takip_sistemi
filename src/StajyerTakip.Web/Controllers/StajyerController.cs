@@ -3,13 +3,14 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using StajyerTakip.Business.Interfaces;
-using StajyerTakip.Business.Models;
 using StajyerTakip.Core.Entities;
 using StajyerTakip.Core.Identity;
-using StajyerTakip.Web.Models;
 
 namespace StajyerTakip.Web.Controllers;
 
+// Stajyer listesi ve düzenleme: Mentör/Yönetici görür.
+// Mentör yalnızca kendi stajyerlerini görür ve düzenler.
+// Artık admin/mentör stajyer oluşturamaz — stajyerler kayıt sistemi üzerinden başvurur.
 [Authorize(Roles = Roller.Yonetici + "," + Roller.Mentor)]
 public class StajyerController : Controller
 {
@@ -34,8 +35,7 @@ public class StajyerController : Controller
     {
         var stajyerler = await _stajyerService.GetAllAsync();
 
-        // Rapor gereği: Mentör tüm stajyerleri değil, yalnızca KENDİ
-        // stajyerlerini görür. Yönetici tümünü görür.
+        // Mentör yalnızca kendi stajyerlerini görür.
         var girenMentor = await GirisYapanMentorAsync();
         if (girenMentor is not null)
         {
@@ -43,68 +43,6 @@ public class StajyerController : Controller
         }
 
         return View(stajyerler);
-    }
-
-    public async Task<IActionResult> Create()
-    {
-        var girenMentor = await GirisYapanMentorAsync();
-        await PopulateDropdownlarAsync(girenMentor?.Id);
-        ViewBag.MentorSabit = girenMentor is not null;
-
-        var model = new StajyerCreateViewModel();
-        if (girenMentor is not null)
-        {
-            model.MentorId = girenMentor.Id;
-            model.DepartmanId = girenMentor.DepartmanId;
-        }
-
-        return View(model);
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(StajyerCreateViewModel model)
-    {
-        // Bir Mentör stajyer eklerken, Mentör alanı ne gönderilirse gönderilsin
-        // her zaman kendisi olur - başka bir mentöre stajyer atayamaz.
-        var girenMentor = await GirisYapanMentorAsync();
-        if (girenMentor is not null)
-        {
-            model.MentorId = girenMentor.Id;
-        }
-
-        if (!ModelState.IsValid)
-        {
-            await PopulateDropdownlarAsync(model.MentorId, model.DepartmanId);
-            ViewBag.MentorSabit = girenMentor is not null;
-            return View(model);
-        }
-
-        try
-        {
-            await _stajyerService.CreateAsync(new YeniStajyerIstegi(
-                model.AdSoyad, model.Email, model.Sifre, model.Okul, model.Bolum,
-                model.BaslangicTarihi, model.BitisTarihi, model.MentorId, model.DepartmanId));
-            return RedirectToAction(nameof(Index));
-        }
-        catch (InvalidOperationException ex)
-        {
-            ModelState.AddModelError(string.Empty, ex.Message);
-            await PopulateDropdownlarAsync(model.MentorId, model.DepartmanId);
-            ViewBag.MentorSabit = girenMentor is not null;
-            return View(model);
-        }
-    }
-
-    private async Task<Mentor?> GirisYapanMentorAsync()
-    {
-        if (User.IsInRole(Roller.Yonetici))
-        {
-            return null;
-        }
-
-        var kullaniciId = _userManager.GetUserId(User);
-        return kullaniciId is null ? null : await _mentorService.GetByKullaniciIdAsync(kullaniciId);
     }
 
     public async Task<IActionResult> Edit(int id)
@@ -205,8 +143,18 @@ public class StajyerController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    // Yönetici için her stajyer "kendisine ait" sayılır; Mentör içinse
-    // yalnızca MentorId'si kendisi olan kayıtlar.
+    private async Task<Mentor?> GirisYapanMentorAsync()
+    {
+        if (User.IsInRole(Roller.Yonetici))
+        {
+            return null;
+        }
+
+        var kullaniciId = _userManager.GetUserId(User);
+        return kullaniciId is null ? null : await _mentorService.GetByKullaniciIdAsync(kullaniciId);
+    }
+
+    // Yönetici için her stajyer "kendisine ait" sayılır; Mentör içinse yalnızca kendi stajyerleri.
     private async Task<bool> BuStajyerBanaMiAitAsync(Stajyer stajyer)
     {
         var girenMentor = await GirisYapanMentorAsync();

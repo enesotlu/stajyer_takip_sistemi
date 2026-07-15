@@ -1,3 +1,4 @@
+@using StajyerTakip.Core.Identity
 @{
     ViewData["Title"] = "Ana Sayfa";
     bool rolVar = User.IsInRole(Roller.Yonetici) || User.IsInRole(Roller.Mentor) || User.IsInRole(Roller.Stajyer);
@@ -6,15 +7,25 @@
 @if (!rolVar)
 {
     <div class="alert alert-warning">
-        <h4 class="alert-heading">Hesabın onay bekliyor</h4>
-        <p>Kayıt oldun ama henüz bir rolün (Mentör / Stajyer) yok. Yönetici hesabını inceleyip sana uygun rolü verdiğinde
-        bu sayfada ilgili ekranlar görünecek.</p>
+        <h4 class="alert-heading">Başvurunuz onay bekliyor</h4>
+        <p>Kayıt oldunuz, ancak henüz bir rolünüz yok.</p>
+        @{
+            var talepEdilenRol = ViewBag.TalepEdilenRol as string;
+        }
+        @if (talepEdilenRol == "Mentor")
+        {
+            <p class="mb-0">Mentör başvurunuz <strong>Yönetici</strong> tarafından onaylandığında sisteme erişebilirsiniz.</p>
+        }
+        else
+        {
+            <p class="mb-0">Stajyer başvurunuz departmanınızdaki <strong>Mentör</strong> tarafından onaylandığında sisteme erişebilirsiniz.</p>
+        }
     </div>
 }
 else
 {
     <div class="p-4 mb-4 bg-white rounded-3 border">
-        <h1 class="h3">Hoş geldin, @(User.FindFirst("AdSoyad")?.Value ?? User.Identity!.Name)</h1>
+        <h1 class="h3">Hoş geldin, @(User.Identity!.Name)</h1>
         <p class="text-muted mb-0">Aşağıdan sana açık ekranlara hızlıca ulaşabilirsin.</p>
     </div>
 
@@ -24,8 +35,16 @@ else
             <div class="col">
                 <a class="text-decoration-none" asp-controller="OnayBekleyenler" asp-action="Index">
                     <div class="card h-100"><div class="card-body">
-                        <h5 class="card-title">Onay Bekleyenler</h5>
-                        <p class="card-text text-muted">Yeni kayıt olan kullanıcılara rol ver.</p>
+                        <h5 class="card-title">Mentör Başvuruları</h5>
+                        <p class="card-text text-muted">Yeni kayıt olan mentör adaylarını onayla veya reddet.</p>
+                    </div></div>
+                </a>
+            </div>
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="YoneticiAtama" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Mentör-Stajyer Ataması</h5>
+                        <p class="card-text text-muted">Hangi mentörün hangi stajyerden sorumlu olacağını belirle.</p>
                     </div></div>
                 </a>
             </div>
@@ -41,7 +60,18 @@ else
                 <a class="text-decoration-none" asp-controller="Mentor" asp-action="Index">
                     <div class="card h-100"><div class="card-body">
                         <h5 class="card-title">Mentörler</h5>
-                        <p class="card-text text-muted">Mentör kayıtlarını yönet.</p>
+                        <p class="card-text text-muted">Onaylanmış mentörleri görüntüle ve yönet.</p>
+                    </div></div>
+                </a>
+            </div>
+        }
+        @if (User.IsInRole(Roller.Mentor))
+        {
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="StajyerBasvuru" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Stajyer Başvuruları</h5>
+                        <p class="card-text text-muted">Departmanınıza yapılan başvuruları onayla veya reddet.</p>
                     </div></div>
                 </a>
             </div>

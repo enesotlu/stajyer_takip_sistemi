@@ -1,0 +1,23 @@
+@using StajyerTakip.Core.Entities
+@model Stajyer
+
+@{
+    ViewData["Title"] = "Mentör Değiştir";
+}
+
+<h1>Mentör Değiştir</h1>
+<p class="text-muted"><strong>@(Model.Kullanici?.AdSoyad ?? "—")</strong> için sorumlu mentörü değiştirin.</p>
+
+<form asp-action="MentorDegistir" asp-route-id="@Model.Id" method="post">
+    @Html.AntiForgeryToken()
+
+    <div class="mb-3">
+        <label class="form-label">Yeni Mentör</label>
+        <select name="mentorId" asp-items="ViewBag.MentorId" class="form-select">
+            <option value="">-- Mentör Seçin --</option>
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Kaydet</button>
+    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+</form>

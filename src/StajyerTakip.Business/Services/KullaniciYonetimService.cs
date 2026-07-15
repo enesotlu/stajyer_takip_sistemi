@@ -14,6 +14,7 @@ public class KullaniciYonetimService : IKullaniciYonetimService
         _userManager = userManager;
     }
 
+    // Tüm onay bekleyenler (henüz rolü olmayan kullanıcılar).
     public async Task<List<ApplicationUser>> GetBekleyenlerAsync()
     {
         var tumKullanicilar = _userManager.Users.ToList();
@@ -25,6 +26,50 @@ public class KullaniciYonetimService : IKullaniciYonetimService
             if (roller.Count == 0)
             {
                 bekleyenler.Add(kullanici);
+            }
+        }
+
+        return bekleyenler.OrderByDescending(k => k.KayitTarihi).ToList();
+    }
+
+    // Mentör başvurusunda bulunmuş, onay bekleyen kullanıcılar (Admin için).
+    public async Task<List<ApplicationUser>> GetMentorBekleyenlerAsync()
+    {
+        var tumKullanicilar = _userManager.Users.ToList();
+        var bekleyenler = new List<ApplicationUser>();
+
+        foreach (var kullanici in tumKullanicilar)
+        {
+            if (kullanici.TalepEdilenRol == Roller.Mentor && kullanici.OnayDurumu == "Bekliyor")
+            {
+                var roller = await _userManager.GetRolesAsync(kullanici);
+                if (roller.Count == 0)
+                {
+                    bekleyenler.Add(kullanici);
+                }
+            }
+        }
+
+        return bekleyenler.OrderByDescending(k => k.KayitTarihi).ToList();
+    }
+
+    // Belirtilen departmana stajyer başvurusu yapmış, onay bekleyen kullanıcılar (Mentör için).
+    public async Task<List<ApplicationUser>> GetStajyerBekleyenlerByDepartmanAsync(int departmanId)
+    {
+        var tumKullanicilar = _userManager.Users.ToList();
+        var bekleyenler = new List<ApplicationUser>();
+
+        foreach (var kullanici in tumKullanicilar)
+        {
+            if (kullanici.TalepEdilenRol == Roller.Stajyer
+                && kullanici.TalepEdilenDepartmanId == departmanId
+                && kullanici.OnayDurumu == "Bekliyor")
+            {
+                var roller = await _userManager.GetRolesAsync(kullanici);
+                if (roller.Count == 0)
+                {
+                    bekleyenler.Add(kullanici);
+                }
             }
         }
 
@@ -78,7 +123,6 @@ public class KullaniciYonetimService : IKullaniciYonetimService
         await _userManager.AddToRoleAsync(hedef, Roller.Yonetici);
 
         // Devir teslim: devreden yöneticinin rolü alınır ve hesabı kapatılır.
-        // Böylece sistemde her an tek aktif Yönetici bulunur.
         var devreden = await _userManager.FindByIdAsync(devredenKullaniciId);
         if (devreden is not null)
         {
@@ -107,6 +151,25 @@ public class KullaniciYonetimService : IKullaniciYonetimService
         await KilitleAsync(kullanici);
     }
 
+    // Başvuruyu reddeder: hesabı kilitler ve onayDurumu = "Reddedildi" yapar.
+    public async Task ReddetAsync(string kullaniciId)
+    {
+        var kullanici = await _userManager.FindByIdAsync(kullaniciId)
+            ?? throw new InvalidOperationException("Kullanıcı bulunamadı.");
+
+        kullanici.OnayDurumu = "Reddedildi";
+        await _userManager.UpdateAsync(kullanici);
+        await KilitleAsync(kullanici);
+    }
+
+    public async Task AktiflestirAsync(string kullaniciId)
+    {
+        var kullanici = await _userManager.FindByIdAsync(kullaniciId)
+            ?? throw new InvalidOperationException("Kullanıcı bulunamadı.");
+
+        await _userManager.SetLockoutEndDateAsync(kullanici, null);
+    }
+
     private async Task KilitleAsync(ApplicationUser kullanici)
     {
         // Kilitleme mekanizmasıyla girişi kapatıyoruz; hesabı silmiyoruz ki
@@ -116,13 +179,5 @@ public class KullaniciYonetimService : IKullaniciYonetimService
 
         // Güvenlik damgasını değiştirmek, açık oturumlarının da düşmesini sağlar.
         await _userManager.UpdateSecurityStampAsync(kullanici);
-    }
-
-    public async Task AktiflestirAsync(string kullaniciId)
-    {
-        var kullanici = await _userManager.FindByIdAsync(kullaniciId)
-            ?? throw new InvalidOperationException("Kullanıcı bulunamadı.");
-
-        await _userManager.SetLockoutEndDateAsync(kullanici, null);
     }
 }

@@ -1,3 +1,4 @@
+@using StajyerTakip.Core.Identity
 @{
     string Aktif(string controller) =>
         string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), controller, StringComparison.OrdinalIgnoreCase)
@@ -30,7 +31,8 @@
                 @if (User.IsInRole(Roller.Yonetici))
                 {
                     <div class="stk-nav-section">Yönetim</div>
-                    <a class="@Aktif("OnayBekleyenler")" asp-controller="OnayBekleyenler" asp-action="Index">Onay Bekleyenler</a>
+                    <a class="@Aktif("OnayBekleyenler")" asp-controller="OnayBekleyenler" asp-action="Index">Mentör Başvuruları</a>
+                    <a class="@Aktif("YoneticiAtama")" asp-controller="YoneticiAtama" asp-action="Index">Mentör-Stajyer Ataması</a>
                     <a class="@Aktif("Kullanicilar")" asp-controller="Kullanicilar" asp-action="Index">Kullanıcılar</a>
                     <a class="@Aktif("Departman")" asp-controller="Departman" asp-action="Index">Departmanlar</a>
                     <a class="@Aktif("Mentor")" asp-controller="Mentor" asp-action="Index">Mentörler</a>
@@ -42,6 +44,12 @@
                     <a class="@Aktif("Stajyer")" asp-controller="Stajyer" asp-action="Index">Stajyerler</a>
                     <a class="@Aktif("Gorev")" asp-controller="Gorev" asp-action="Index">Görevler</a>
                     <a class="@Aktif("Devam")" asp-controller="Devam" asp-action="Index">Devam Onayı</a>
+                }
+
+                @if (User.IsInRole(Roller.Mentor))
+                {
+                    <div class="stk-nav-section">Başvurular</div>
+                    <a class="@Aktif("StajyerBasvuru")" asp-controller="StajyerBasvuru" asp-action="Index">Stajyer Başvuruları</a>
                 }
 
                 @if (User.IsInRole(Roller.Stajyer))

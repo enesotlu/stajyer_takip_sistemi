@@ -25,4 +25,12 @@ public class RegisterViewModel
     [Display(Name = "Şifre (Tekrar)")]
     [Compare(nameof(Sifre), ErrorMessage = "Şifreler eşleşmiyor.")]
     public string SifreTekrar { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Lütfen başvurmak istediğiniz rolü seçin.")]
+    [Display(Name = "Başvuru Rolü")]
+    public string TalepEdilenRol { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Lütfen departmanınızı seçin.")]
+    [Display(Name = "Departman")]
+    public int TalepEdilenDepartmanId { get; set; }
 }

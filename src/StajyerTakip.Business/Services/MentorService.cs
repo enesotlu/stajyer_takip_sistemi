@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Identity;
 using StajyerTakip.Business.Interfaces;
-using StajyerTakip.Business.Models;
 using StajyerTakip.Core.Entities;
 using StajyerTakip.Core.Identity;
 using StajyerTakip.Core.Interfaces;
@@ -28,30 +27,9 @@ public class MentorService : IMentorService
         return eslesenler.SingleOrDefault();
     }
 
-    public async Task CreateAsync(YeniMentorIstegi istek)
+    public async Task<List<Mentor>> GetByDepartmanAsync(int departmanId)
     {
-        var mevcutKullanici = await _userManager.FindByEmailAsync(istek.Email);
-        if (mevcutKullanici is not null)
-        {
-            throw new InvalidOperationException($"\"{istek.Email}\" e-postası zaten kullanımda.");
-        }
-
-        var kullanici = new ApplicationUser
-        {
-            UserName = istek.Email,
-            Email = istek.Email,
-            AdSoyad = istek.AdSoyad,
-            EmailConfirmed = true
-        };
-
-        var kullaniciSonucu = await _userManager.CreateAsync(kullanici, istek.Sifre);
-        if (!kullaniciSonucu.Succeeded)
-        {
-            var hatalar = string.Join(" ", kullaniciSonucu.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Kullanıcı hesabı oluşturulamadı: {hatalar}");
-        }
-
-        await RolVeProfilOlusturAsync(kullanici.Id, istek.Unvan, istek.DepartmanId);
+        return await _unitOfWork.Mentorler.FindAsync(m => m.DepartmanId == departmanId, m => m.Kullanici);
     }
 
     public async Task AtaAsync(string kullaniciId, string unvan, int departmanId)
@@ -77,6 +55,9 @@ public class MentorService : IMentorService
             ?? throw new InvalidOperationException("Kullanıcı bulunamadı.");
 
         await _userManager.AddToRoleAsync(kullanici, Roller.Mentor);
+
+        kullanici.OnayDurumu = "Onaylandi";
+        await _userManager.UpdateAsync(kullanici);
 
         var mentor = new Mentor
         {
@@ -123,3 +104,4 @@ public class MentorService : IMentorService
         await _unitOfWork.SaveChangesAsync();
     }
 }
+

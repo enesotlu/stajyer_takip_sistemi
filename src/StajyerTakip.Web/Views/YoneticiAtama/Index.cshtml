@@ -1,0 +1,54 @@
+@using StajyerTakip.Core.Entities
+@model List<Stajyer>
+
+@{
+    ViewData["Title"] = "Mentör-Stajyer Ataması";
+}
+
+<h1>Mentör-Stajyer Ataması</h1>
+<p class="text-muted">Her stajyerin sorumlu mentörünü buradan değiştirebilirsiniz.</p>
+
+@if (TempData["BilgiMesaji"] != null)
+{
+    <div class="alert alert-success">@TempData["BilgiMesaji"]</div>
+}
+@if (TempData["HataMesaji"] != null)
+{
+    <div class="alert alert-danger">@TempData["HataMesaji"]</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">Henüz onaylanmış stajyer bulunmuyor.</div>
+}
+else
+{
+    <div class="table-wrap">
+    <table class="table table-striped mb-0">
+        <thead>
+            <tr>
+                <th>Stajyer</th>
+                <th>Okul / Bölüm</th>
+                <th>Departman</th>
+                <th>Mevcut Mentör</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var stajyer in Model)
+            {
+                <tr>
+                    <td>@(stajyer.Kullanici?.AdSoyad ?? "—")</td>
+                    <td>@(stajyer.Okul) / @(stajyer.Bolum)</td>
+                    <td>@(stajyer.Departman?.Ad ?? "—")</td>
+                    <td>@(stajyer.Mentor?.Kullanici?.AdSoyad ?? stajyer.Mentor?.Unvan ?? "—")</td>
+                    <td>
+                        <a asp-action="MentorDegistir" asp-route-id="@stajyer.Id"
+                           class="btn btn-sm btn-outline-secondary">Mentör Değiştir</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    </div>
+}

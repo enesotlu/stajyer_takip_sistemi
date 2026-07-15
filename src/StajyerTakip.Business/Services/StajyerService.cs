@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Identity;
 using StajyerTakip.Business.Interfaces;
-using StajyerTakip.Business.Models;
 using StajyerTakip.Core.Entities;
 using StajyerTakip.Core.Identity;
 using StajyerTakip.Core.Interfaces;
@@ -19,9 +18,15 @@ public class StajyerService : IStajyerService
     }
 
     public Task<List<Stajyer>> GetAllAsync() =>
-        _unitOfWork.Stajyerler.GetAllAsync(s => s.Mentor, s => s.Departman, s => s.Kullanici);
+        _unitOfWork.Stajyerler.GetAllAsync(s => s.Mentor!.Kullanici, s => s.Departman, s => s.Kullanici);
 
     public Task<Stajyer?> GetByIdAsync(int id) => _unitOfWork.Stajyerler.GetByIdAsync(id);
+
+    public async Task<Stajyer?> GetByIdWithDetailsAsync(int id)
+    {
+        var result = await _unitOfWork.Stajyerler.FindAsync(s => s.Id == id, s => s.Kullanici, s => s.Departman);
+        return result.FirstOrDefault();
+    }
 
     public async Task<Stajyer?> GetByKullaniciIdAsync(string kullaniciId)
     {
@@ -29,39 +34,7 @@ public class StajyerService : IStajyerService
         return eslesenler.SingleOrDefault();
     }
 
-    public async Task CreateAsync(YeniStajyerIstegi istek)
-    {
-        if (istek.BaslangicTarihi >= istek.BitisTarihi)
-        {
-            throw new InvalidOperationException("Başlangıç tarihi, bitiş tarihinden önce olmalıdır.");
-        }
-
-        var mevcutKullanici = await _userManager.FindByEmailAsync(istek.Email);
-        if (mevcutKullanici is not null)
-        {
-            throw new InvalidOperationException($"\"{istek.Email}\" e-postası zaten kullanımda.");
-        }
-
-        var kullanici = new ApplicationUser
-        {
-            UserName = istek.Email,
-            Email = istek.Email,
-            AdSoyad = istek.AdSoyad,
-            EmailConfirmed = true
-        };
-
-        var kullaniciSonucu = await _userManager.CreateAsync(kullanici, istek.Sifre);
-        if (!kullaniciSonucu.Succeeded)
-        {
-            var hatalar = string.Join(" ", kullaniciSonucu.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Kullanıcı hesabı oluşturulamadı: {hatalar}");
-        }
-
-        await RolVeProfilOlusturAsync(
-            kullanici.Id, istek.Okul, istek.Bolum, istek.BaslangicTarihi, istek.BitisTarihi,
-            istek.MentorId, istek.DepartmanId);
-    }
-
+    // Zaten kayıt olmuş bir kullanıcıyı Mentör'ün onayıyla Stajyer yapar.
     public async Task AtaAsync(
         string kullaniciId, string okul, string bolum, DateTime baslangicTarihi, DateTime bitisTarihi,
         int mentorId, int departmanId)
@@ -94,6 +67,9 @@ public class StajyerService : IStajyerService
             ?? throw new InvalidOperationException("Kullanıcı bulunamadı.");
 
         await _userManager.AddToRoleAsync(kullanici, Roller.Stajyer);
+
+        kullanici.OnayDurumu = "Onaylandi";
+        await _userManager.UpdateAsync(kullanici);
 
         var stajyer = new Stajyer
         {
@@ -140,6 +116,22 @@ public class StajyerService : IStajyerService
         }
 
         _unitOfWork.Stajyerler.Remove(stajyer);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    // Admin: stajyerin sorumlu mentörünü değiştirir.
+    public async Task MentorAtaAsync(int stajyerId, int yeniMentorId)
+    {
+        var stajyer = await _unitOfWork.Stajyerler.GetByIdAsync(stajyerId)
+            ?? throw new InvalidOperationException("Stajyer bulunamadı.");
+
+        // Geçersiz/boş seçim veritabanına inmeden burada yakalanır;
+        // aksi halde foreign key ihlali 500 hatası olarak patlar.
+        var yeniMentor = await _unitOfWork.Mentorler.GetByIdAsync(yeniMentorId)
+            ?? throw new InvalidOperationException("Lütfen geçerli bir mentör seçin.");
+
+        stajyer.MentorId = yeniMentor.Id;
+        _unitOfWork.Stajyerler.Update(stajyer);
         await _unitOfWork.SaveChangesAsync();
     }
 

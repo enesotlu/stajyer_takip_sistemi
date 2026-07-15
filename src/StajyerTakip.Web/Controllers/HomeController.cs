@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using StajyerTakip.Core.Identity;
 using StajyerTakip.Web.Models;
 
 namespace StajyerTakip.Web.Controllers;
@@ -7,19 +9,27 @@ namespace StajyerTakip.Web.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly UserManager<ApplicationUser> _userManager;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(ILogger<HomeController> logger, UserManager<ApplicationUser> userManager)
     {
         _logger = logger;
+        _userManager = userManager;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        // Giriş yapmamış kullanıcıyı ara sayfayla oyalamadan doğrudan
-        // login ekranına gönderiyoruz.
+        // Giriş yapmamış kullanıcıyı login ekranına gönderiyoruz.
         if (User.Identity is null || !User.Identity.IsAuthenticated)
         {
             return RedirectToAction("Login", "Account");
+        }
+
+        // Onay bekleyen kullanıcılar için talep edilen rol bilgisini view'a aktar.
+        var kullanici = await _userManager.GetUserAsync(User);
+        if (kullanici is not null)
+        {
+            ViewBag.TalepEdilenRol = kullanici.TalepEdilenRol;
         }
 
         return View();

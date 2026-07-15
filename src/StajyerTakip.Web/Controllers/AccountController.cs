@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using StajyerTakip.Business.Interfaces;
 using StajyerTakip.Core.Identity;
 using StajyerTakip.Web.Models;
 
@@ -9,11 +11,16 @@ public class AccountController : Controller
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IDepartmanService _departmanService;
 
-    public AccountController(SignInManager<ApplicationUser> signInManager, UserManager<ApplicationUser> userManager)
+    public AccountController(
+        SignInManager<ApplicationUser> signInManager,
+        UserManager<ApplicationUser> userManager,
+        IDepartmanService departmanService)
     {
         _signInManager = signInManager;
         _userManager = userManager;
+        _departmanService = departmanService;
     }
 
     [HttpGet]
@@ -62,8 +69,9 @@ public class AccountController : Controller
     }
 
     [HttpGet]
-    public IActionResult Register()
+    public async Task<IActionResult> Register()
     {
+        await PopulateDepartmanListesiAsync();
         return View(new RegisterViewModel());
     }
 
@@ -73,6 +81,15 @@ public class AccountController : Controller
     {
         if (!ModelState.IsValid)
         {
+            await PopulateDepartmanListesiAsync(model.TalepEdilenDepartmanId);
+            return View(model);
+        }
+
+        // Sadece geçerli rol talepleri kabul edilir.
+        if (model.TalepEdilenRol != Roller.Mentor && model.TalepEdilenRol != Roller.Stajyer)
+        {
+            ModelState.AddModelError(nameof(model.TalepEdilenRol), "Geçersiz rol seçimi.");
+            await PopulateDepartmanListesiAsync(model.TalepEdilenDepartmanId);
             return View(model);
         }
 
@@ -82,15 +99,19 @@ public class AccountController : Controller
             Email = model.Email,
             AdSoyad = model.AdSoyad,
             EmailConfirmed = true,
-            KayitTarihi = DateTime.UtcNow
+            KayitTarihi = DateTime.UtcNow,
+            TalepEdilenRol = model.TalepEdilenRol,
+            TalepEdilenDepartmanId = model.TalepEdilenDepartmanId,
+            OnayDurumu = "Bekliyor"
         };
 
         var sonuc = await _userManager.CreateAsync(kullanici, model.Sifre);
 
         if (sonuc.Succeeded)
         {
-            // Bilinçli olarak rol atamıyoruz: hesap "onay bekliyor" durumunda kalır,
-            // Yönetici bunu Mentör veya Stajyer olarak onaylayana kadar hiçbir ekrana erişemez.
+            // Bilinçli olarak rol atamıyoruz: hesap "onay bekliyor" durumunda kalır.
+            // Mentör başvurusu → Yönetici onaylar.
+            // Stajyer başvurusu → Aynı departmandaki Mentör(ler) onaylar.
             await _signInManager.SignInAsync(kullanici, isPersistent: false);
             return RedirectToAction("Index", "Home");
         }
@@ -100,6 +121,7 @@ public class AccountController : Controller
             ModelState.AddModelError(string.Empty, hata.Description);
         }
 
+        await PopulateDepartmanListesiAsync(model.TalepEdilenDepartmanId);
         return View(model);
     }
 
@@ -115,5 +137,11 @@ public class AccountController : Controller
     public IActionResult AccessDenied()
     {
         return View();
+    }
+
+    private async Task PopulateDepartmanListesiAsync(int? seciliId = null)
+    {
+        var departmanlar = await _departmanService.GetAllAsync();
+        ViewBag.DepartmanListesi = new SelectList(departmanlar, "Id", "Ad", seciliId);
     }
 }

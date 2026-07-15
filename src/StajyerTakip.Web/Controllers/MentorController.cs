@@ -2,13 +2,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using StajyerTakip.Business.Interfaces;
-using StajyerTakip.Business.Models;
 using StajyerTakip.Core.Entities;
 using StajyerTakip.Core.Identity;
-using StajyerTakip.Web.Models;
 
 namespace StajyerTakip.Web.Controllers;
 
+// Admin mentör listesini görür, düzenler ve siler.
+// Artık admin mentor oluşturamaz — mentörler kayıt sistemi üzerinden başvurur.
 [Authorize(Roles = Roller.Yonetici)]
 public class MentorController : Controller
 {
@@ -25,36 +25,6 @@ public class MentorController : Controller
     {
         var mentorler = await _mentorService.GetAllAsync();
         return View(mentorler);
-    }
-
-    public async Task<IActionResult> Create()
-    {
-        await PopulateDepartmanListesiAsync();
-        return View();
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(MentorCreateViewModel model)
-    {
-        if (!ModelState.IsValid)
-        {
-            await PopulateDepartmanListesiAsync(model.DepartmanId);
-            return View(model);
-        }
-
-        try
-        {
-            await _mentorService.CreateAsync(new YeniMentorIstegi(
-                model.AdSoyad, model.Email, model.Sifre, model.Unvan, model.DepartmanId));
-            return RedirectToAction(nameof(Index));
-        }
-        catch (InvalidOperationException ex)
-        {
-            ModelState.AddModelError(string.Empty, ex.Message);
-            await PopulateDepartmanListesiAsync(model.DepartmanId);
-            return View(model);
-        }
     }
 
     public async Task<IActionResult> Edit(int id)
