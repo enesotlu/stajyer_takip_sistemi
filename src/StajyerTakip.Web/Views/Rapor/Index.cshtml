@@ -1,0 +1,90 @@
+@using StajyerTakip.Business.Models
+@model RaporOzeti
+
+@{
+    ViewData["Title"] = "Raporlar";
+}
+
+<h1>Raporlar</h1>
+<p class="text-muted">Staj programının genel durumu: özet sayılar ve dağılım grafikleri.</p>
+
+<div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3 mb-4">
+    <div class="col"><div class="card text-center h-100"><div class="card-body">
+        <div class="h2 mb-0">@Model.ToplamStajyer</div><div class="text-muted">Toplam Stajyer</div>
+    </div></div></div>
+    <div class="col"><div class="card text-center h-100"><div class="card-body">
+        <div class="h2 mb-0 text-success">@Model.AktifStajyer</div><div class="text-muted">Aktif Stajyer</div>
+    </div></div></div>
+    <div class="col"><div class="card text-center h-100"><div class="card-body">
+        <div class="h2 mb-0">@Model.ToplamMentor</div><div class="text-muted">Mentör</div>
+    </div></div></div>
+    <div class="col"><div class="card text-center h-100"><div class="card-body">
+        <div class="h2 mb-0">@Model.ToplamDepartman</div><div class="text-muted">Departman</div>
+    </div></div></div>
+    <div class="col"><div class="card text-center h-100"><div class="card-body">
+        <div class="h2 mb-0 text-warning">@Model.BekleyenMentorBasvurusu</div><div class="text-muted">Bekleyen Mentör Başvurusu</div>
+    </div></div></div>
+    <div class="col"><div class="card text-center h-100"><div class="card-body">
+        <div class="h2 mb-0 text-warning">@Model.BekleyenStajyerBasvurusu</div><div class="text-muted">Bekleyen Stajyer Başvurusu</div>
+    </div></div></div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card h-100"><div class="card-body">
+            <h5 class="card-title">Görev Durumları (@Model.ToplamGorev görev)</h5>
+            <canvas id="gorevGrafik"></canvas>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100"><div class="card-body">
+            <h5 class="card-title">Devam Onay Durumu</h5>
+            <canvas id="devamGrafik"></canvas>
+        </div></div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100"><div class="card-body">
+            <h5 class="card-title">Departmana Göre Stajyer</h5>
+            <canvas id="departmanGrafik"></canvas>
+        </div></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/chartjs/chart.umd.min.js"></script>
+    <script>
+        const gorevVerisi = @Json.Serialize(Model.GorevDurumDagilimi);
+        const devamVerisi = @Json.Serialize(Model.DevamDurumDagilimi);
+        const departmanVerisi = @Json.Serialize(Model.DepartmanStajyerDagilimi);
+
+        const renkler = ['#f0ad4e', '#2f6fed', '#28a745', '#6c757d', '#dc3545', '#17a2b8'];
+
+        new Chart(document.getElementById('gorevGrafik'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(gorevVerisi),
+                datasets: [{ data: Object.values(gorevVerisi), backgroundColor: renkler }]
+            }
+        });
+
+        new Chart(document.getElementById('devamGrafik'), {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(devamVerisi),
+                datasets: [{ data: Object.values(devamVerisi), backgroundColor: ['#f0ad4e', '#28a745', '#dc3545'] }]
+            }
+        });
+
+        new Chart(document.getElementById('departmanGrafik'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(departmanVerisi),
+                datasets: [{ label: 'Stajyer sayısı', data: Object.values(departmanVerisi), backgroundColor: '#2f6fed' }]
+            },
+            options: {
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                plugins: { legend: { display: false } }
+            }
+        });
+    </script>
+}

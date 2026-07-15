@@ -21,5 +21,5 @@ public class ApplicationUser : IdentityUser
 
     // "Bekliyor" | "Onaylandi" | "Reddedildi"
     [StringLength(20)]
-    public string OnayDurumu { get; set; } = "Bekliyor";
+    public string OnayDurumu { get; set; } = OnayDurumlari.Bekliyor;
 }

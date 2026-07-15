@@ -56,7 +56,7 @@ public class MentorService : IMentorService
 
         await _userManager.AddToRoleAsync(kullanici, Roller.Mentor);
 
-        kullanici.OnayDurumu = "Onaylandi";
+        kullanici.OnayDurumu = OnayDurumlari.Onaylandi;
         await _userManager.UpdateAsync(kullanici);
 
         var mentor = new Mentor

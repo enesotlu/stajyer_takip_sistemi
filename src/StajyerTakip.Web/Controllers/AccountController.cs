@@ -102,7 +102,7 @@ public class AccountController : Controller
             KayitTarihi = DateTime.UtcNow,
             TalepEdilenRol = model.TalepEdilenRol,
             TalepEdilenDepartmanId = model.TalepEdilenDepartmanId,
-            OnayDurumu = "Bekliyor"
+            OnayDurumu = OnayDurumlari.Bekliyor
         };
 
         var sonuc = await _userManager.CreateAsync(kullanici, model.Sifre);

@@ -3,6 +3,7 @@
 
 @{
     ViewData["Title"] = "Mentör Başvuruları";
+    var departmanAdlari = (Dictionary<int, string>)ViewBag.DepartmanAdlari;
 }
 
 <h1>Mentör Başvuruları</h1>
@@ -40,7 +41,7 @@ else
                 <tr>
                     <td>@kullanici.AdSoyad</td>
                     <td>@kullanici.Email</td>
-                    <td>@(kullanici.TalepEdilenDepartmanId?.ToString() ?? "—")</td>
+                    <td>@(kullanici.TalepEdilenDepartmanId is int depId && departmanAdlari.TryGetValue(depId, out var depAd) ? depAd : "—")</td>
                     <td>@kullanici.KayitTarihi.ToString("dd.MM.yyyy HH:mm")</td>
                     <td class="d-flex gap-2">
                         <a asp-action="MentorOnayla" asp-route-id="@kullanici.Id"

@@ -11,7 +11,7 @@ namespace StajyerTakip.Web.Controllers;
 // Görev atama ve takibi Mentör/Yönetici tarafında; stajyerin kendi
 // görevlerini görüp durum güncellemesi GorevlerimController'da.
 // Rapor gereği Mentör yalnızca KENDİ stajyerlerinin görevlerini yönetir.
-[Authorize(Roles = Roller.Yonetici + "," + Roller.Mentor)]
+[Authorize(Roles = Roller.Mentor)]
 public class GorevController : Controller
 {
     private readonly IGorevService _gorevService;

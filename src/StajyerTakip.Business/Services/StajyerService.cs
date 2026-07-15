@@ -68,7 +68,7 @@ public class StajyerService : IStajyerService
 
         await _userManager.AddToRoleAsync(kullanici, Roller.Stajyer);
 
-        kullanici.OnayDurumu = "Onaylandi";
+        kullanici.OnayDurumu = OnayDurumlari.Onaylandi;
         await _userManager.UpdateAsync(kullanici);
 
         var stajyer = new Stajyer

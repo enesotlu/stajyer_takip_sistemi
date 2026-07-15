@@ -9,7 +9,7 @@ namespace StajyerTakip.Web.Controllers;
 
 // Rapor gereği Mentör yalnızca KENDİ stajyerlerinin devam kayıtlarını
 // görür ve onaylar; Yönetici tümünü görür.
-[Authorize(Roles = Roller.Yonetici + "," + Roller.Mentor)]
+[Authorize(Roles = Roller.Mentor)]
 public class DevamController : Controller
 {
     private readonly IDevamService _devamService;

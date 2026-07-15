@@ -12,7 +12,7 @@
         @{
             var talepEdilenRol = ViewBag.TalepEdilenRol as string;
         }
-        @if (talepEdilenRol == "Mentor")
+        @if (talepEdilenRol == Roller.Mentor)
         {
             <p class="mb-0">Mentör başvurunuz <strong>Yönetici</strong> tarafından onaylandığında sisteme erişebilirsiniz.</p>
         }
@@ -25,13 +25,21 @@
 else
 {
     <div class="p-4 mb-4 bg-white rounded-3 border">
-        <h1 class="h3">Hoş geldin, @(User.Identity!.Name)</h1>
+        <h1 class="h3">Hoş geldin, @(User.FindFirst("AdSoyad")?.Value ?? User.Identity!.Name)</h1>
         <p class="text-muted mb-0">Aşağıdan sana açık ekranlara hızlıca ulaşabilirsin.</p>
     </div>
 
     <div class="row row-cols-1 row-cols-md-3 g-3">
         @if (User.IsInRole(Roller.Yonetici))
         {
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="Rapor" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Raporlar</h5>
+                        <p class="card-text text-muted">Staj programının özet sayıları ve grafikleri.</p>
+                    </div></div>
+                </a>
+            </div>
             <div class="col">
                 <a class="text-decoration-none" asp-controller="OnayBekleyenler" asp-action="Index">
                     <div class="card h-100"><div class="card-body">
@@ -65,6 +73,17 @@ else
                 </a>
             </div>
         }
+        @if (User.IsInRole(Roller.Yonetici) && !User.IsInRole(Roller.Mentor))
+        {
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="Stajyer" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Stajyerler</h5>
+                        <p class="card-text text-muted">Tüm stajyerleri görüntüle.</p>
+                    </div></div>
+                </a>
+            </div>
+        }
         @if (User.IsInRole(Roller.Mentor))
         {
             <div class="col">
@@ -75,14 +94,11 @@ else
                     </div></div>
                 </a>
             </div>
-        }
-        @if (User.IsInRole(Roller.Yonetici) || User.IsInRole(Roller.Mentor))
-        {
             <div class="col">
                 <a class="text-decoration-none" asp-controller="Stajyer" asp-action="Index">
                     <div class="card h-100"><div class="card-body">
-                        <h5 class="card-title">Stajyerler</h5>
-                        <p class="card-text text-muted">Stajyer listesini görüntüle.</p>
+                        <h5 class="card-title">Stajyerlerim</h5>
+                        <p class="card-text text-muted">Kendi stajyerlerini görüntüle.</p>
                     </div></div>
                 </a>
             </div>
@@ -102,6 +118,14 @@ else
                     </div></div>
                 </a>
             </div>
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="Talep" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Talepler</h5>
+                        <p class="card-text text-muted">Stajyerlerinden CV/belge iste, cevapları gör.</p>
+                    </div></div>
+                </a>
+            </div>
         }
         @if (User.IsInRole(Roller.Stajyer))
         {
@@ -118,6 +142,14 @@ else
                     <div class="card h-100"><div class="card-body">
                         <h5 class="card-title">Devam Kayıtlarım</h5>
                         <p class="card-text text-muted">Giriş/çıkış kaydı gir, aylık özetini gör.</p>
+                    </div></div>
+                </a>
+            </div>
+            <div class="col">
+                <a class="text-decoration-none" asp-controller="Taleplerim" asp-action="Index">
+                    <div class="card h-100"><div class="card-body">
+                        <h5 class="card-title">Taleplerim</h5>
+                        <p class="card-text text-muted">Mentörünün senden istediklerini gör, CV/belge yükle.</p>
                     </div></div>
                 </a>
             </div>

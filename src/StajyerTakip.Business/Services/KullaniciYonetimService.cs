@@ -40,7 +40,7 @@ public class KullaniciYonetimService : IKullaniciYonetimService
 
         foreach (var kullanici in tumKullanicilar)
         {
-            if (kullanici.TalepEdilenRol == Roller.Mentor && kullanici.OnayDurumu == "Bekliyor")
+            if (kullanici.TalepEdilenRol == Roller.Mentor && kullanici.OnayDurumu == OnayDurumlari.Bekliyor)
             {
                 var roller = await _userManager.GetRolesAsync(kullanici);
                 if (roller.Count == 0)
@@ -63,7 +63,7 @@ public class KullaniciYonetimService : IKullaniciYonetimService
         {
             if (kullanici.TalepEdilenRol == Roller.Stajyer
                 && kullanici.TalepEdilenDepartmanId == departmanId
-                && kullanici.OnayDurumu == "Bekliyor")
+                && kullanici.OnayDurumu == OnayDurumlari.Bekliyor)
             {
                 var roller = await _userManager.GetRolesAsync(kullanici);
                 if (roller.Count == 0)
@@ -157,7 +157,7 @@ public class KullaniciYonetimService : IKullaniciYonetimService
         var kullanici = await _userManager.FindByIdAsync(kullaniciId)
             ?? throw new InvalidOperationException("Kullanıcı bulunamadı.");
 
-        kullanici.OnayDurumu = "Reddedildi";
+        kullanici.OnayDurumu = OnayDurumlari.Reddedildi;
         await _userManager.UpdateAsync(kullanici);
         await KilitleAsync(kullanici);
     }

@@ -16,6 +16,7 @@ public class UnitOfWork : IUnitOfWork
     private IRepository<Devam>? _devamKayitlari;
     private IRepository<Degerlendirme>? _degerlendirmeler;
     private IRepository<Duyuru>? _duyurular;
+    private IRepository<Talep>? _talepler;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -29,6 +30,7 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<Devam> DevamKayitlari => _devamKayitlari ??= new Repository<Devam>(_context);
     public IRepository<Degerlendirme> Degerlendirmeler => _degerlendirmeler ??= new Repository<Degerlendirme>(_context);
     public IRepository<Duyuru> Duyurular => _duyurular ??= new Repository<Duyuru>(_context);
+    public IRepository<Talep> Talepler => _talepler ??= new Repository<Talep>(_context);
 
     public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
 

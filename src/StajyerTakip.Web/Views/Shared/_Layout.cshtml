@@ -1,4 +1,8 @@
 @using StajyerTakip.Core.Identity
+@using Microsoft.AspNetCore.Identity
+@inject StajyerTakip.Business.Interfaces.ITalepService TalepServisi
+@inject StajyerTakip.Business.Interfaces.IStajyerService StajyerServisi
+@inject UserManager<ApplicationUser> KullaniciYoneticisi
 @{
     string Aktif(string controller) =>
         string.Equals(ViewContext.RouteData.Values["controller"]?.ToString(), controller, StringComparison.OrdinalIgnoreCase)
@@ -9,6 +13,18 @@
         : User.IsInRole(Roller.Mentor) ? "Mentör"
         : User.IsInRole(Roller.Stajyer) ? "Stajyer"
         : "Onay Bekliyor";
+
+    // Bildirim rozeti: stajyerin cevaplamadığı talep sayısı.
+    int bekleyenTalepSayisi = 0;
+    if (User.IsInRole(Roller.Stajyer))
+    {
+        var kullaniciId = KullaniciYoneticisi.GetUserId(User);
+        var stajyerProfili = kullaniciId is null ? null : await StajyerServisi.GetByKullaniciIdAsync(kullaniciId);
+        if (stajyerProfili is not null)
+        {
+            bekleyenTalepSayisi = await TalepServisi.BekleyenSayisiAsync(stajyerProfili.Id);
+        }
+    }
 }
 <!DOCTYPE html>
 <html lang="tr">
@@ -31,24 +47,22 @@
                 @if (User.IsInRole(Roller.Yonetici))
                 {
                     <div class="stk-nav-section">Yönetim</div>
+                    <a class="@Aktif("Rapor")" asp-controller="Rapor" asp-action="Index">Raporlar</a>
                     <a class="@Aktif("OnayBekleyenler")" asp-controller="OnayBekleyenler" asp-action="Index">Mentör Başvuruları</a>
                     <a class="@Aktif("YoneticiAtama")" asp-controller="YoneticiAtama" asp-action="Index">Mentör-Stajyer Ataması</a>
                     <a class="@Aktif("Kullanicilar")" asp-controller="Kullanicilar" asp-action="Index">Kullanıcılar</a>
                     <a class="@Aktif("Departman")" asp-controller="Departman" asp-action="Index">Departmanlar</a>
                     <a class="@Aktif("Mentor")" asp-controller="Mentor" asp-action="Index">Mentörler</a>
-                }
-
-                @if (User.IsInRole(Roller.Yonetici) || User.IsInRole(Roller.Mentor))
-                {
-                    <div class="stk-nav-section">Staj Takibi</div>
                     <a class="@Aktif("Stajyer")" asp-controller="Stajyer" asp-action="Index">Stajyerler</a>
-                    <a class="@Aktif("Gorev")" asp-controller="Gorev" asp-action="Index">Görevler</a>
-                    <a class="@Aktif("Devam")" asp-controller="Devam" asp-action="Index">Devam Onayı</a>
                 }
 
                 @if (User.IsInRole(Roller.Mentor))
                 {
-                    <div class="stk-nav-section">Başvurular</div>
+                    <div class="stk-nav-section">Staj Takibi</div>
+                    <a class="@Aktif("Stajyer")" asp-controller="Stajyer" asp-action="Index">Stajyerlerim</a>
+                    <a class="@Aktif("Gorev")" asp-controller="Gorev" asp-action="Index">Görevler</a>
+                    <a class="@Aktif("Devam")" asp-controller="Devam" asp-action="Index">Devam Onayı</a>
+                    <a class="@Aktif("Talep")" asp-controller="Talep" asp-action="Index">Talepler</a>
                     <a class="@Aktif("StajyerBasvuru")" asp-controller="StajyerBasvuru" asp-action="Index">Stajyer Başvuruları</a>
                 }
 
@@ -57,6 +71,13 @@
                     <div class="stk-nav-section">Staj İşlemlerim</div>
                     <a class="@Aktif("Gorevlerim")" asp-controller="Gorevlerim" asp-action="Index">Görevlerim</a>
                     <a class="@Aktif("Devamlarim")" asp-controller="Devamlarim" asp-action="Index">Devam Kayıtlarım</a>
+                    <a class="@Aktif("Taleplerim")" asp-controller="Taleplerim" asp-action="Index">
+                        Taleplerim
+                        @if (bekleyenTalepSayisi > 0)
+                        {
+                            <span class="badge rounded-pill bg-danger">@bekleyenTalepSayisi</span>
+                        }
+                    </a>
                 }
 
                 @if (User.Identity != null && User.Identity.IsAuthenticated)

@@ -1,0 +1,45 @@
+@model TalepCreateViewModel
+
+@{
+    ViewData["Title"] = "Yeni Talep";
+}
+
+<h1>Yeni Talep</h1>
+<p class="text-muted">Stajyerinden bir belge veya işlem iste; talebin onun ekranına bildirim olarak düşer.</p>
+
+<form asp-action="Create" method="post" class="col-md-6">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="mb-3">
+        <label asp-for="StajyerId" class="form-label"></label>
+        <select asp-for="StajyerId" asp-items="ViewBag.StajyerId" class="form-select">
+            <option value="">-- Seçiniz --</option>
+        </select>
+        <span asp-validation-for="StajyerId" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Baslik" class="form-label"></label>
+        <input asp-for="Baslik" class="form-control" placeholder="Örn: CV'ni gönder / 21.07 Pazartesi 14:00 mülakata gel" />
+        <span asp-validation-for="Baslik" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Aciklama" class="form-label"></label>
+        <textarea asp-for="Aciklama" class="form-control" rows="3" placeholder="İsteğe bağlı ek detay"></textarea>
+        <span asp-validation-for="Aciklama" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3 form-check">
+        <input asp-for="DosyaIstensin" class="form-check-input" />
+        <label asp-for="DosyaIstensin" class="form-check-label"></label>
+        <div class="form-text">İşaretlersen stajyer, cevap verirken dosya yüklemek zorunda olur.</div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Talebi Gönder</button>
+    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
