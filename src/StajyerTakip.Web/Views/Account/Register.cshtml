@@ -14,7 +14,7 @@
     <div class="stk-input-grup mb-1">
         <label asp-for="AdSoyad" class="visually-hidden"></label>
         <svg class="stk-input-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-        <input asp-for="AdSoyad" class="form-control" placeholder="Ad Soyad" />
+        <input asp-for="AdSoyad" class="form-control" placeholder="Ad Soyad" autofocus />
     </div>
     <span asp-validation-for="AdSoyad" class="text-danger d-block mb-2"></span>
 
@@ -50,12 +50,16 @@
         <label class="form-label fw-semibold" style="font-size:0.85rem; color:#55647a; text-transform:uppercase; letter-spacing:0.05em;">
             Başvuru Rolü
         </label>
-        <div class="d-flex gap-3">
-            <div class="stk-rol-kart @(Model.TalepEdilenRol == "Mentor" ? "secili" : "")" id="rolKartMentor" onclick="rolSec('Mentor')">
+        <div class="d-flex gap-3 stk-rol-secim">
+            <div class="stk-rol-kart @(Model.TalepEdilenRol == "Mentor" ? "secili" : "")" id="rolKartMentor"
+                 role="radio" tabindex="0" aria-checked="@(Model.TalepEdilenRol == "Mentor" ? "true" : "false")"
+                 onclick="rolSec('Mentor')">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/><path d="M16 3.5a3 3 0 0 1 0 5.5"/></svg>
                 <span>Mentör</span>
             </div>
-            <div class="stk-rol-kart @(Model.TalepEdilenRol == "Stajyer" ? "secili" : "")" id="rolKartStajyer" onclick="rolSec('Stajyer')">
+            <div class="stk-rol-kart @(Model.TalepEdilenRol == "Stajyer" ? "secili" : "")" id="rolKartStajyer"
+                 role="radio" tabindex="0" aria-checked="@(Model.TalepEdilenRol == "Stajyer" ? "true" : "false")"
+                 onclick="rolSec('Stajyer')">
                 <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
                 <span>Stajyer</span>
             </div>
@@ -75,51 +79,38 @@
         <span asp-validation-for="TalepEdilenDepartmanId" class="text-danger d-block mt-1"></span>
     </div>
 
-    <button type="submit" class="btn btn-primary">Kayıt Ol</button>
+    <button type="submit" class="btn btn-primary" data-yukleniyor="Kayıt yapılıyor...">Kayıt Ol</button>
 
     <p class="stk-auth-alt">Zaten hesabınız var mı? <a asp-action="Login">Giriş yapın.</a></p>
 </form>
-
-<style>
-    .stk-rol-kart {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.4rem;
-        padding: 0.85rem;
-        border: 2px solid #dfe6ee;
-        border-radius: 1rem;
-        cursor: pointer;
-        color: #55647a;
-        font-size: 0.9rem;
-        font-weight: 500;
-        transition: border-color 0.15s, background 0.15s, color 0.15s;
-        user-select: none;
-    }
-    .stk-rol-kart:hover {
-        border-color: var(--stk-accent);
-        background: rgba(47, 111, 237, 0.04);
-    }
-    .stk-rol-kart.secili {
-        border-color: var(--stk-accent);
-        background: rgba(47, 111, 237, 0.08);
-        color: var(--stk-accent);
-    }
-</style>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         function rolSec(rol) {
             document.getElementById('talepEdilenRolInput').value = rol;
-            document.getElementById('rolKartMentor').classList.toggle('secili', rol === 'Mentor');
-            document.getElementById('rolKartStajyer').classList.toggle('secili', rol === 'Stajyer');
+            ['Mentor', 'Stajyer'].forEach(function (r) {
+                var kart = document.getElementById('rolKart' + r);
+                kart.classList.toggle('secili', rol === r);
+                kart.setAttribute('aria-checked', rol === r ? 'true' : 'false');
+            });
+            document.querySelector('.stk-rol-secim').classList.remove('hata');
         }
-        // Sayfa yüklenince mevcut değere göre kartı işaretle
+        // Klavyeyle secim: Enter veya bosluk karti isaretler
+        document.querySelectorAll('.stk-rol-kart').forEach(function (kart) {
+            kart.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    kart.click();
+                }
+            });
+        });
+        // Sayfa yüklenince mevcut değere göre kartı işaretle; sunucu hatasi varsa kartlari kirmizila
         (function () {
             var mevcut = document.getElementById('talepEdilenRolInput').value;
             if (mevcut) rolSec(mevcut);
+            var rolHatasi = document.querySelector('[data-valmsg-for="TalepEdilenRol"].field-validation-error');
+            if (rolHatasi) document.querySelector('.stk-rol-secim').classList.add('hata');
         })();
     </script>
 }

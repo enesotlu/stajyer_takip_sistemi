@@ -42,37 +42,37 @@
             <a class="stk-sidebar-brand" asp-controller="Home" asp-action="Index">Stajyer Takip Sistemi</a>
 
             <nav class="stk-sidebar-nav" id="sidebarNav">
-                <a class="@Aktif("Home")" asp-controller="Home" asp-action="Index">Ana Sayfa</a>
+                <a class="@Aktif("Home")" asp-controller="Home" asp-action="Index"><partial name="_Ikon" model="@("ev")" /><span>Ana Sayfa</span></a>
 
                 @if (User.IsInRole(Roller.Yonetici))
                 {
                     <div class="stk-nav-section">Yönetim</div>
-                    <a class="@Aktif("Rapor")" asp-controller="Rapor" asp-action="Index">Raporlar</a>
-                    <a class="@Aktif("OnayBekleyenler")" asp-controller="OnayBekleyenler" asp-action="Index">Mentör Başvuruları</a>
-                    <a class="@Aktif("YoneticiAtama")" asp-controller="YoneticiAtama" asp-action="Index">Mentör-Stajyer Ataması</a>
-                    <a class="@Aktif("Kullanicilar")" asp-controller="Kullanicilar" asp-action="Index">Kullanıcılar</a>
-                    <a class="@Aktif("Departman")" asp-controller="Departman" asp-action="Index">Departmanlar</a>
-                    <a class="@Aktif("Mentor")" asp-controller="Mentor" asp-action="Index">Mentörler</a>
-                    <a class="@Aktif("Stajyer")" asp-controller="Stajyer" asp-action="Index">Stajyerler</a>
+                    <a class="@Aktif("Rapor")" asp-controller="Rapor" asp-action="Index"><partial name="_Ikon" model="@("grafik")" /><span>Raporlar</span></a>
+                    <a class="@Aktif("OnayBekleyenler")" asp-controller="OnayBekleyenler" asp-action="Index"><partial name="_Ikon" model="@("kisi-onay")" /><span>Mentör Başvuruları</span></a>
+                    <a class="@Aktif("YoneticiAtama")" asp-controller="YoneticiAtama" asp-action="Index"><partial name="_Ikon" model="@("atama")" /><span>Mentör-Stajyer Ataması</span></a>
+                    <a class="@Aktif("Kullanicilar")" asp-controller="Kullanicilar" asp-action="Index"><partial name="_Ikon" model="@("kisiler")" /><span>Kullanıcılar</span></a>
+                    <a class="@Aktif("Departman")" asp-controller="Departman" asp-action="Index"><partial name="_Ikon" model="@("bina")" /><span>Departmanlar</span></a>
+                    <a class="@Aktif("Mentor")" asp-controller="Mentor" asp-action="Index"><partial name="_Ikon" model="@("canta")" /><span>Mentörler</span></a>
+                    <a class="@Aktif("Stajyer")" asp-controller="Stajyer" asp-action="Index"><partial name="_Ikon" model="@("kisi")" /><span>Stajyerler</span></a>
                 }
 
                 @if (User.IsInRole(Roller.Mentor))
                 {
                     <div class="stk-nav-section">Staj Takibi</div>
-                    <a class="@Aktif("Stajyer")" asp-controller="Stajyer" asp-action="Index">Stajyerlerim</a>
-                    <a class="@Aktif("Gorev")" asp-controller="Gorev" asp-action="Index">Görevler</a>
-                    <a class="@Aktif("Devam")" asp-controller="Devam" asp-action="Index">Devam Onayı</a>
-                    <a class="@Aktif("Talep")" asp-controller="Talep" asp-action="Index">Talepler</a>
-                    <a class="@Aktif("StajyerBasvuru")" asp-controller="StajyerBasvuru" asp-action="Index">Stajyer Başvuruları</a>
+                    <a class="@Aktif("Stajyer")" asp-controller="Stajyer" asp-action="Index"><partial name="_Ikon" model="@("kisiler")" /><span>Stajyerlerim</span></a>
+                    <a class="@Aktif("Gorev")" asp-controller="Gorev" asp-action="Index"><partial name="_Ikon" model="@("liste")" /><span>Görevler</span></a>
+                    <a class="@Aktif("Devam")" asp-controller="Devam" asp-action="Index"><partial name="_Ikon" model="@("takvim")" /><span>Devam Onayı</span></a>
+                    <a class="@Aktif("Talep")" asp-controller="Talep" asp-action="Index"><partial name="_Ikon" model="@("dosya")" /><span>Talepler</span></a>
+                    <a class="@Aktif("StajyerBasvuru")" asp-controller="StajyerBasvuru" asp-action="Index"><partial name="_Ikon" model="@("kisi-arti")" /><span>Stajyer Başvuruları</span></a>
                 }
 
                 @if (User.IsInRole(Roller.Stajyer))
                 {
                     <div class="stk-nav-section">Staj İşlemlerim</div>
-                    <a class="@Aktif("Gorevlerim")" asp-controller="Gorevlerim" asp-action="Index">Görevlerim</a>
-                    <a class="@Aktif("Devamlarim")" asp-controller="Devamlarim" asp-action="Index">Devam Kayıtlarım</a>
+                    <a class="@Aktif("Gorevlerim")" asp-controller="Gorevlerim" asp-action="Index"><partial name="_Ikon" model="@("liste")" /><span>Görevlerim</span></a>
+                    <a class="@Aktif("Devamlarim")" asp-controller="Devamlarim" asp-action="Index"><partial name="_Ikon" model="@("takvim")" /><span>Devam Kayıtlarım</span></a>
                     <a class="@Aktif("Taleplerim")" asp-controller="Taleplerim" asp-action="Index">
-                        Taleplerim
+                        <partial name="_Ikon" model="@("dosya")" /><span>Taleplerim</span>
                         @if (bekleyenTalepSayisi > 0)
                         {
                             <span class="badge rounded-pill bg-danger">@bekleyenTalepSayisi</span>
@@ -83,7 +83,7 @@
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
                     <div class="stk-nav-section">Hesap</div>
-                    <a class="@Aktif("Profil")" asp-controller="Profil" asp-action="Index">Profilim</a>
+                    <a class="@Aktif("Profil")" asp-controller="Profil" asp-action="Index"><partial name="_Ikon" model="@("kisi")" /><span>Profilim</span></a>
                 }
             </nav>
 
@@ -111,6 +111,7 @@
             </div>
 
             <main role="main" class="stk-content">
+                <partial name="_DurumMesaji" />
                 @RenderBody()
             </main>
         </div>

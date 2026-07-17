@@ -4,32 +4,36 @@
     ViewData["Title"] = "Mentör Başvurusunu Onayla";
 }
 
-<h1>Mentör Başvurusunu Onayla</h1>
-<p class="text-muted"><strong>@Model.AdSoyad</strong> (@Model.Email) kullanıcısını Mentör olarak onaylayın.</p>
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel("Mentör Başvurusunu Onayla", $"{Model.AdSoyad} ({Model.Email}) kullanıcısını Mentör olarak onaylayın."))" />
 
-<form asp-action="MentorOnayla" method="post">
-    <input type="hidden" asp-for="KullaniciId" />
-    <input type="hidden" asp-for="AdSoyad" />
-    <input type="hidden" asp-for="Email" />
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="stk-form-kart">
+    <form asp-action="MentorOnayla" method="post">
+        <input type="hidden" asp-for="KullaniciId" />
+        <input type="hidden" asp-for="AdSoyad" />
+        <input type="hidden" asp-for="Email" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="mb-3">
-        <label asp-for="Unvan" class="form-label"></label>
-        <input asp-for="Unvan" class="form-control" placeholder="Örn: Kıdemli Yazılım Uzmanı" />
-        <span asp-validation-for="Unvan" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="Unvan" class="form-label"></label>
+            <input asp-for="Unvan" class="form-control" placeholder="Örn: Kıdemli Yazılım Uzmanı" />
+            <span asp-validation-for="Unvan" class="text-danger"></span>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="DepartmanId" class="form-label"></label>
-        <select asp-for="DepartmanId" asp-items="ViewBag.DepartmanId" class="form-select">
-            <option value="">-- Departman Seçin --</option>
-        </select>
-        <span asp-validation-for="DepartmanId" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="DepartmanId" class="form-label"></label>
+            <select asp-for="DepartmanId" asp-items="ViewBag.DepartmanId" class="form-select">
+                <option value="">-- Departman Seçin --</option>
+            </select>
+            <span asp-validation-for="DepartmanId" class="text-danger"></span>
+        </div>
 
-    <button type="submit" class="btn btn-primary">Onayla ve Mentör Yap</button>
-    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
-</form>
+        <div class="stk-form-eylemler">
+            <button type="submit" class="btn btn-primary">Onayla ve Mentör Yap</button>
+            <a asp-action="Index" class="stk-btn-iptal">Vazgeç</a>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

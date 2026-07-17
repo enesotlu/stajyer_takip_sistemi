@@ -4,40 +4,64 @@
     ViewData["Title"] = "Devam / Puantaj Onayı";
 }
 
-<h1>Devam / Puantaj Onayı</h1>
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Devam / Puantaj Onayı",
+             "Stajyerlerinizin giriş-çıkış kayıtlarını onaylayın veya reddedin."))" />
 
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Stajyer</th>
-            <th>Tarih</th>
-            <th>Giriş</th>
-            <th>Çıkış</th>
-            <th>Durum</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var devam in Model)
-        {
-            <tr>
-                <td>@devam.Stajyer.Okul / @devam.Stajyer.Bolum</td>
-                <td>@devam.Tarih.ToString("dd.MM.yyyy")</td>
-                <td>@devam.GirisSaati</td>
-                <td>@devam.CikisSaati</td>
-                <td>@devam.OnayDurumu</td>
-                <td>
-                    @if (devam.OnayDurumu == OnayDurumu.Bekliyor)
-                    {
-                        <form asp-action="Onayla" asp-route-id="@devam.Id" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-outline-success">Onayla</button>
-                        </form>
-                        <form asp-action="Reddet" asp-route-id="@devam.Id" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Reddet</button>
-                        </form>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+@if (Model.Count == 0)
+{
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("takvim")" />
+        <h2>Bekleyen devam kaydı yok</h2>
+        <p>Stajyerleriniz devam kaydı girdiğinde burada görünür.</p>
+    </div>
+}
+else
+{
+    <div class="stk-tablo-kart">
+        <table class="stk-tablo">
+            <thead>
+                <tr>
+                    <th>Stajyer</th>
+                    <th>Tarih</th>
+                    <th>Giriş</th>
+                    <th>Çıkış</th>
+                    <th>Durum</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var devam in Model)
+                {
+                    <tr>
+                        <td class="stk-hucre-ad">@devam.Stajyer.Okul / @devam.Stajyer.Bolum</td>
+                        <td>@devam.Tarih.ToString("dd.MM.yyyy")</td>
+                        <td>@devam.GirisSaati</td>
+                        <td>@devam.CikisSaati</td>
+                        <td><partial name="_OnayDurumRozet" model="devam.OnayDurumu" /></td>
+                        <td>
+                            <span class="stk-islem-hucre">
+                                @if (devam.OnayDurumu == OnayDurumu.Bekliyor)
+                                {
+                                    <form asp-action="Onayla" asp-route-id="@devam.Id" method="post" class="d-inline">
+                                        <button type="submit" class="stk-btn-hafif stk-btn-hafif-yesil">
+                                            <partial name="_Ikon" model="@("onay")" />
+                                            Onayla
+                                        </button>
+                                    </form>
+                                    <form asp-action="Reddet" asp-route-id="@devam.Id" method="post" class="d-inline">
+                                        <button type="submit" class="stk-btn-hafif stk-btn-hafif-kirmizi">
+                                            <partial name="_Ikon" model="@("kapat")" />
+                                            Reddet
+                                        </button>
+                                    </form>
+                                }
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

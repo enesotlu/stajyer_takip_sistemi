@@ -1,0 +1,17 @@
+@model SayfaBaslikModel
+
+<div class="stk-sayfa-baslik">
+    <div>
+        <h1>@Model.Baslik</h1>
+        <p class="stk-baslik-aciklama">@Model.Aciklama</p>
+    </div>
+    @if (Model.AksiyonMetni is not null)
+    {
+        <a class="btn btn-primary stk-btn-ikonlu"
+           asp-controller="@Model.AksiyonController"
+           asp-action="@Model.AksiyonAction">
+            <partial name="_Ikon" model="Model.AksiyonIkon" />
+            @Model.AksiyonMetni
+        </a>
+    }
+</div>

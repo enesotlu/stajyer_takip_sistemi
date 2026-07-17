@@ -5,50 +5,51 @@
     ViewData["Title"] = "Mentör-Stajyer Ataması";
 }
 
-<h1>Mentör-Stajyer Ataması</h1>
-<p class="text-muted">Her stajyerin sorumlu mentörünü buradan değiştirebilirsiniz.</p>
-
-@if (TempData["BilgiMesaji"] != null)
-{
-    <div class="alert alert-success">@TempData["BilgiMesaji"]</div>
-}
-@if (TempData["HataMesaji"] != null)
-{
-    <div class="alert alert-danger">@TempData["HataMesaji"]</div>
-}
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Mentör-Stajyer Ataması",
+             "Her stajyerin sorumlu mentörünü buradan değiştirebilirsiniz."))" />
 
 @if (!Model.Any())
 {
-    <div class="alert alert-info">Henüz onaylanmış stajyer bulunmuyor.</div>
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("atama")" />
+        <h2>Henüz onaylanmış stajyer yok</h2>
+        <p>Stajyer başvuruları onaylandığında atamaları buradan yönetebilirsiniz.</p>
+    </div>
 }
 else
 {
-    <div class="table-wrap">
-    <table class="table table-striped mb-0">
-        <thead>
-            <tr>
-                <th>Stajyer</th>
-                <th>Okul / Bölüm</th>
-                <th>Departman</th>
-                <th>Mevcut Mentör</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var stajyer in Model)
-            {
+    <div class="stk-tablo-kart">
+        <table class="stk-tablo">
+            <thead>
                 <tr>
-                    <td>@(stajyer.Kullanici?.AdSoyad ?? "—")</td>
-                    <td>@(stajyer.Okul) / @(stajyer.Bolum)</td>
-                    <td>@(stajyer.Departman?.Ad ?? "—")</td>
-                    <td>@(stajyer.Mentor?.Kullanici?.AdSoyad ?? stajyer.Mentor?.Unvan ?? "—")</td>
-                    <td>
-                        <a asp-action="MentorDegistir" asp-route-id="@stajyer.Id"
-                           class="btn btn-sm btn-outline-secondary">Mentör Değiştir</a>
-                    </td>
+                    <th>Stajyer</th>
+                    <th>Okul / Bölüm</th>
+                    <th>Departman</th>
+                    <th>Mevcut Mentör</th>
+                    <th></th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var stajyer in Model)
+                {
+                    <tr>
+                        <td class="stk-hucre-ad">@(stajyer.Kullanici?.AdSoyad ?? "—")</td>
+                        <td>@(stajyer.Okul) / @(stajyer.Bolum)</td>
+                        <td>@(stajyer.Departman?.Ad ?? "—")</td>
+                        <td>@(stajyer.Mentor?.Kullanici?.AdSoyad ?? stajyer.Mentor?.Unvan ?? "—")</td>
+                        <td>
+                            <span class="stk-islem-hucre">
+                                <a asp-action="MentorDegistir" asp-route-id="@stajyer.Id" class="stk-btn-hafif stk-btn-hafif-mavi">
+                                    <partial name="_Ikon" model="@("atama")" />
+                                    Mentör Değiştir
+                                </a>
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 }

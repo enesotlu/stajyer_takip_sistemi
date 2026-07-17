@@ -1,0 +1,11 @@
+@model OnayDurumu
+@{
+    var (sinif, metin) = Model switch
+    {
+        OnayDurumu.Bekliyor => ("stk-rozet-amber", "Bekliyor"),
+        OnayDurumu.Onaylandi => ("stk-rozet-yesil", "Onaylandı"),
+        OnayDurumu.Reddedildi => ("stk-rozet-kirmizi", "Reddedildi"),
+        _ => ("stk-rozet-gri", Model.ToString())
+    };
+}
+<span class="stk-rozet @sinif">@metin</span>

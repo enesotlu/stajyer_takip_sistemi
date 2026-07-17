@@ -4,14 +4,20 @@
     ViewData["Title"] = "Mentör Sil";
 }
 
-<h1>Mentörü sil</h1>
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel("Mentörü Sil", "Bu işlem geri alınamaz; silmeden önce kontrol edin."))" />
 
-<div class="alert alert-warning">
-    <strong>@Model.Unvan</strong> mentörünü silmek istediğine emin misin?
+<div class="stk-form-kart">
+    <div class="stk-banner stk-banner-uyari">
+        <partial name="_Ikon" model="@("unlem")" />
+        <div><strong>@Model.Unvan</strong> mentörünü silmek istediğine emin misin?</div>
+    </div>
+
+    <form asp-action="Delete" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div class="stk-form-eylemler">
+            <button type="submit" class="btn btn-danger">Sil</button>
+            <a asp-action="Index" class="stk-btn-iptal">Vazgeç</a>
+        </div>
+    </form>
 </div>
-
-<form asp-action="Delete" method="post">
-    <input type="hidden" asp-for="Id" />
-    <button type="submit" class="btn btn-danger">Sil</button>
-    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
-</form>

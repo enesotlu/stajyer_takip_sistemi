@@ -5,85 +5,84 @@
     bool profilYok = ViewBag.ProfilYok;
 }
 
-<h1>Taleplerim</h1>
-<p class="text-muted">Mentörünün senden istedikleri. Dosya istenen taleplere CV/belge yükleyerek cevap ver.</p>
-
-@if (TempData["BilgiMesaji"] != null)
-{
-    <div class="alert alert-success">@TempData["BilgiMesaji"]</div>
-}
-@if (TempData["HataMesaji"] != null)
-{
-    <div class="alert alert-danger">@TempData["HataMesaji"]</div>
-}
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Taleplerim",
+             "Mentörünün senden istedikleri. Dosya istenen taleplere CV/belge yükleyerek cevap ver."))" />
 
 @if (profilYok)
 {
-    <div class="alert alert-warning">Hesabına bağlı bir Stajyer profili bulunamadı.</div>
+    <div class="stk-banner stk-banner-uyari">
+        <partial name="_Ikon" model="@("unlem")" />
+        <div>Hesabına bağlı bir Stajyer profili bulunamadı.</div>
+    </div>
 }
 else if (!Model.Any())
 {
-    <div class="alert alert-info">Sana gelen bir talep yok.</div>
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("dosya")" />
+        <h2>Sana gelen bir talep yok</h2>
+        <p>Mentörün senden belge istediğinde burada görünecek.</p>
+    </div>
 }
 else
 {
     @foreach (var talep in Model)
     {
-        <div class="card mb-3 @(talep.Durum == TalepDurumu.Bekliyor ? "border-warning" : "")">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start">
-                    <h5 class="card-title mb-1">
-                        @talep.Baslik
-                        @if (talep.DosyaIstensin)
-                        {
-                            <span class="badge bg-info text-dark">Dosya gerekli</span>
-                        }
-                    </h5>
-                    @if (talep.Durum == TalepDurumu.Bekliyor)
+        <div class="stk-kart @(talep.Durum == TalepDurumu.Bekliyor ? "stk-kart-bekliyor" : "")">
+            <div class="d-flex justify-content-between align-items-start">
+                <h5 class="mb-1">
+                    @talep.Baslik
+                    @if (talep.DosyaIstensin)
                     {
-                        <span class="badge bg-warning text-dark">Cevap bekliyor</span>
+                        <span class="stk-rozet stk-rozet-mavi">Dosya gerekli</span>
                     }
-                    else
-                    {
-                        <span class="badge bg-success">Tamamlandı</span>
-                    }
-                </div>
-                <p class="text-muted mb-2">@talep.OlusturmaTarihi.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
-
-                @if (!string.IsNullOrWhiteSpace(talep.Aciklama))
-                {
-                    <p>@talep.Aciklama</p>
-                }
-
+                </h5>
                 @if (talep.Durum == TalepDurumu.Bekliyor)
                 {
-                    <form asp-action="Cevapla" asp-route-id="@talep.Id" method="post" enctype="multipart/form-data">
-                        @Html.AntiForgeryToken()
-                        <div class="mb-2">
-                            <textarea name="cevapMetni" class="form-control" rows="2" placeholder="Cevabın (isteğe bağlı)"></textarea>
-                        </div>
-                        <div class="d-flex gap-2 align-items-center">
-                            <input type="file" name="dosya" class="form-control" style="max-width: 320px"
-                                   accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" />
-                            <button type="submit" class="btn btn-primary btn-sm">Gönder</button>
-                        </div>
-                        <div class="form-text">İzinli türler: PDF, Word, PNG, JPG - en fazla 10 MB.</div>
-                    </form>
+                    <span class="stk-rozet stk-rozet-amber">Cevap bekliyor</span>
                 }
                 else
                 {
-                    @if (!string.IsNullOrWhiteSpace(talep.CevapMetni))
-                    {
-                        <p class="mb-1"><strong>Cevabın:</strong> @talep.CevapMetni</p>
-                    }
-                    @if (!string.IsNullOrEmpty(talep.CevapDosyaAdi))
-                    {
-                        <a asp-action="DosyaIndir" asp-route-id="@talep.Id" class="btn btn-sm btn-outline-primary">
-                            📎 @(talep.CevapDosyaOrijinalAdi ?? "Yüklediğin dosya")
-                        </a>
-                    }
+                    <span class="stk-rozet stk-rozet-yesil">Tamamlandı</span>
                 }
             </div>
+            <p class="text-muted mb-2">@talep.OlusturmaTarihi.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
+
+            @if (!string.IsNullOrWhiteSpace(talep.Aciklama))
+            {
+                <p>@talep.Aciklama</p>
+            }
+
+            @if (talep.Durum == TalepDurumu.Bekliyor)
+            {
+                <form asp-action="Cevapla" asp-route-id="@talep.Id" method="post" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-2">
+                        <textarea name="cevapMetni" class="form-control" rows="2" placeholder="Cevabın (isteğe bağlı)"></textarea>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="file" name="dosya" class="form-control" style="max-width: 320px"
+                               accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" />
+                        <button type="submit" class="btn btn-primary btn-sm">Gönder</button>
+                    </div>
+                    <div class="form-text">İzinli türler: PDF, Word, PNG, JPG - en fazla 10 MB.</div>
+                </form>
+            }
+            else
+            {
+                @if (!string.IsNullOrWhiteSpace(talep.CevapMetni))
+                {
+                    <p class="mb-1"><strong>Cevabın:</strong> @talep.CevapMetni</p>
+                }
+                @if (!string.IsNullOrEmpty(talep.CevapDosyaAdi))
+                {
+                    <a asp-action="DosyaIndir" asp-route-id="@talep.Id" class="stk-btn-hafif stk-btn-hafif-mavi">
+                        <partial name="_Ikon" model="@("indir")" />
+                        @(talep.CevapDosyaOrijinalAdi ?? "Yüklediğin dosya")
+                    </a>
+                }
+            }
         </div>
     }
 }

@@ -5,48 +5,86 @@
     ViewData["Title"] = "Raporlar";
 }
 
-<h1>Raporlar</h1>
-<p class="text-muted">Staj programının genel durumu: özet sayılar ve dağılım grafikleri.</p>
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Raporlar",
+             "Staj programının genel durumu: özet sayılar ve dağılım grafikleri."))" />
 
-<div class="row row-cols-2 row-cols-md-3 row-cols-lg-6 g-3 mb-4">
-    <div class="col"><div class="card text-center h-100"><div class="card-body">
-        <div class="h2 mb-0">@Model.ToplamStajyer</div><div class="text-muted">Toplam Stajyer</div>
-    </div></div></div>
-    <div class="col"><div class="card text-center h-100"><div class="card-body">
-        <div class="h2 mb-0 text-success">@Model.AktifStajyer</div><div class="text-muted">Aktif Stajyer</div>
-    </div></div></div>
-    <div class="col"><div class="card text-center h-100"><div class="card-body">
-        <div class="h2 mb-0">@Model.ToplamMentor</div><div class="text-muted">Mentör</div>
-    </div></div></div>
-    <div class="col"><div class="card text-center h-100"><div class="card-body">
-        <div class="h2 mb-0">@Model.ToplamDepartman</div><div class="text-muted">Departman</div>
-    </div></div></div>
-    <div class="col"><div class="card text-center h-100"><div class="card-body">
-        <div class="h2 mb-0 text-warning">@Model.BekleyenMentorBasvurusu</div><div class="text-muted">Bekleyen Mentör Başvurusu</div>
-    </div></div></div>
-    <div class="col"><div class="card text-center h-100"><div class="card-body">
-        <div class="h2 mb-0 text-warning">@Model.BekleyenStajyerBasvurusu</div><div class="text-muted">Bekleyen Stajyer Başvurusu</div>
-    </div></div></div>
+<div class="row row-cols-2 row-cols-md-3 row-cols-xl-6 g-3 mb-4">
+    <div class="col">
+        <div class="stk-stat-kart">
+            <span class="stk-stat-ikon stk-stat-ikon-mavi"><partial name="_Ikon" model="@("kisiler")" /></span>
+            <div>
+                <div class="stk-stat-sayi">@Model.ToplamStajyer</div>
+                <div class="stk-stat-etiket">Toplam Stajyer</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stk-stat-kart">
+            <span class="stk-stat-ikon stk-stat-ikon-yesil"><partial name="_Ikon" model="@("kisi-onay")" /></span>
+            <div>
+                <div class="stk-stat-sayi">@Model.AktifStajyer</div>
+                <div class="stk-stat-etiket">Aktif Stajyer</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stk-stat-kart">
+            <span class="stk-stat-ikon stk-stat-ikon-mor"><partial name="_Ikon" model="@("canta")" /></span>
+            <div>
+                <div class="stk-stat-sayi">@Model.ToplamMentor</div>
+                <div class="stk-stat-etiket">Mentör</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stk-stat-kart">
+            <span class="stk-stat-ikon stk-stat-ikon-mor"><partial name="_Ikon" model="@("bina")" /></span>
+            <div>
+                <div class="stk-stat-sayi">@Model.ToplamDepartman</div>
+                <div class="stk-stat-etiket">Departman</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stk-stat-kart">
+            <span class="stk-stat-ikon stk-stat-ikon-amber"><partial name="_Ikon" model="@("kisi-onay")" /></span>
+            <div>
+                <div class="stk-stat-sayi">@Model.BekleyenMentorBasvurusu</div>
+                <div class="stk-stat-etiket">Bekleyen Mentör Başvurusu</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="stk-stat-kart">
+            <span class="stk-stat-ikon stk-stat-ikon-amber"><partial name="_Ikon" model="@("kisi-arti")" /></span>
+            <div>
+                <div class="stk-stat-sayi">@Model.BekleyenStajyerBasvurusu</div>
+                <div class="stk-stat-etiket">Bekleyen Stajyer Başvurusu</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="row g-3">
     <div class="col-md-4">
-        <div class="card h-100"><div class="card-body">
-            <h5 class="card-title">Görev Durumları (@Model.ToplamGorev görev)</h5>
+        <div class="stk-kart h-100">
+            <h2 class="stk-grafik-baslik">Görev Durumları (@Model.ToplamGorev görev)</h2>
             <canvas id="gorevGrafik"></canvas>
-        </div></div>
+        </div>
     </div>
     <div class="col-md-4">
-        <div class="card h-100"><div class="card-body">
-            <h5 class="card-title">Devam Onay Durumu</h5>
+        <div class="stk-kart h-100">
+            <h2 class="stk-grafik-baslik">Devam Onay Durumu</h2>
             <canvas id="devamGrafik"></canvas>
-        </div></div>
+        </div>
     </div>
     <div class="col-md-4">
-        <div class="card h-100"><div class="card-body">
-            <h5 class="card-title">Departmana Göre Stajyer</h5>
+        <div class="stk-kart h-100">
+            <h2 class="stk-grafik-baslik">Departmana Göre Stajyer</h2>
             <canvas id="departmanGrafik"></canvas>
-        </div></div>
+        </div>
     </div>
 </div>
 
@@ -57,32 +95,64 @@
         const devamVerisi = @Json.Serialize(Model.DevamDurumDagilimi);
         const departmanVerisi = @Json.Serialize(Model.DepartmanStajyerDagilimi);
 
-        const renkler = ['#f0ad4e', '#2f6fed', '#28a745', '#6c757d', '#dc3545', '#17a2b8'];
+        // Rozetlerle ayni anlam-renk eslesmesi: bekleyen=amber, devam=mavi, tamam=yesil, red=kirmizi
+        const durumRenkleri = {
+            'Baslamadi': '#8494a7',
+            'DevamEdiyor': '#2f6fed',
+            'Tamamlandi': '#2f9e5b',
+            'Bekliyor': '#e9a23b',
+            'Onaylandi': '#2f9e5b',
+            'Reddedildi': '#c0392b'
+        };
 
-        new Chart(document.getElementById('gorevGrafik'), {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(gorevVerisi),
-                datasets: [{ data: Object.values(gorevVerisi), backgroundColor: renkler }]
-            }
-        });
+        const turkceEtiket = {
+            'Baslamadi': 'Başlamadı',
+            'DevamEdiyor': 'Devam Ediyor',
+            'Tamamlandi': 'Tamamlandı',
+            'Bekliyor': 'Bekliyor',
+            'Onaylandi': 'Onaylandı',
+            'Reddedildi': 'Reddedildi'
+        };
 
-        new Chart(document.getElementById('devamGrafik'), {
-            type: 'doughnut',
-            data: {
-                labels: Object.keys(devamVerisi),
-                datasets: [{ data: Object.values(devamVerisi), backgroundColor: ['#f0ad4e', '#28a745', '#dc3545'] }]
-            }
-        });
+        function halkaGrafik(id, veri) {
+            const anahtarlar = Object.keys(veri);
+            new Chart(document.getElementById(id), {
+                type: 'doughnut',
+                data: {
+                    labels: anahtarlar.map(a => turkceEtiket[a] ?? a),
+                    datasets: [{
+                        data: Object.values(veri),
+                        backgroundColor: anahtarlar.map(a => durumRenkleri[a] ?? '#2f6fed'),
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    cutout: '62%',
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, boxHeight: 12 } } }
+                }
+            });
+        }
+
+        halkaGrafik('gorevGrafik', gorevVerisi);
+        halkaGrafik('devamGrafik', devamVerisi);
 
         new Chart(document.getElementById('departmanGrafik'), {
             type: 'bar',
             data: {
                 labels: Object.keys(departmanVerisi),
-                datasets: [{ label: 'Stajyer sayısı', data: Object.values(departmanVerisi), backgroundColor: '#2f6fed' }]
+                datasets: [{
+                    label: 'Stajyer sayısı',
+                    data: Object.values(departmanVerisi),
+                    backgroundColor: '#2f6fed',
+                    borderRadius: 6,
+                    maxBarThickness: 42
+                }]
             },
             options: {
-                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#eef2f7' } },
+                    x: { grid: { display: false } }
+                },
                 plugins: { legend: { display: false } }
             }
         });

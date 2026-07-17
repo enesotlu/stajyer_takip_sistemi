@@ -4,27 +4,32 @@
     ViewData["Title"] = "Departman Düzenle";
 }
 
-<h1>Departman Düzenle</h1>
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel("Departman Düzenle", "Departman bilgilerini güncelleyin."))" />
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="Id" />
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="stk-form-kart">
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="Id" />
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="mb-3">
-        <label asp-for="Ad" class="form-label"></label>
-        <input asp-for="Ad" class="form-control" />
-        <span asp-validation-for="Ad" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="Ad" class="form-label"></label>
+            <input asp-for="Ad" class="form-control" />
+            <span asp-validation-for="Ad" class="text-danger"></span>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="Aciklama" class="form-label"></label>
-        <textarea asp-for="Aciklama" class="form-control"></textarea>
-        <span asp-validation-for="Aciklama" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="Aciklama" class="form-label"></label>
+            <textarea asp-for="Aciklama" class="form-control"></textarea>
+            <span asp-validation-for="Aciklama" class="text-danger"></span>
+        </div>
 
-    <button type="submit" class="btn btn-primary">Kaydet</button>
-    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
-</form>
+        <div class="stk-form-eylemler">
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+            <a asp-action="Index" class="stk-btn-iptal">Vazgeç</a>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

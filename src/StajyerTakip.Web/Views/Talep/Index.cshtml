@@ -1,76 +1,75 @@
 @model List<Talep>
 
 @{
-    ViewData["Title"] = "Taleplerim (Mentör)";
+    ViewData["Title"] = "Talepler";
 }
 
-<h1>Stajyer Talepleri</h1>
-<p class="text-muted">Stajyerlerinden istediğin belgeler ve görevler; cevaplananların dosyalarını buradan indirebilirsin.</p>
-
-@if (TempData["BilgiMesaji"] != null)
-{
-    <div class="alert alert-success">@TempData["BilgiMesaji"]</div>
-}
-
-<p>
-    <a asp-action="Create" class="btn btn-primary">Yeni Talep</a>
-</p>
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Stajyer Talepleri",
+             "Stajyerlerinizden istediğiniz belgeler; cevaplananların dosyalarını buradan indirebilirsiniz.",
+             "Yeni Talep", "Talep", "Create"))" />
 
 @if (!Model.Any())
 {
-    <div class="alert alert-info">Henüz bir talep oluşturmadın.</div>
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("dosya")" />
+        <h2>Henüz talep oluşturmadınız</h2>
+        <p>"Yeni Talep" ile stajyerlerinizden CV veya belge isteyebilirsiniz.</p>
+    </div>
 }
 else
 {
-    <div class="table-wrap">
-    <table class="table table-striped mb-0">
-        <thead>
-            <tr>
-                <th>Stajyer</th>
-                <th>Başlık</th>
-                <th>Tarih</th>
-                <th>Durum</th>
-                <th>Cevap</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var talep in Model)
-            {
+    <div class="stk-tablo-kart">
+        <table class="stk-tablo">
+            <thead>
                 <tr>
-                    <td>@(talep.Stajyer.Kullanici?.AdSoyad ?? "—")</td>
-                    <td>
-                        @talep.Baslik
-                        @if (talep.DosyaIstensin)
-                        {
-                            <span class="badge bg-info text-dark">Dosya istendi</span>
-                        }
-                    </td>
-                    <td>@talep.OlusturmaTarihi.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
-                    <td>
-                        @if (talep.Durum == TalepDurumu.Bekliyor)
-                        {
-                            <span class="badge bg-warning text-dark">Bekliyor</span>
-                        }
-                        else
-                        {
-                            <span class="badge bg-success">Tamamlandı</span>
-                        }
-                    </td>
-                    <td>
-                        @if (!string.IsNullOrWhiteSpace(talep.CevapMetni))
-                        {
-                            <div>@talep.CevapMetni</div>
-                        }
-                        @if (!string.IsNullOrEmpty(talep.CevapDosyaAdi))
-                        {
-                            <a asp-action="DosyaIndir" asp-route-id="@talep.Id" class="btn btn-sm btn-outline-primary mt-1">
-                                📎 @(talep.CevapDosyaOrijinalAdi ?? "Dosyayı indir")
-                            </a>
-                        }
-                    </td>
+                    <th>Stajyer</th>
+                    <th>Başlık</th>
+                    <th>Tarih</th>
+                    <th>Durum</th>
+                    <th>Cevap</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var talep in Model)
+                {
+                    <tr>
+                        <td class="stk-hucre-ad">@(talep.Stajyer.Kullanici?.AdSoyad ?? "—")</td>
+                        <td>
+                            @talep.Baslik
+                            @if (talep.DosyaIstensin)
+                            {
+                                <span class="stk-rozet stk-rozet-mavi">Dosya istendi</span>
+                            }
+                        </td>
+                        <td>@talep.OlusturmaTarihi.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>
+                            @if (talep.Durum == TalepDurumu.Bekliyor)
+                            {
+                                <span class="stk-rozet stk-rozet-amber">Bekliyor</span>
+                            }
+                            else
+                            {
+                                <span class="stk-rozet stk-rozet-yesil">Tamamlandı</span>
+                            }
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(talep.CevapMetni))
+                            {
+                                <div>@talep.CevapMetni</div>
+                            }
+                            @if (!string.IsNullOrEmpty(talep.CevapDosyaAdi))
+                            {
+                                <a asp-action="DosyaIndir" asp-route-id="@talep.Id" class="stk-btn-hafif stk-btn-hafif-mavi mt-1">
+                                    <partial name="_Ikon" model="@("indir")" />
+                                    @(talep.CevapDosyaOrijinalAdi ?? "Dosyayı indir")
+                                </a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 }

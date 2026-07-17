@@ -4,38 +4,51 @@
     ViewData["Title"] = "Mentörler";
 }
 
-<h1>Mentörler</h1>
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Mentörler",
+             "Onaylanmış mentörleri görüntüleyin ve yönetin. Yeni mentörler başvuru onayıyla eklenir."))" />
 
-@if (TempData["HataMesaji"] != null)
+@if (Model.Count == 0)
 {
-    <div class="alert alert-danger">@TempData["HataMesaji"]</div>
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("canta")" />
+        <h2>Henüz mentör yok</h2>
+        <p>Mentörler, başvuruları onaylandığında burada listelenir.</p>
+    </div>
 }
-
-<p>
-    <a asp-action="Create" class="btn btn-primary">Yeni Mentör</a>
-</p>
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Ad Soyad</th>
-            <th>Unvan</th>
-            <th>Departman</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var mentor in Model)
-        {
-            <tr>
-                <td>@mentor.Kullanici.AdSoyad</td>
-                <td>@mentor.Unvan</td>
-                <td>@mentor.Departman.Ad</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@mentor.Id" class="btn btn-sm btn-outline-secondary">Düzenle</a>
-                    <a asp-action="Delete" asp-route-id="@mentor.Id" class="btn btn-sm btn-outline-danger">Sil</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+else
+{
+    <div class="stk-tablo-kart">
+        <table class="stk-tablo">
+            <thead>
+                <tr>
+                    <th>Ad Soyad</th>
+                    <th>Unvan</th>
+                    <th>Departman</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var mentor in Model)
+                {
+                    <tr>
+                        <td class="stk-hucre-ad">@mentor.Kullanici.AdSoyad</td>
+                        <td>@mentor.Unvan</td>
+                        <td>@mentor.Departman.Ad</td>
+                        <td>
+                            <span class="stk-islem-hucre">
+                                <a asp-action="Edit" asp-route-id="@mentor.Id" class="stk-ikon-btn" title="Düzenle">
+                                    <partial name="_Ikon" model="@("kalem")" />
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@mentor.Id" class="stk-ikon-btn stk-ikon-btn-tehlike" title="Sil">
+                                    <partial name="_Ikon" model="@("cop")" />
+                                </a>
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

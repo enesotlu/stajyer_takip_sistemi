@@ -4,59 +4,70 @@
     ViewData["Title"] = "Görevlerim";
 }
 
-<h1>Görevlerim</h1>
-
-@if (TempData["HataMesaji"] != null)
-{
-    <div class="alert alert-danger">@TempData["HataMesaji"]</div>
-}
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Görevlerim",
+             "Mentörünüzün size atadığı görevler; durumlarını buradan güncelleyebilirsiniz."))" />
 
 @if ((bool)ViewBag.ProfilYok)
 {
-    <div class="alert alert-warning">
-        Hesabına bağlı bir Stajyer profili bulunamadı. Görev görebilmen için Yöneticinin seni
-        Stajyer olarak eklemesi (Okul/Bölüm/Mentör/Departman bilgilerinle) gerekiyor.
+    <div class="stk-banner stk-banner-uyari">
+        <partial name="_Ikon" model="@("unlem")" />
+        <div>
+            Hesabına bağlı bir Stajyer profili bulunamadı. Görev görebilmen için Yöneticinin seni
+            Stajyer olarak eklemesi (Okul/Bölüm/Mentör/Departman bilgilerinle) gerekiyor.
+        </div>
     </div>
 }
 else if (!Model.Any())
 {
-    <p>Henüz sana atanmış bir görev yok.</p>
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("liste")" />
+        <h2>Henüz görevin yok</h2>
+        <p>Mentörün sana görev atadığında burada görünecek.</p>
+    </div>
 }
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Başlık</th>
-            <th>Açıklama</th>
-            <th>Teslim Tarihi</th>
-            <th>Durum</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var gorev in Model)
-        {
-            <tr>
-                <td>@gorev.Baslik</td>
-                <td>@gorev.Aciklama</td>
-                <td>@gorev.TeslimTarihi.ToString("dd.MM.yyyy")</td>
-                <td>@gorev.Durum</td>
-                <td>
-                    @if (gorev.Durum != GorevDurumu.Tamamlandi)
-                    {
-                        <form asp-action="DurumGuncelle" method="post" class="d-inline-flex gap-1">
-                            <input type="hidden" name="id" value="@gorev.Id" />
-                            <select name="yeniDurum" class="form-select form-select-sm">
-                                @foreach (var durum in Enum.GetValues<GorevDurumu>().Where(d => d >= gorev.Durum))
-                                {
-                                    <option value="@durum" selected="@(durum == gorev.Durum)">@durum</option>
-                                }
-                            </select>
-                            <button type="submit" class="btn btn-sm btn-primary">Güncelle</button>
-                        </form>
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+else
+{
+    <div class="stk-tablo-kart">
+        <table class="stk-tablo">
+            <thead>
+                <tr>
+                    <th>Başlık</th>
+                    <th>Açıklama</th>
+                    <th>Teslim Tarihi</th>
+                    <th>Durum</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var gorev in Model)
+                {
+                    <tr>
+                        <td class="stk-hucre-ad">@gorev.Baslik</td>
+                        <td>@gorev.Aciklama</td>
+                        <td>@gorev.TeslimTarihi.ToString("dd.MM.yyyy")</td>
+                        <td><partial name="_GorevDurumRozet" model="gorev.Durum" /></td>
+                        <td>
+                            @if (gorev.Durum != GorevDurumu.Tamamlandi)
+                            {
+                                <form asp-action="DurumGuncelle" method="post" class="d-inline-flex gap-1">
+                                    <input type="hidden" name="id" value="@gorev.Id" />
+                                    <select name="yeniDurum" class="form-select form-select-sm">
+                                        @foreach (var durum in Enum.GetValues<GorevDurumu>().Where(d => d >= gorev.Durum))
+                                        {
+                                            <option value="@durum" selected="@(durum == gorev.Durum)">
+                                                @(durum switch { GorevDurumu.Baslamadi => "Başlamadı", GorevDurumu.DevamEdiyor => "Devam Ediyor", GorevDurumu.Tamamlandi => "Tamamlandı", _ => durum.ToString() })
+                                            </option>
+                                        }
+                                    </select>
+                                    <button type="submit" class="stk-btn-hafif stk-btn-hafif-mavi">Güncelle</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -4,47 +4,59 @@
     ViewData["Title"] = "Görevler";
 }
 
-<h1>Görevler</h1>
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Görevler",
+             "Stajyerlerinize atadığınız görevleri takip edin.",
+             "Yeni Görev Ata", "Gorev", "Create"))" />
 
-@if (TempData["HataMesaji"] != null)
+@if (Model.Count == 0)
 {
-    <div class="alert alert-danger">@TempData["HataMesaji"]</div>
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("liste")" />
+        <h2>Henüz görev yok</h2>
+        <p>"Yeni Görev Ata" ile stajyerlerinize ilk görevi atayabilirsiniz.</p>
+    </div>
 }
-
-<p>
-    <a asp-action="Create" class="btn btn-primary">Yeni Görev Ata</a>
-</p>
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Stajyer</th>
-            <th>Başlık</th>
-            <th>Teslim Tarihi</th>
-            <th>Durum</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var gorev in Model)
-        {
-            <tr>
-                <td>@gorev.Stajyer.Okul / @gorev.Stajyer.Bolum</td>
-                <td>@gorev.Baslik</td>
-                <td>@gorev.TeslimTarihi.ToString("dd.MM.yyyy")</td>
-                <td>@gorev.Durum</td>
-                <td>
-                    @if (gorev.Durum == GorevDurumu.Tamamlandi)
-                    {
-                        <form asp-action="GeriGonder" asp-route-id="@gorev.Id" method="post" class="d-inline">
-                            <button type="submit" class="btn btn-sm btn-outline-warning">Geri Gönder</button>
-                        </form>
-                    }
-                    <form asp-action="Delete" asp-route-id="@gorev.Id" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">Sil</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+else
+{
+    <div class="stk-tablo-kart">
+        <table class="stk-tablo">
+            <thead>
+                <tr>
+                    <th>Stajyer</th>
+                    <th>Başlık</th>
+                    <th>Teslim Tarihi</th>
+                    <th>Durum</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var gorev in Model)
+                {
+                    <tr>
+                        <td class="stk-hucre-ad">@gorev.Stajyer.Okul / @gorev.Stajyer.Bolum</td>
+                        <td>@gorev.Baslik</td>
+                        <td>@gorev.TeslimTarihi.ToString("dd.MM.yyyy")</td>
+                        <td><partial name="_GorevDurumRozet" model="gorev.Durum" /></td>
+                        <td>
+                            <span class="stk-islem-hucre">
+                                @if (gorev.Durum == GorevDurumu.Tamamlandi)
+                                {
+                                    <form asp-action="GeriGonder" asp-route-id="@gorev.Id" method="post" class="d-inline">
+                                        <button type="submit" class="stk-btn-hafif stk-btn-hafif-amber">Geri Gönder</button>
+                                    </form>
+                                }
+                                <form asp-action="Delete" asp-route-id="@gorev.Id" method="post" class="d-inline">
+                                    <button type="submit" class="stk-ikon-btn stk-ikon-btn-tehlike" title="Sil">
+                                        <partial name="_Ikon" model="@("cop")" />
+                                    </button>
+                                </form>
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

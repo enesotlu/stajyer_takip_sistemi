@@ -10,17 +10,20 @@
 
 @if (TempData["BasariMesaji"] != null)
 {
-    <div class="alert alert-success text-center">@TempData["BasariMesaji"]</div>
+    <div class="stk-banner stk-banner-basari" role="status">
+        <partial name="_Ikon" model="@("onay-daire")" />
+        <div>@TempData["BasariMesaji"]</div>
+    </div>
 }
 
 <form asp-action="Login" method="post">
     <input type="hidden" asp-for="ReturnUrl" />
-    <div asp-validation-summary="ModelOnly" class="text-danger text-center mb-3"></div>
+    <div asp-validation-summary="ModelOnly"></div>
 
     <div class="stk-input-grup mb-1">
         <label asp-for="Email" class="visually-hidden"></label>
         <svg class="stk-input-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
-        <input asp-for="Email" class="form-control" placeholder="E-posta" autocomplete="username" />
+        <input asp-for="Email" class="form-control" placeholder="E-posta" autocomplete="username" autofocus />
     </div>
     <span asp-validation-for="Email" class="text-danger d-block mb-2"></span>
 
@@ -39,7 +42,7 @@
         <label asp-for="BeniHatirla" class="form-check-label"></label>
     </div>
 
-    <button type="submit" class="btn btn-primary">Giriş Yap</button>
+    <button type="submit" class="btn btn-primary" data-yukleniyor="Giriş yapılıyor...">Giriş Yap</button>
 
     <p class="stk-auth-alt">Hesabınız yok mu? <a asp-action="Register">Kayıt olun.</a></p>
 </form>

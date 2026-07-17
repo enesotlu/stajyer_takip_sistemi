@@ -34,6 +34,41 @@
                 input.type = input.type === 'password' ? 'text' : 'password';
             });
         });
+
+        // Cift gonderimi engelle: form gecerliyse butonu kilitle ve "yukleniyor" metnini goster.
+        document.querySelectorAll('.stk-auth-card form').forEach(function (form) {
+            form.addEventListener('submit', function () {
+                if (window.jQuery && jQuery.fn.valid && !jQuery(form).valid()) {
+                    return; // istemci dogrulamasi gecmedi, buton serbest kalsin
+                }
+                var btn = form.querySelector('button[type="submit"]');
+                if (!btn || btn.disabled) { return; }
+                var metin = btn.getAttribute('data-yukleniyor') || 'Gönderiliyor...';
+                // setTimeout: buton, submit tamamlanmadan disable olursa bazi tarayicilar gonderimi iptal eder
+                setTimeout(function () {
+                    btn.disabled = true;
+                    btn.textContent = metin;
+                }, 0);
+            });
+        });
+
+        // Caps Lock uyarisi: sifre alanlarinin altinda kucuk gri not
+        document.querySelectorAll('.stk-auth-card .stk-parola-alani').forEach(function (input) {
+            var uyari = document.createElement('div');
+            uyari.className = 'stk-capslock-uyari';
+            uyari.textContent = 'Caps Lock açık';
+            uyari.hidden = true;
+            input.closest('.stk-input-grup').insertAdjacentElement('afterend', uyari);
+
+            function kontrol(e) {
+                if (typeof e.getModifierState === 'function') {
+                    uyari.hidden = !e.getModifierState('CapsLock');
+                }
+            }
+            input.addEventListener('keydown', kontrol);
+            input.addEventListener('keyup', kontrol);
+            input.addEventListener('blur', function () { uyari.hidden = true; });
+        });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

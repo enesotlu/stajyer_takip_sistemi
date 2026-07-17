@@ -14,93 +14,93 @@
     };
 }
 
-<h1>Kullanıcı Yönetimi</h1>
-<p class="text-muted">
-    <strong>Yetkiyi Devret:</strong> Yönetici yetkisini seçtiğin kullanıcıya aktarır; kendi hesabın otomatik kapanır (sistemde her an tek Yönetici bulunur, Stajyerlere devredilemez).
-    <strong>Pasifleştir:</strong> hesabı silmeden girişini kapatır; işlem geçmişi korunur.
-</p>
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Kullanıcı Yönetimi",
+             "Sistemdeki tüm hesapları görüntüleyin, yetki devri ve pasifleştirme işlemlerini yapın."))" />
 
-@if (TempData["BasariMesaji"] != null)
-{
-    <div class="alert alert-success">@TempData["BasariMesaji"]</div>
-}
-@if (TempData["HataMesaji"] != null)
-{
-    <div class="alert alert-danger">@TempData["HataMesaji"]</div>
-}
+<div class="stk-banner stk-banner-bilgi">
+    <partial name="_Ikon" model="@("bilgi")" />
+    <div>
+        <strong>Yetkiyi Devret:</strong> Yönetici yetkisini seçtiğiniz kullanıcıya aktarır; kendi hesabınız otomatik kapanır (sistemde her an tek Yönetici bulunur, Stajyerlere devredilemez).
+        <strong>Pasifleştir:</strong> hesabı silmeden girişini kapatır; işlem geçmişi korunur.
+    </div>
+</div>
 
-<div class="table-wrap">
-<table class="table table-striped mb-0">
-    <thead>
-        <tr>
-            <th>Ad Soyad</th>
-            <th>E-posta</th>
-            <th>Roller</th>
-            <th>Durum</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var ozet in Model)
-        {
-            var k = ozet.Kullanici;
-            bool ben = k.Id == benimId;
+<div class="stk-tablo-kart">
+    <table class="stk-tablo">
+        <thead>
             <tr>
-                <td>
-                    @k.AdSoyad
-                    @if (ben)
-                    {
-                        <span class="badge bg-info text-dark">Sen</span>
-                    }
-                </td>
-                <td>@k.Email</td>
-                <td>
-                    @if (!ozet.Roller.Any())
-                    {
-                        <span class="badge bg-warning text-dark">Onay Bekliyor</span>
-                    }
-                    @foreach (var rol in ozet.Roller)
-                    {
-                        <span class="badge bg-primary">@RolAdi(rol)</span>
-                    }
-                </td>
-                <td>
-                    @if (ozet.Pasif)
-                    {
-                        <span class="badge bg-secondary">Pasif</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-success">Aktif</span>
-                    }
-                </td>
-                <td class="text-nowrap">
-                    @if (!ozet.Roller.Contains(Roller.Yonetici) && !ozet.Roller.Contains(Roller.Stajyer) && !ozet.Pasif)
-                    {
-                        <form asp-action="YoneticiDevret" asp-route-id="@k.Id" method="post" class="d-inline"
-                              onsubmit="return confirm('DİKKAT: Yönetici yetkisi @k.AdSoyad kullanıcısına DEVREDİLECEK ve SENİN hesabın otomatik KAPATILACAK. Emin misin?');">
-                            <button type="submit" class="btn btn-sm btn-outline-primary">Yetkiyi Devret</button>
-                        </form>
-                    }
-                    @if (!ben && !ozet.Roller.Contains(Roller.Yonetici))
-                    {
+                <th>Ad Soyad</th>
+                <th>E-posta</th>
+                <th>Roller</th>
+                <th>Durum</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ozet in Model)
+            {
+                var k = ozet.Kullanici;
+                bool ben = k.Id == benimId;
+                <tr>
+                    <td class="stk-hucre-ad">
+                        @k.AdSoyad
+                        @if (ben)
+                        {
+                            <span class="stk-rozet stk-rozet-mavi">Sen</span>
+                        }
+                    </td>
+                    <td>@k.Email</td>
+                    <td>
+                        @if (!ozet.Roller.Any())
+                        {
+                            <span class="stk-rozet stk-rozet-amber">Onay Bekliyor</span>
+                        }
+                        @foreach (var rol in ozet.Roller)
+                        {
+                            <span class="stk-rozet stk-rozet-mavi">@RolAdi(rol)</span>
+                        }
+                    </td>
+                    <td>
                         @if (ozet.Pasif)
                         {
-                            <form asp-action="Aktiflestir" asp-route-id="@k.Id" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm btn-outline-success">Aktifleştir</button>
-                            </form>
+                            <span class="stk-rozet stk-rozet-gri">Pasif</span>
                         }
                         else
                         {
-                            <form asp-action="Pasiflestir" asp-route-id="@k.Id" method="post" class="d-inline"
-                                  onsubmit="return confirm('@k.AdSoyad kullanıcısının hesabı kapatılacak (giriş yapamayacak). Emin misin?');">
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Pasifleştir</button>
-                            </form>
+                            <span class="stk-rozet stk-rozet-yesil">Aktif</span>
                         }
-                    }
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                    </td>
+                    <td>
+                        <span class="stk-islem-hucre">
+                            @if (!ozet.Roller.Contains(Roller.Yonetici) && !ozet.Roller.Contains(Roller.Stajyer) && !ozet.Pasif)
+                            {
+                                <form asp-action="YoneticiDevret" asp-route-id="@k.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('DİKKAT: Yönetici yetkisi @k.AdSoyad kullanıcısına DEVREDİLECEK ve SENİN hesabın otomatik KAPATILACAK. Emin misin?');">
+                                    <button type="submit" class="stk-btn-hafif stk-btn-hafif-mavi">Yetkiyi Devret</button>
+                                </form>
+                            }
+                            @if (!ben && !ozet.Roller.Contains(Roller.Yonetici))
+                            {
+                                @if (ozet.Pasif)
+                                {
+                                    <form asp-action="Aktiflestir" asp-route-id="@k.Id" method="post" class="d-inline">
+                                        <button type="submit" class="stk-btn-hafif stk-btn-hafif-yesil">Aktifleştir</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-action="Pasiflestir" asp-route-id="@k.Id" method="post" class="d-inline"
+                                          onsubmit="return confirm('@k.AdSoyad kullanıcısının hesabı kapatılacak (giriş yapamayacak). Emin misin?');">
+                                        <button type="submit" class="stk-btn-hafif stk-btn-hafif-kirmizi">Pasifleştir</button>
+                                    </form>
+                                }
+                            }
+                        </span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
 </div>

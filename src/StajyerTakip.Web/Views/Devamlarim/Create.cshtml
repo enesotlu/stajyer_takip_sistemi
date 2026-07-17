@@ -4,32 +4,38 @@
     ViewData["Title"] = "Devam Kaydı Gir";
 }
 
-<h1>Devam Kaydı Gir</h1>
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel("Devam Kaydı Gir", "Günün giriş ve çıkış saatlerini kaydedin; mentörünüz onaylayacak."))" />
 
-<form asp-action="Create" method="post" class="col-md-4">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="stk-form-kart">
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="mb-3">
-        <label asp-for="Tarih" class="form-label"></label>
-        <input asp-for="Tarih" class="form-control" />
-        <span asp-validation-for="Tarih" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="Tarih" class="form-label"></label>
+            <input asp-for="Tarih" class="form-control" />
+            <span asp-validation-for="Tarih" class="text-danger"></span>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="GirisSaati" class="form-label"></label>
-        <input asp-for="GirisSaati" type="time" class="form-control" />
-        <span asp-validation-for="GirisSaati" class="text-danger"></span>
-    </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="GirisSaati" class="form-label"></label>
+                <input asp-for="GirisSaati" type="time" class="form-control" />
+                <span asp-validation-for="GirisSaati" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="CikisSaati" class="form-label"></label>
+                <input asp-for="CikisSaati" type="time" class="form-control" />
+                <span asp-validation-for="CikisSaati" class="text-danger"></span>
+            </div>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="CikisSaati" class="form-label"></label>
-        <input asp-for="CikisSaati" type="time" class="form-control" />
-        <span asp-validation-for="CikisSaati" class="text-danger"></span>
-    </div>
-
-    <button type="submit" class="btn btn-primary">Kaydet</button>
-    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
-</form>
+        <div class="stk-form-eylemler">
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+            <a asp-action="Index" class="stk-btn-iptal">Vazgeç</a>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

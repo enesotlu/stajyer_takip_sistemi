@@ -2,54 +2,76 @@
 
 @{
     ViewData["Title"] = "Stajyerler";
+    bool mentorGorunumu = User.IsInRole(Roller.Mentor) && !User.IsInRole(Roller.Yonetici);
 }
 
-<h1>Stajyerler</h1>
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             mentorGorunumu ? "Stajyerlerim" : "Stajyerler",
+             mentorGorunumu
+                 ? "Sorumlu olduğunuz stajyerleri görüntüleyin ve yönetin."
+                 : "Sistemdeki stajyerleri görüntüleyin ve yönetin."))" />
 
-
-<div class="table-wrap">
-<table class="table table-striped mb-0">
-    <thead>
-        <tr>
-            <th>Ad Soyad</th>
-            <th>Okul</th>
-            <th>Bölüm</th>
-            <th>Başlangıç</th>
-            <th>Bitiş</th>
-            <th>Durum</th>
-            <th>Mentör</th>
-            <th>Departman</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var stajyer in Model)
-        {
-            bool aktif = stajyer.BaslangicTarihi.Date <= DateTime.Today && DateTime.Today <= stajyer.BitisTarihi.Date;
-            <tr>
-                <td>@stajyer.Kullanici.AdSoyad</td>
-                <td>@stajyer.Okul</td>
-                <td>@stajyer.Bolum</td>
-                <td>@stajyer.BaslangicTarihi.ToString("dd.MM.yyyy")</td>
-                <td>@stajyer.BitisTarihi.ToString("dd.MM.yyyy")</td>
-                <td>
-                    @if (aktif)
-                    {
-                        <span class="badge bg-success">Aktif</span>
-                    }
-                    else
-                    {
-                        <span class="badge bg-secondary">Pasif</span>
-                    }
-                </td>
-                <td>@(stajyer.Mentor?.Kullanici?.AdSoyad ?? stajyer.Mentor?.Unvan ?? "—")</td>
-                <td>@stajyer.Departman.Ad</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@stajyer.Id" class="btn btn-sm btn-outline-secondary">Düzenle</a>
-                    <a asp-action="Delete" asp-route-id="@stajyer.Id" class="btn btn-sm btn-outline-danger">Sil</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
-</div>
+@if (Model.Count == 0)
+{
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("kutu")" />
+        <h2>Henüz stajyer yok</h2>
+        <p>Stajyerler, başvuruları onaylandığında burada listelenir.</p>
+    </div>
+}
+else
+{
+    <div class="stk-tablo-kart">
+        <table class="stk-tablo">
+            <thead>
+                <tr>
+                    <th>Ad Soyad</th>
+                    <th>Okul</th>
+                    <th>Bölüm</th>
+                    <th>Başlangıç</th>
+                    <th>Bitiş</th>
+                    <th>Durum</th>
+                    <th>Mentör</th>
+                    <th>Departman</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var stajyer in Model)
+                {
+                    bool aktif = stajyer.BaslangicTarihi.Date <= DateTime.Today && DateTime.Today <= stajyer.BitisTarihi.Date;
+                    <tr>
+                        <td class="stk-hucre-ad">@stajyer.Kullanici.AdSoyad</td>
+                        <td>@stajyer.Okul</td>
+                        <td>@stajyer.Bolum</td>
+                        <td>@stajyer.BaslangicTarihi.ToString("dd.MM.yyyy")</td>
+                        <td>@stajyer.BitisTarihi.ToString("dd.MM.yyyy")</td>
+                        <td>
+                            @if (aktif)
+                            {
+                                <span class="stk-rozet stk-rozet-yesil">Aktif</span>
+                            }
+                            else
+                            {
+                                <span class="stk-rozet stk-rozet-gri">Pasif</span>
+                            }
+                        </td>
+                        <td>@(stajyer.Mentor?.Kullanici?.AdSoyad ?? stajyer.Mentor?.Unvan ?? "—")</td>
+                        <td>@stajyer.Departman.Ad</td>
+                        <td>
+                            <span class="stk-islem-hucre">
+                                <a asp-action="Edit" asp-route-id="@stajyer.Id" class="stk-ikon-btn" title="Düzenle">
+                                    <partial name="_Ikon" model="@("kalem")" />
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@stajyer.Id" class="stk-ikon-btn stk-ikon-btn-tehlike" title="Sil">
+                                    <partial name="_Ikon" model="@("cop")" />
+                                </a>
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -4,36 +4,50 @@
     ViewData["Title"] = "Departmanlar";
 }
 
-<h1>Departmanlar</h1>
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Departmanlar",
+             "Kurumdaki departmanları oluşturun ve düzenleyin.",
+             "Yeni Departman", "Departman", "Create"))" />
 
-@if (TempData["HataMesaji"] != null)
+@if (Model.Count == 0)
 {
-    <div class="alert alert-danger">@TempData["HataMesaji"]</div>
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("bina")" />
+        <h2>Henüz departman yok</h2>
+        <p>İlk departmanı eklemek için "Yeni Departman" butonunu kullanın.</p>
+    </div>
 }
-
-<p>
-    <a asp-action="Create" class="btn btn-primary">Yeni Departman</a>
-</p>
-
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Ad</th>
-            <th>Açıklama</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var departman in Model)
-        {
-            <tr>
-                <td>@departman.Ad</td>
-                <td>@departman.Aciklama</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@departman.Id" class="btn btn-sm btn-outline-secondary">Düzenle</a>
-                    <a asp-action="Delete" asp-route-id="@departman.Id" class="btn btn-sm btn-outline-danger">Sil</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+else
+{
+    <div class="stk-tablo-kart">
+        <table class="stk-tablo">
+            <thead>
+                <tr>
+                    <th>Ad</th>
+                    <th>Açıklama</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var departman in Model)
+                {
+                    <tr>
+                        <td class="stk-hucre-ad">@departman.Ad</td>
+                        <td>@departman.Aciklama</td>
+                        <td>
+                            <span class="stk-islem-hucre">
+                                <a asp-action="Edit" asp-route-id="@departman.Id" class="stk-ikon-btn" title="Düzenle">
+                                    <partial name="_Ikon" model="@("kalem")" />
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@departman.Id" class="stk-ikon-btn stk-ikon-btn-tehlike" title="Sil">
+                                    <partial name="_Ikon" model="@("cop")" />
+                                </a>
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

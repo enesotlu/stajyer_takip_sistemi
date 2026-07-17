@@ -6,51 +6,65 @@
     bool profilYok = ViewBag.ProfilYok;
 }
 
-<h1>Devam Kayıtlarım</h1>
-
-@if (TempData["HataMesaji"] != null)
-{
-    <div class="alert alert-danger">@TempData["HataMesaji"]</div>
-}
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Devam Kayıtlarım",
+             "Günlük giriş-çıkış kayıtlarınız ve mentör onay durumları.",
+             profilYok ? null : "Bugün İçin Kayıt Gir", "Devamlarim", "Create"))" />
 
 @if (profilYok)
 {
-    <div class="alert alert-warning">
-        Hesabına bağlı bir Stajyer profili bulunamadı. Bu genelde kendi kendine "Kayıt Ol" ile hesap açtığında olur —
-        devam kaydı girebilmen için Yöneticinin seni Stajyer olarak eklemesi (Okul/Bölüm/Mentör/Departman bilgilerinle) gerekiyor.
+    <div class="stk-banner stk-banner-uyari">
+        <partial name="_Ikon" model="@("unlem")" />
+        <div>
+            Hesabına bağlı bir Stajyer profili bulunamadı. Bu genelde kendi kendine "Kayıt Ol" ile hesap açtığında olur —
+            devam kaydı girebilmen için Yöneticinin seni Stajyer olarak eklemesi (Okul/Bölüm/Mentör/Departman bilgilerinle) gerekiyor.
+        </div>
     </div>
 }
 else
 {
     var ozet = (AylikDevamOzeti)ViewBag.AylikOzet;
-    <div class="alert alert-info">
-        <strong>@ozet.Ay.ToString("00")/@ozet.Yil özeti:</strong>
-        Toplam @ozet.ToplamGun gün — Onaylanan @ozet.OnaylananGun, Bekleyen @ozet.BekleyenGun, Reddedilen @ozet.ReddedilenGun
+    <div class="stk-banner stk-banner-bilgi">
+        <partial name="_Ikon" model="@("takvim")" />
+        <div>
+            <strong>@ozet.Ay.ToString("00")/@ozet.Yil özeti:</strong>
+            Toplam @ozet.ToplamGun gün — Onaylanan @ozet.OnaylananGun, Bekleyen @ozet.BekleyenGun, Reddedilen @ozet.ReddedilenGun
+        </div>
     </div>
 
-    <p>
-        <a asp-action="Create" class="btn btn-primary">Bugün İçin Kayıt Gir</a>
-    </p>
-
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Tarih</th>
-                <th>Giriş</th>
-                <th>Çıkış</th>
-                <th>Durum</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var devam in Model)
-            {
-                <tr>
-                    <td>@devam.Tarih.ToString("dd.MM.yyyy")</td>
-                    <td>@devam.GirisSaati</td>
-                    <td>@devam.CikisSaati</td>
-                    <td>@devam.OnayDurumu</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    @if (!Model.Any())
+    {
+        <div class="stk-bos-durum">
+            <partial name="_Ikon" model="@("takvim")" />
+            <h2>Henüz devam kaydın yok</h2>
+            <p>"Bugün İçin Kayıt Gir" ile ilk kaydını oluşturabilirsin.</p>
+        </div>
+    }
+    else
+    {
+        <div class="stk-tablo-kart">
+            <table class="stk-tablo">
+                <thead>
+                    <tr>
+                        <th>Tarih</th>
+                        <th>Giriş</th>
+                        <th>Çıkış</th>
+                        <th>Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var devam in Model)
+                    {
+                        <tr>
+                            <td class="stk-hucre-ad">@devam.Tarih.ToString("dd.MM.yyyy")</td>
+                            <td>@devam.GirisSaati</td>
+                            <td>@devam.CikisSaati</td>
+                            <td><partial name="_OnayDurumRozet" model="devam.OnayDurumu" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
 }

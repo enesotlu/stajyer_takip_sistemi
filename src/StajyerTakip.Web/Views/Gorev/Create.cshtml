@@ -4,40 +4,45 @@
     ViewData["Title"] = "Yeni Görev Ata";
 }
 
-<h1>Yeni Görev Ata</h1>
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel("Yeni Görev Ata", "Stajyerinize başlık, açıklama ve teslim tarihiyle görev atayın."))" />
 
-<form asp-action="Create" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+<div class="stk-form-kart">
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-    <div class="mb-3">
-        <label asp-for="StajyerId" class="form-label"></label>
-        <select asp-for="StajyerId" asp-items="ViewBag.StajyerId" class="form-select">
-            <option value="">-- Seçiniz --</option>
-        </select>
-        <span asp-validation-for="StajyerId" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="StajyerId" class="form-label"></label>
+            <select asp-for="StajyerId" asp-items="ViewBag.StajyerId" class="form-select">
+                <option value="">-- Seçiniz --</option>
+            </select>
+            <span asp-validation-for="StajyerId" class="text-danger"></span>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="Baslik" class="form-label"></label>
-        <input asp-for="Baslik" class="form-control" />
-        <span asp-validation-for="Baslik" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="Baslik" class="form-label"></label>
+            <input asp-for="Baslik" class="form-control" />
+            <span asp-validation-for="Baslik" class="text-danger"></span>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="Aciklama" class="form-label"></label>
-        <textarea asp-for="Aciklama" class="form-control"></textarea>
-        <span asp-validation-for="Aciklama" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="Aciklama" class="form-label"></label>
+            <textarea asp-for="Aciklama" class="form-control"></textarea>
+            <span asp-validation-for="Aciklama" class="text-danger"></span>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="TeslimTarihi" class="form-label"></label>
-        <input asp-for="TeslimTarihi" class="form-control" />
-        <span asp-validation-for="TeslimTarihi" class="text-danger"></span>
-    </div>
+        <div class="mb-3">
+            <label asp-for="TeslimTarihi" class="form-label"></label>
+            <input asp-for="TeslimTarihi" class="form-control" />
+            <span asp-validation-for="TeslimTarihi" class="text-danger"></span>
+        </div>
 
-    <button type="submit" class="btn btn-primary">Ata</button>
-    <a asp-action="Index" class="btn btn-secondary">Vazgeç</a>
-</form>
+        <div class="stk-form-eylemler">
+            <button type="submit" class="btn btn-primary">Ata</button>
+            <a asp-action="Index" class="stk-btn-iptal">Vazgeç</a>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

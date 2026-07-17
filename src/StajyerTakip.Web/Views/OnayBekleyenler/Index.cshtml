@@ -6,55 +6,59 @@
     var departmanAdlari = (Dictionary<int, string>)ViewBag.DepartmanAdlari;
 }
 
-<h1>Mentör Başvuruları</h1>
-<p class="text-muted">Mentör olarak başvuran kullanıcıları onaylayın veya reddedin.</p>
-
-@if (TempData["BilgiMesaji"] != null)
-{
-    <div class="alert alert-success">@TempData["BilgiMesaji"]</div>
-}
-@if (TempData["HataMesaji"] != null)
-{
-    <div class="alert alert-danger">@TempData["HataMesaji"]</div>
-}
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Mentör Başvuruları",
+             "Mentör olarak başvuran kullanıcıları onaylayın veya reddedin."))" />
 
 @if (!Model.Any())
 {
-    <div class="alert alert-info">Bekleyen mentör başvurusu yok.</div>
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("kisi-onay")" />
+        <h2>Bekleyen mentör başvurusu yok</h2>
+        <p>Yeni başvurular geldiğinde burada listelenir.</p>
+    </div>
 }
 else
 {
-    <div class="table-wrap">
-    <table class="table table-striped mb-0">
-        <thead>
-            <tr>
-                <th>Ad Soyad</th>
-                <th>E-posta</th>
-                <th>Talep Edilen Departman</th>
-                <th>Kayıt Tarihi</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var kullanici in Model)
-            {
+    <div class="stk-tablo-kart">
+        <table class="stk-tablo">
+            <thead>
                 <tr>
-                    <td>@kullanici.AdSoyad</td>
-                    <td>@kullanici.Email</td>
-                    <td>@(kullanici.TalepEdilenDepartmanId is int depId && departmanAdlari.TryGetValue(depId, out var depAd) ? depAd : "—")</td>
-                    <td>@kullanici.KayitTarihi.ToString("dd.MM.yyyy HH:mm")</td>
-                    <td class="d-flex gap-2">
-                        <a asp-action="MentorOnayla" asp-route-id="@kullanici.Id"
-                           class="btn btn-sm btn-outline-primary">Onayla</a>
-                        <form asp-action="Reddet" asp-route-id="@kullanici.Id" method="post"
-                              onsubmit="return confirm('Bu başvuruyu reddetmek istediğinize emin misiniz?')">
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Reddet</button>
-                        </form>
-                    </td>
+                    <th>Ad Soyad</th>
+                    <th>E-posta</th>
+                    <th>Talep Edilen Departman</th>
+                    <th>Kayıt Tarihi</th>
+                    <th></th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var kullanici in Model)
+                {
+                    <tr>
+                        <td class="stk-hucre-ad">@kullanici.AdSoyad</td>
+                        <td>@kullanici.Email</td>
+                        <td>@(kullanici.TalepEdilenDepartmanId is int depId && departmanAdlari.TryGetValue(depId, out var depAd) ? depAd : "—")</td>
+                        <td>@kullanici.KayitTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>
+                            <span class="stk-islem-hucre">
+                                <a asp-action="MentorOnayla" asp-route-id="@kullanici.Id" class="stk-btn-hafif stk-btn-hafif-yesil">
+                                    <partial name="_Ikon" model="@("onay")" />
+                                    Onayla
+                                </a>
+                                <form asp-action="Reddet" asp-route-id="@kullanici.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('Bu başvuruyu reddetmek istediğinize emin misiniz?')">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="stk-btn-hafif stk-btn-hafif-kirmizi">
+                                        <partial name="_Ikon" model="@("kapat")" />
+                                        Reddet
+                                    </button>
+                                </form>
+                            </span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
     </div>
 }

@@ -1,0 +1,20 @@
+@* TempData tabanli basari/hata mesajlarini tek yerden basar; _Layout icinde durur.
+   Boylece her view kendi alert blogunu tekrarlamaz. *@
+@{
+    var basari = TempData["BasariMesaji"] ?? TempData["BilgiMesaji"];
+    var hata = TempData["HataMesaji"];
+}
+@if (basari != null)
+{
+    <div class="stk-banner stk-banner-basari" role="status">
+        <partial name="_Ikon" model="@("onay-daire")" />
+        <div>@basari</div>
+    </div>
+}
+@if (hata != null)
+{
+    <div class="stk-banner stk-banner-hata" role="alert">
+        <partial name="_Ikon" model="@("unlem")" />
+        <div>@hata</div>
+    </div>
+}

@@ -1,0 +1,11 @@
+@model GorevDurumu
+@{
+    var (sinif, metin) = Model switch
+    {
+        GorevDurumu.Baslamadi => ("stk-rozet-gri", "Başlamadı"),
+        GorevDurumu.DevamEdiyor => ("stk-rozet-mavi", "Devam Ediyor"),
+        GorevDurumu.Tamamlandi => ("stk-rozet-yesil", "Tamamlandı"),
+        _ => ("stk-rozet-gri", Model.ToString())
+    };
+}
+<span class="stk-rozet @sinif">@metin</span>
