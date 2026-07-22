@@ -26,4 +26,21 @@ public class Gorev
 
     [Display(Name = "Durum")]
     public GorevDurumu Durum { get; set; } = GorevDurumu.Baslamadi;
+
+    // Stajyerin "Teslim Et" ile yüklediği dosya (opsiyonel) - Talep'teki
+    // aynı güvenli GUID-adlandırma deseniyle wwwroot dışında saklanır.
+    public string? TeslimDosyaAdi { get; set; }
+    public string? TeslimDosyaOrijinalAdi { get; set; }
+
+    [StringLength(1000)]
+    [Display(Name = "Teslim Notu")]
+    public string? TeslimNotu { get; set; }
+
+    public DateTime? TeslimEdilmeTarihi { get; set; }
+
+    // Mentörün "Geri Gönder" ile bıraktığı geri bildirim; bir sonraki
+    // teslimde stajyer için görünür kalır.
+    [StringLength(1000)]
+    [Display(Name = "Mentör Notu")]
+    public string? MentorNotu { get; set; }
 }

@@ -28,18 +28,20 @@ public class RaporService : IRaporService
         var gorevler = await _unitOfWork.Gorevler.GetAllAsync();
         var devamlar = await _unitOfWork.DevamKayitlari.GetAllAsync();
 
+        // Anahtarlar enum adlarıdır (Türkçesi değil): grafiğin renk/etiket haritası
+        // (Rapor/Index.cshtml) bu adlarla eşleşiyor; çeviri orada, görünüm katmanında yapılır.
         var gorevDagilimi = new Dictionary<string, int>
         {
-            ["Başlamadı"] = gorevler.Count(g => g.Durum == GorevDurumu.Baslamadi),
-            ["Devam Ediyor"] = gorevler.Count(g => g.Durum == GorevDurumu.DevamEdiyor),
-            ["Tamamlandı"] = gorevler.Count(g => g.Durum == GorevDurumu.Tamamlandi)
+            [nameof(GorevDurumu.Baslamadi)] = gorevler.Count(g => g.Durum == GorevDurumu.Baslamadi),
+            [nameof(GorevDurumu.DevamEdiyor)] = gorevler.Count(g => g.Durum == GorevDurumu.DevamEdiyor),
+            [nameof(GorevDurumu.Tamamlandi)] = gorevler.Count(g => g.Durum == GorevDurumu.Tamamlandi)
         };
 
         var devamDagilimi = new Dictionary<string, int>
         {
-            ["Bekliyor"] = devamlar.Count(d => d.OnayDurumu == OnayDurumu.Bekliyor),
-            ["Onaylandı"] = devamlar.Count(d => d.OnayDurumu == OnayDurumu.Onaylandi),
-            ["Reddedildi"] = devamlar.Count(d => d.OnayDurumu == OnayDurumu.Reddedildi)
+            [nameof(OnayDurumu.Bekliyor)] = devamlar.Count(d => d.OnayDurumu == OnayDurumu.Bekliyor),
+            [nameof(OnayDurumu.Onaylandi)] = devamlar.Count(d => d.OnayDurumu == OnayDurumu.Onaylandi),
+            [nameof(OnayDurumu.Reddedildi)] = devamlar.Count(d => d.OnayDurumu == OnayDurumu.Reddedildi)
         };
 
         var departmanDagilimi = stajyerler

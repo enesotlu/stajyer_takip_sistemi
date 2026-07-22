@@ -38,13 +38,7 @@ public class ProfilController : Controller
             AdSoyad = kullanici.AdSoyad,
             Email = kullanici.Email ?? string.Empty,
             KayitTarihi = kullanici.KayitTarihi,
-            Rol = roller.FirstOrDefault() switch
-            {
-                Roller.Yonetici => "Yönetici",
-                Roller.Mentor => "Mentör",
-                Roller.Stajyer => "Stajyer",
-                _ => "Onay Bekliyor"
-            }
+            Rol = roller.FirstOrDefault() ?? string.Empty
         };
 
         if (roller.Contains(Roller.Stajyer))

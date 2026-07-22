@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using StajyerTakip.Business.Interfaces;
 using StajyerTakip.Core.Entities;
 using StajyerTakip.Core.Identity;
+using StajyerTakip.Web.Helpers;
 using StajyerTakip.Web.Models;
 
 namespace StajyerTakip.Web.Controllers;
@@ -76,7 +77,8 @@ public class TalepController : Controller
 
         try
         {
-            await _talepService.CreateAsync(mentor.Id, model.StajyerId, model.Baslik, model.Aciklama, model.DosyaIstensin);
+            await _talepService.CreateAsync(
+                mentor.Id, model.StajyerId, model.Baslik, model.Aciklama, model.DosyaIstensin, model.SonTarih!.Value);
             TempData["BilgiMesaji"] = "Talep oluşturuldu; stajyerin ekranına bildirim olarak düştü.";
             return RedirectToAction(nameof(Index));
         }
@@ -117,6 +119,122 @@ public class TalepController : Controller
 
         return PhysicalFile(dosyaYolu, "application/octet-stream",
             talep.CevapDosyaOrijinalAdi ?? talep.CevapDosyaAdi);
+    }
+
+    public async Task<IActionResult> Edit(int id)
+    {
+        var talep = await _talepService.GetByIdAsync(id);
+        if (talep is null)
+        {
+            return NotFound();
+        }
+
+        if (!await BuTalepBanaMiAitAsync(talep))
+        {
+            return Forbid();
+        }
+
+        var mentor = await GirisYapanMentorAsync();
+        await PopulateStajyerListesiAsync(mentor!.Id);
+        ViewBag.StajyerAdi = (await _stajyerService.GetByIdWithDetailsAsync(talep.StajyerId))?.Kullanici.AdSoyad ?? "—";
+
+        return View(talep);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, string baslik, string? aciklama, bool dosyaIstensin, DateTime sonTarih)
+    {
+        var talep = await _talepService.GetByIdAsync(id);
+        if (talep is null)
+        {
+            return NotFound();
+        }
+
+        if (!await BuTalepBanaMiAitAsync(talep))
+        {
+            return Forbid();
+        }
+
+        try
+        {
+            await _talepService.UpdateAsync(id, baslik, aciklama, dosyaIstensin, sonTarih);
+            TempData["BilgiMesaji"] = "Talep güncellendi.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            talep.Baslik = baslik;
+            talep.Aciklama = aciklama;
+            talep.DosyaIstensin = dosyaIstensin;
+            talep.SonTarih = sonTarih;
+
+            ViewBag.StajyerAdi = (await _stajyerService.GetByIdWithDetailsAsync(talep.StajyerId))?.Kullanici.AdSoyad ?? "—";
+            return View(talep);
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var talep = await _talepService.GetByIdAsync(id);
+        if (talep is null)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!await BuTalepBanaMiAitAsync(talep))
+        {
+            return Forbid();
+        }
+
+        await _talepService.DeleteAsync(id);
+        TempData["BilgiMesaji"] = "Talep silindi.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    // Mentör, stajyerin cevabini yetersiz bulup geri gönderir; yeni son tarih zorunludur.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GeriGonder(int id, string? mentorNotu, DateTime yeniSonTarih)
+    {
+        var talep = await _talepService.GetByIdAsync(id);
+        if (talep is null)
+        {
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (!await BuTalepBanaMiAitAsync(talep))
+        {
+            return Forbid();
+        }
+
+        try
+        {
+            var eskiDosyaAdi = await _talepService.MentorGeriGonderAsync(id, mentorNotu, yeniSonTarih);
+            DosyaYukleyici.SilVarsa(_ortam.ContentRootPath, "Talepler", eskiDosyaAdi);
+            TempData["BilgiMesaji"] = "Talep geri gönderildi, stajyer yeniden cevaplayabilir.";
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["HataMesaji"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    private async Task<bool> BuTalepBanaMiAitAsync(Talep talep)
+    {
+        var mentor = await GirisYapanMentorAsync();
+        if (mentor is null)
+        {
+            return false;
+        }
+
+        var stajyer = await _stajyerService.GetByIdAsync(talep.StajyerId);
+        return stajyer is not null && stajyer.MentorId == mentor.Id;
     }
 
     private async Task<Mentor?> GirisYapanMentorAsync()

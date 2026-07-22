@@ -12,12 +12,25 @@ public interface ITalepService
 
     Task<Talep?> GetByIdAsync(int id);
 
-    // Mentör yalnızca KENDİ stajyerine talep açabilir.
-    Task CreateAsync(int mentorId, int stajyerId, string baslik, string? aciklama, bool dosyaIstensin);
+    // Mentör yalnızca KENDİ stajyerine talep açabilir. sonTarih, stajyerin
+    // cevaplamak zorunda olduğu son gündür.
+    Task CreateAsync(
+        int mentorId, int stajyerId, string baslik, string? aciklama, bool dosyaIstensin, DateTime sonTarih);
+
+    // Mentör, henüz cevaplanmamış kendi talebinin bilgilerini düzenler.
+    Task UpdateAsync(
+        int talepId, string baslik, string? aciklama, bool dosyaIstensin, DateTime sonTarih);
+
+    Task DeleteAsync(int talepId);
 
     // Stajyer kendi talebini cevaplar; dosya istenmişse dosya zorunludur.
     Task CevaplaAsync(
         int talepId, int stajyerId, string? cevapMetni, string? dosyaAdi, string? orijinalDosyaAdi);
+
+    // Mentör, stajyerin cevabını yetersiz bulup geri gönderir; talep tekrar
+    // Bekliyor'a döner, eski cevap/dosya temizlenir, yeni bir son tarih zorunludur.
+    // Dönüş değeri, controller'ın diskten silmesi için eski cevap dosyasının adıdır.
+    Task<string?> MentorGeriGonderAsync(int talepId, string? mentorNotu, DateTime yeniSonTarih);
 
     // Bildirim rozeti için: stajyerin bekleyen talep sayısı.
     Task<int> BekleyenSayisiAsync(int stajyerId);

@@ -1,0 +1,17 @@
+@model Talep
+@{
+    // Son tarih gecmis ve hala Bekliyor olan talepler DB'de Durum degismeden
+    // "Cevaplanmadı" olarak gosterilir - Gorev/Devam'daki ayni desen.
+    var suresiGecti = Model.Durum == TalepDurumu.Bekliyor
+        && Model.SonTarih.HasValue && DateTime.Today > Model.SonTarih.Value.Date;
+
+    var (sinif, metin) = suresiGecti
+        ? ("stk-rozet-kirmizi", "Cevaplanmadı")
+        : Model.Durum switch
+        {
+            TalepDurumu.Bekliyor => ("stk-rozet-amber", "Bekliyor"),
+            TalepDurumu.Tamamlandi => ("stk-rozet-yesil", "Tamamlandı"),
+            _ => ("stk-rozet-gri", Model.Durum.ToString())
+        };
+}
+<span class="stk-rozet @sinif">@metin</span>

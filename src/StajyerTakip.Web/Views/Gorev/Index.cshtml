@@ -7,7 +7,7 @@
 <partial name="_SayfaBaslik"
          model="@(new SayfaBaslikModel(
              "Görevler",
-             "Stajyerlerinize atadığınız görevleri takip edin.",
+             "Stajyerlerinize atadığınız görevleri takip edin, tesliminizi inceleyin.",
              "Yeni Görev Ata", "Gorev", "Create"))" />
 
 @if (Model.Count == 0)
@@ -28,6 +28,7 @@ else
                     <th>Başlık</th>
                     <th>Teslim Tarihi</th>
                     <th>Durum</th>
+                    <th>Teslim</th>
                     <th></th>
                 </tr>
             </thead>
@@ -35,18 +36,49 @@ else
                 @foreach (var gorev in Model)
                 {
                     <tr>
-                        <td class="stk-hucre-ad">@gorev.Stajyer.Okul / @gorev.Stajyer.Bolum</td>
+                        <td class="stk-hucre-ad">@gorev.Stajyer.Kullanici.AdSoyad</td>
                         <td>@gorev.Baslik</td>
                         <td>@gorev.TeslimTarihi.ToString("dd.MM.yyyy")</td>
-                        <td><partial name="_GorevDurumRozet" model="gorev.Durum" /></td>
+                        <td><partial name="_GorevDurumRozet" model="gorev" /></td>
+                        <td>
+                            @if (gorev.Durum == GorevDurumu.Tamamlandi)
+                            {
+                                @if (!string.IsNullOrEmpty(gorev.TeslimDosyaAdi))
+                                {
+                                    <a asp-action="DosyaIndir" asp-route-id="@gorev.Id" class="stk-btn-hafif stk-btn-hafif-mavi" title="@gorev.TeslimDosyaOrijinalAdi">
+                                        <partial name="_Ikon" model="@("indir")" /> Dosya
+                                    </a>
+                                }
+                                else if (!string.IsNullOrWhiteSpace(gorev.TeslimNotu))
+                                {
+                                    <span class="text-muted" title="@gorev.TeslimNotu">Not var</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
                         <td>
                             <span class="stk-islem-hucre">
                                 @if (gorev.Durum == GorevDurumu.Tamamlandi)
                                 {
-                                    <form asp-action="GeriGonder" asp-route-id="@gorev.Id" method="post" class="d-inline">
-                                        <button type="submit" class="stk-btn-hafif stk-btn-hafif-amber">Geri Gönder</button>
-                                    </form>
+                                    <details class="stk-teslim-detay">
+                                        <summary class="stk-btn-hafif stk-btn-hafif-amber">Geri Gönder</summary>
+                                        <form asp-action="GeriGonder" asp-route-id="@gorev.Id" method="post" class="mt-2">
+                                            <textarea name="mentorNotu" class="form-control form-control-sm mb-2" rows="2"
+                                                      placeholder="Neden geri gönderiyorsun? (isteğe bağlı)" style="min-width: 220px"></textarea>
+                                            <button type="submit" class="stk-btn-hafif stk-btn-hafif-amber">Gönder</button>
+                                        </form>
+                                    </details>
                                 }
+                                <a asp-action="Edit" asp-route-id="@gorev.Id" class="stk-ikon-btn" title="Düzenle">
+                                    <partial name="_Ikon" model="@("kalem")" />
+                                </a>
                                 <form asp-action="Delete" asp-route-id="@gorev.Id" method="post" class="d-inline">
                                     <button type="submit" class="stk-ikon-btn stk-ikon-btn-tehlike" title="Sil">
                                         <partial name="_Ikon" model="@("cop")" />

@@ -4,14 +4,6 @@
 @{
     ViewData["Title"] = "Kullanıcı Yönetimi";
     string benimId = ViewBag.BenimId;
-
-    string RolAdi(string rol) => rol switch
-    {
-        Roller.Yonetici => "Yönetici",
-        Roller.Mentor => "Mentör",
-        Roller.Stajyer => "Stajyer",
-        _ => rol
-    };
 }
 
 <partial name="_SayfaBaslik"
@@ -59,7 +51,7 @@
                         }
                         @foreach (var rol in ozet.Roller)
                         {
-                            <span class="stk-rozet stk-rozet-mavi">@RolAdi(rol)</span>
+                            <span class="stk-rozet @RolGorunumleri.RozetSinifi(rol)">@RolGorunumleri.Ad(rol)</span>
                         }
                     </td>
                     <td>

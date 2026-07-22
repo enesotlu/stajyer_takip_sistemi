@@ -79,7 +79,8 @@ public class StajyerService : IStajyerService
             BaslangicTarihi = baslangicTarihi,
             BitisTarihi = bitisTarihi,
             MentorId = mentorId,
-            DepartmanId = departmanId
+            DepartmanId = departmanId,
+            OlusturmaTarihi = DateTime.UtcNow
         };
 
         await _unitOfWork.Stajyerler.AddAsync(stajyer);

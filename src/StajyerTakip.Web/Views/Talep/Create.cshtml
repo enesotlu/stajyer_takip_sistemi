@@ -31,6 +31,13 @@
             <span asp-validation-for="Aciklama" class="text-danger"></span>
         </div>
 
+        <div class="mb-3">
+            <label asp-for="SonTarih" class="form-label"></label>
+            <input asp-for="SonTarih" class="form-control" style="max-width: 220px" />
+            <span asp-validation-for="SonTarih" class="text-danger"></span>
+            <div class="form-text">Stajyer bu tarihten sonra cevap veremez; unutursa sen belge/cevabı senin adına giremezsin, yeniden talep açman gerekir.</div>
+        </div>
+
         <div class="mb-3 form-check">
             <input asp-for="DosyaIstensin" class="form-check-input" />
             <label asp-for="DosyaIstensin" class="form-check-label"></label>

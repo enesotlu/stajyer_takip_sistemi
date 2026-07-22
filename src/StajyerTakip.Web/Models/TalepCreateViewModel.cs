@@ -17,6 +17,11 @@ public class TalepCreateViewModel
     [Display(Name = "Açıklama")]
     public string? Aciklama { get; set; }
 
+    [Required(ErrorMessage = "Son tarih zorunludur.")]
+    [DataType(DataType.Date)]
+    [Display(Name = "Son Tarih")]
+    public DateTime? SonTarih { get; set; }
+
     [Display(Name = "Dosya istensin (CV, belge vb.)")]
     public bool DosyaIstensin { get; set; }
 }

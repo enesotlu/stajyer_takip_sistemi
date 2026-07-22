@@ -27,6 +27,13 @@ public class Talep
 
     public DateTime OlusturmaTarihi { get; set; }
 
+    // Stajyerin cevaplamak zorunda oldugu son gun. Yeni taleplerde zorunludur
+    // (bkz. TalepCreateViewModel); bu alan eklenmeden once olusturulmus eski
+    // taleplerde null'dir ve suresi hic dolmaz.
+    [DataType(DataType.Date)]
+    [Display(Name = "Son Tarih")]
+    public DateTime? SonTarih { get; set; }
+
     public TalepDurumu Durum { get; set; } = TalepDurumu.Bekliyor;
 
     [StringLength(1000)]
@@ -40,4 +47,10 @@ public class Talep
     public string? CevapDosyaOrijinalAdi { get; set; }
 
     public DateTime? CevapTarihi { get; set; }
+
+    // Mentörün, cevabı yetersiz bulup geri gönderirken bıraktığı geri bildirim
+    // (Gorev.MentorNotu ile ayni desen).
+    [StringLength(1000)]
+    [Display(Name = "Mentör Notu")]
+    public string? MentorNotu { get; set; }
 }

@@ -1,5 +1,5 @@
 @using StajyerTakip.Business.Models
-@model List<Devam>
+@model List<GunlukDevamDurumu>
 
 @{
     ViewData["Title"] = "Devam Kayıtlarım";
@@ -9,7 +9,7 @@
 <partial name="_SayfaBaslik"
          model="@(new SayfaBaslikModel(
              "Devam Kayıtlarım",
-             "Günlük giriş-çıkış kayıtlarınız ve mentör onay durumları.",
+             "Günlük giriş-çıkış kayıtlarınız; girmediğiniz iş günleri \"Yok\" olarak görünür.",
              profilYok ? null : "Bugün İçin Kayıt Gir", "Devamlarim", "Create"))" />
 
 @if (profilYok)
@@ -25,11 +25,11 @@
 else
 {
     var ozet = (AylikDevamOzeti)ViewBag.AylikOzet;
-    <div class="stk-banner stk-banner-bilgi">
+    <div class="stk-banner @(ozet.EksikGun > 0 ? "stk-banner-uyari" : "stk-banner-bilgi")">
         <partial name="_Ikon" model="@("takvim")" />
         <div>
             <strong>@ozet.Ay.ToString("00")/@ozet.Yil özeti:</strong>
-            Toplam @ozet.ToplamGun gün — Onaylanan @ozet.OnaylananGun, Bekleyen @ozet.BekleyenGun, Reddedilen @ozet.ReddedilenGun
+            @ozet.ToplamGun iş günü — Onaylanan @ozet.OnaylananGun, Bekleyen @ozet.BekleyenGun, Reddedilen @ozet.ReddedilenGun, Eksik @ozet.EksikGun
         </div>
     </div>
 
@@ -54,13 +54,22 @@ else
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var devam in Model)
+                    @foreach (var gun in Model)
                     {
                         <tr>
-                            <td class="stk-hucre-ad">@devam.Tarih.ToString("dd.MM.yyyy")</td>
-                            <td>@devam.GirisSaati</td>
-                            <td>@devam.CikisSaati</td>
-                            <td><partial name="_OnayDurumRozet" model="devam.OnayDurumu" /></td>
+                            <td class="stk-hucre-ad">@gun.Tarih.ToString("dd.MM.yyyy")</td>
+                            <td>@(gun.Kayit?.GirisSaati?.ToString(@"hh\:mm") ?? "—")</td>
+                            <td>@(gun.Kayit?.CikisSaati?.ToString(@"hh\:mm") ?? "—")</td>
+                            <td>
+                                @if (gun.Kayit is not null)
+                                {
+                                    <partial name="_OnayDurumRozet" model="gun.Kayit.OnayDurumu" />
+                                }
+                                else
+                                {
+                                    <span class="stk-rozet stk-rozet-kirmizi">Yok</span>
+                                }
+                            </td>
                         </tr>
                     }
                 </tbody>

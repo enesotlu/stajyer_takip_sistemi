@@ -61,6 +61,12 @@ else
                         <td>@stajyer.Departman.Ad</td>
                         <td>
                             <span class="stk-islem-hucre">
+                                @if (mentorGorunumu)
+                                {
+                                    <a asp-controller="Devam" asp-action="Takvim" asp-route-stajyerId="@stajyer.Id" class="stk-ikon-btn" title="Devam Takvimi">
+                                        <partial name="_Ikon" model="@("takvim")" />
+                                    </a>
+                                }
                                 <a asp-action="Edit" asp-route-id="@stajyer.Id" class="stk-ikon-btn" title="Düzenle">
                                     <partial name="_Ikon" model="@("kalem")" />
                                 </a>

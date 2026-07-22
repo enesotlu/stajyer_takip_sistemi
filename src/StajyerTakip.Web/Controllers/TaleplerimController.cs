@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using StajyerTakip.Business.Interfaces;
 using StajyerTakip.Core.Entities;
 using StajyerTakip.Core.Identity;
+using StajyerTakip.Web.Helpers;
 
 namespace StajyerTakip.Web.Controllers;
 
@@ -12,10 +13,7 @@ namespace StajyerTakip.Web.Controllers;
 [Authorize(Roles = Roller.Stajyer)]
 public class TaleplerimController : Controller
 {
-    // Rapordaki girdi doğrulama maddesi gereği yalnızca beklenen belge
-    // türlerine izin veriyoruz; boyut da 10 MB ile sınırlı.
-    private static readonly string[] IzinliUzantilar = { ".pdf", ".doc", ".docx", ".png", ".jpg", ".jpeg" };
-    private const long MaksimumDosyaBoyutu = 10 * 1024 * 1024;
+    private const string DosyaAltKlasoru = "Talepler";
 
     private readonly ITalepService _talepService;
     private readonly IStajyerService _stajyerService;
@@ -64,30 +62,8 @@ public class TaleplerimController : Controller
         {
             if (dosya is not null && dosya.Length > 0)
             {
-                var uzanti = Path.GetExtension(dosya.FileName).ToLowerInvariant();
-                if (!IzinliUzantilar.Contains(uzanti))
-                {
-                    throw new InvalidOperationException(
-                        $"Bu dosya türüne izin verilmiyor. İzinli türler: {string.Join(", ", IzinliUzantilar)}");
-                }
-
-                if (dosya.Length > MaksimumDosyaBoyutu)
-                {
-                    throw new InvalidOperationException("Dosya boyutu 10 MB'ı aşamaz.");
-                }
-
-                // Dosya, kullanıcının verdiği adla değil güvenli bir GUID adla
-                // ve wwwroot DIŞINDA saklanır - indirme yalnızca yetki kontrolü
-                // yapan controller action'ları üzerinden olur.
-                var klasor = Path.Combine(_ortam.ContentRootPath, "Uploads", "Talepler");
-                Directory.CreateDirectory(klasor);
-
-                kayitliDosyaAdi = $"{Guid.NewGuid():N}{uzanti}";
-                orijinalDosyaAdi = Path.GetFileName(dosya.FileName);
-
-                var tamYol = Path.Combine(klasor, kayitliDosyaAdi);
-                await using var akis = System.IO.File.Create(tamYol);
-                await dosya.CopyToAsync(akis);
+                (kayitliDosyaAdi, orijinalDosyaAdi) =
+                    await DosyaYukleyici.KaydetAsync(dosya, _ortam.ContentRootPath, DosyaAltKlasoru);
             }
 
             await _talepService.CevaplaAsync(id, stajyer.Id, cevapMetni, kayitliDosyaAdi, orijinalDosyaAdi);
@@ -98,14 +74,7 @@ public class TaleplerimController : Controller
             TempData["HataMesaji"] = ex.Message;
 
             // Servis reddettiyse diske yazılmış dosyayı geride bırakma.
-            if (kayitliDosyaAdi is not null)
-            {
-                var tamYol = Path.Combine(_ortam.ContentRootPath, "Uploads", "Talepler", kayitliDosyaAdi);
-                if (System.IO.File.Exists(tamYol))
-                {
-                    System.IO.File.Delete(tamYol);
-                }
-            }
+            DosyaYukleyici.SilVarsa(_ortam.ContentRootPath, DosyaAltKlasoru, kayitliDosyaAdi);
         }
 
         return RedirectToAction(nameof(Index));
@@ -126,7 +95,7 @@ public class TaleplerimController : Controller
             return NotFound();
         }
 
-        var dosyaYolu = Path.Combine(_ortam.ContentRootPath, "Uploads", "Talepler", talep.CevapDosyaAdi);
+        var dosyaYolu = DosyaYukleyici.TamYol(_ortam.ContentRootPath, DosyaAltKlasoru, talep.CevapDosyaAdi);
         if (!System.IO.File.Exists(dosyaYolu))
         {
             return NotFound();

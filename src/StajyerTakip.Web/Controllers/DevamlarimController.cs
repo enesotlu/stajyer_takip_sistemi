@@ -29,14 +29,14 @@ public class DevamlarimController : Controller
         ViewBag.ProfilYok = stajyer is null;
         if (stajyer is null)
         {
-            return View(new List<Devam>());
+            return View(new List<Business.Models.GunlukDevamDurumu>());
         }
 
-        var kayitlar = await _devamService.GetByStajyerIdAsync(stajyer.Id);
+        var takvim = await _devamService.GetAylikTakvimAsync(stajyer.Id, DateTime.Today.Year, DateTime.Today.Month);
         var ozet = await _devamService.GetAylikOzetAsync(stajyer.Id, DateTime.Today.Year, DateTime.Today.Month);
         ViewBag.AylikOzet = ozet;
 
-        return View(kayitlar.OrderByDescending(d => d.Tarih).ToList());
+        return View(takvim.OrderByDescending(g => g.Tarih).ToList());
     }
 
     public async Task<IActionResult> Create()
@@ -45,6 +45,15 @@ public class DevamlarimController : Controller
         if (stajyer is null)
         {
             TempData["HataMesaji"] = "Devam kaydı girebilmen için önce bir Stajyer profilin olması gerekiyor. Yöneticinle iletişime geç.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Mesai bittiyse forma hic girmeden uyar - "saat gecti" bilgisini
+        // form doldurulduktan sonra degil, hemen tiklandiginda gormeli.
+        if (DateTime.Now.TimeOfDay > IDevamService.GunSonuKayitSiniri)
+        {
+            TempData["HataMesaji"] =
+                $"Bugün için kayıt girme süresi ({IDevamService.GunSonuKayitSiniri:hh\\:mm}) geçti. Mentörün senin adına girebilir.";
             return RedirectToAction(nameof(Index));
         }
 
@@ -71,7 +80,7 @@ public class DevamlarimController : Controller
 
         try
         {
-            await _devamService.CreateAsync(kullaniciId, model.Tarih, giris, cikis);
+            await _devamService.CreateAsync(kullaniciId, giris, cikis);
             return RedirectToAction(nameof(Index));
         }
         catch (InvalidOperationException ex)

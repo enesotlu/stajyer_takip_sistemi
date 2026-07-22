@@ -29,7 +29,10 @@ else
 {
     @foreach (var talep in Model)
     {
-        <div class="stk-kart @(talep.Durum == TalepDurumu.Bekliyor ? "stk-kart-bekliyor" : "")">
+        var suresiGecti = talep.Durum == TalepDurumu.Bekliyor
+            && talep.SonTarih.HasValue && DateTime.Today > talep.SonTarih.Value.Date;
+
+        <div class="stk-kart @(talep.Durum == TalepDurumu.Bekliyor && !suresiGecti ? "stk-kart-bekliyor" : "")">
             <div class="d-flex justify-content-between align-items-start">
                 <h5 class="mb-1">
                     @talep.Baslik
@@ -38,23 +41,37 @@ else
                         <span class="stk-rozet stk-rozet-mavi">Dosya gerekli</span>
                     }
                 </h5>
-                @if (talep.Durum == TalepDurumu.Bekliyor)
-                {
-                    <span class="stk-rozet stk-rozet-amber">Cevap bekliyor</span>
-                }
-                else
-                {
-                    <span class="stk-rozet stk-rozet-yesil">Tamamlandı</span>
-                }
+                <partial name="_TalepDurumRozet" model="talep" />
             </div>
-            <p class="text-muted mb-2">@talep.OlusturmaTarihi.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</p>
+            <p class="text-muted mb-2">
+                @talep.OlusturmaTarihi.ToLocalTime().ToString("dd.MM.yyyy HH:mm")
+                @if (talep.SonTarih.HasValue)
+                {
+                    <text> — Son tarih: @talep.SonTarih.Value.ToString("dd.MM.yyyy")</text>
+                }
+            </p>
 
             @if (!string.IsNullOrWhiteSpace(talep.Aciklama))
             {
                 <p>@talep.Aciklama</p>
             }
 
-            @if (talep.Durum == TalepDurumu.Bekliyor)
+            @if (talep.MentorNotu is not null)
+            {
+                <div class="stk-banner stk-banner-uyari mb-2">
+                    <partial name="_Ikon" model="@("unlem")" />
+                    <div><strong>Mentör geri bildirimi:</strong> @talep.MentorNotu</div>
+                </div>
+            }
+
+            @if (suresiGecti)
+            {
+                <div class="stk-banner stk-banner-hata mb-0">
+                    <partial name="_Ikon" model="@("unlem")" />
+                    <div>Bu talebin son cevaplama tarihi geçti, artık cevap veremezsin. Mentörünle iletişime geç.</div>
+                </div>
+            }
+            else if (talep.Durum == TalepDurumu.Bekliyor)
             {
                 <form asp-action="Cevapla" asp-route-id="@talep.Id" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()

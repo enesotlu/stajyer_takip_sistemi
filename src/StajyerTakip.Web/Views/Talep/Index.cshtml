@@ -27,8 +27,10 @@ else
                     <th>Stajyer</th>
                     <th>Başlık</th>
                     <th>Tarih</th>
+                    <th>Son Tarih</th>
                     <th>Durum</th>
                     <th>Cevap</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
@@ -44,16 +46,8 @@ else
                             }
                         </td>
                         <td>@talep.OlusturmaTarihi.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
-                        <td>
-                            @if (talep.Durum == TalepDurumu.Bekliyor)
-                            {
-                                <span class="stk-rozet stk-rozet-amber">Bekliyor</span>
-                            }
-                            else
-                            {
-                                <span class="stk-rozet stk-rozet-yesil">Tamamlandı</span>
-                            }
-                        </td>
+                        <td>@(talep.SonTarih?.ToString("dd.MM.yyyy") ?? "—")</td>
+                        <td><partial name="_TalepDurumRozet" model="talep" /></td>
                         <td>
                             @if (!string.IsNullOrWhiteSpace(talep.CevapMetni))
                             {
@@ -66,6 +60,39 @@ else
                                     @(talep.CevapDosyaOrijinalAdi ?? "Dosyayı indir")
                                 </a>
                             }
+                            @if (talep.MentorNotu is not null)
+                            {
+                                <div class="text-muted mt-1"><small><strong>Önceki notun:</strong> @talep.MentorNotu</small></div>
+                            }
+                        </td>
+                        <td>
+                            <span class="stk-islem-hucre">
+                                @if (talep.Durum == TalepDurumu.Tamamlandi)
+                                {
+                                    <details class="stk-teslim-detay">
+                                        <summary class="stk-btn-hafif stk-btn-hafif-amber">Geri Gönder</summary>
+                                        <form asp-action="GeriGonder" asp-route-id="@talep.Id" method="post" class="mt-2" style="min-width: 220px">
+                                            <textarea name="mentorNotu" class="form-control form-control-sm mb-2" rows="2"
+                                                      placeholder="Neden geri gönderiyorsun? (isteğe bağlı)"></textarea>
+                                            <label class="form-label small mb-1">Yeni son tarih</label>
+                                            <input name="yeniSonTarih" type="date" class="form-control form-control-sm mb-2" required />
+                                            <button type="submit" class="stk-btn-hafif stk-btn-hafif-amber">Gönder</button>
+                                        </form>
+                                    </details>
+                                }
+                                else
+                                {
+                                    <a asp-action="Edit" asp-route-id="@talep.Id" class="stk-ikon-btn" title="Düzenle">
+                                        <partial name="_Ikon" model="@("kalem")" />
+                                    </a>
+                                }
+                                <form asp-action="Delete" asp-route-id="@talep.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('Bu talebi silmek istediğinize emin misiniz?');">
+                                    <button type="submit" class="stk-ikon-btn stk-ikon-btn-tehlike" title="Sil">
+                                        <partial name="_Ikon" model="@("cop")" />
+                                    </button>
+                                </form>
+                            </span>
                         </td>
                     </tr>
                 }

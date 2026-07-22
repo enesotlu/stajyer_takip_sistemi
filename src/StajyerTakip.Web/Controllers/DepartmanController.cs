@@ -10,15 +10,23 @@ namespace StajyerTakip.Web.Controllers;
 public class DepartmanController : Controller
 {
     private readonly IDepartmanService _departmanService;
+    private readonly IMentorService _mentorService;
 
-    public DepartmanController(IDepartmanService departmanService)
+    public DepartmanController(IDepartmanService departmanService, IMentorService mentorService)
     {
         _departmanService = departmanService;
+        _mentorService = mentorService;
     }
 
     public async Task<IActionResult> Index()
     {
         var departmanlar = await _departmanService.GetAllAsync();
+
+        var mentorler = await _mentorService.GetAllAsync();
+        ViewBag.MentorlerByDepartman = mentorler
+            .GroupBy(m => m.DepartmanId)
+            .ToDictionary(g => g.Key, g => g.Select(m => m.Kullanici.AdSoyad).OrderBy(ad => ad).ToList());
+
         return View(departmanlar);
     }
 

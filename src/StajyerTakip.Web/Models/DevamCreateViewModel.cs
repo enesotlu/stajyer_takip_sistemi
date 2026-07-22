@@ -4,11 +4,8 @@ namespace StajyerTakip.Web.Models;
 
 public class DevamCreateViewModel
 {
-    [Required]
-    [DataType(DataType.Date)]
-    [Display(Name = "Tarih")]
-    public DateTime Tarih { get; set; } = DateTime.Today;
-
+    // Tarih artik kullanicidan alinmiyor; kayit her zaman bugun icin girilir
+    // (bkz. IDevamService.CreateAsync).
     [Required(ErrorMessage = "Giriş saati zorunludur.")]
     [Display(Name = "Giriş Saati")]
     public string GirisSaati { get; set; } = string.Empty;

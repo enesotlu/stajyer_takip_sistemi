@@ -1,0 +1,41 @@
+@model Talep
+
+@{
+    ViewData["Title"] = "Talebi Düzenle";
+}
+
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel("Talebi Düzenle", $"{ViewBag.StajyerAdi} için talep bilgilerini güncelleyin."))" />
+
+<div class="stk-form-kart">
+    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label class="form-label">Başlık</label>
+            <input name="baslik" class="form-control" value="@Model.Baslik" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Açıklama</label>
+            <textarea name="aciklama" class="form-control" rows="3">@Model.Aciklama</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Son Tarih</label>
+            <input name="sonTarih" type="date" class="form-control" style="max-width: 220px"
+                   value="@Model.SonTarih?.ToString("yyyy-MM-dd")" required />
+        </div>
+
+        <div class="mb-3 form-check">
+            <input type="checkbox" name="dosyaIstensin" class="form-check-input" value="true" checked="@Model.DosyaIstensin" />
+            <input type="hidden" name="dosyaIstensin" value="false" />
+            <label class="form-check-label">Dosya istensin (CV, belge vb.)</label>
+        </div>
+
+        <div class="stk-form-eylemler">
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+            <a asp-action="Index" class="stk-btn-iptal">Vazgeç</a>
+        </div>
+    </form>
+</div>

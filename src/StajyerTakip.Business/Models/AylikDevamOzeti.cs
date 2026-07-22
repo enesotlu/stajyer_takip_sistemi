@@ -6,4 +6,5 @@ public record AylikDevamOzeti(
     int ToplamGun,
     int OnaylananGun,
     int BekleyenGun,
-    int ReddedilenGun);
+    int ReddedilenGun,
+    int EksikGun);

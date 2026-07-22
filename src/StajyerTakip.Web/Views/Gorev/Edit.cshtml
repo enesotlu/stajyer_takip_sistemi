@@ -1,0 +1,34 @@
+@model Gorev
+
+@{
+    ViewData["Title"] = "Görevi Düzenle";
+}
+
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel("Görevi Düzenle", $"{ViewBag.StajyerAdi} için görev bilgilerini güncelleyin."))" />
+
+<div class="stk-form-kart">
+    <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="mb-3">
+            <label class="form-label">Başlık</label>
+            <input name="baslik" class="form-control" value="@Model.Baslik" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Açıklama</label>
+            <textarea name="aciklama" class="form-control">@Model.Aciklama</textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Teslim Tarihi</label>
+            <input name="teslimTarihi" type="date" class="form-control" value="@Model.TeslimTarihi.ToString("yyyy-MM-dd")" required />
+        </div>
+
+        <div class="stk-form-eylemler">
+            <button type="submit" class="btn btn-primary">Kaydet</button>
+            <a asp-action="Index" class="stk-btn-iptal">Vazgeç</a>
+        </div>
+    </form>
+</div>

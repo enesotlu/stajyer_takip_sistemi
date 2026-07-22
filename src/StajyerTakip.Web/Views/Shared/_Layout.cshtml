@@ -9,10 +9,12 @@
             ? "active" : "";
 
     string adSoyad = User.FindFirst("AdSoyad")?.Value ?? User.Identity?.Name ?? "";
-    string rolEtiketi = User.IsInRole(Roller.Yonetici) ? "Yönetici"
-        : User.IsInRole(Roller.Mentor) ? "Mentör"
-        : User.IsInRole(Roller.Stajyer) ? "Stajyer"
-        : "Onay Bekliyor";
+    string kullanicininRolu = User.IsInRole(Roller.Yonetici) ? Roller.Yonetici
+        : User.IsInRole(Roller.Mentor) ? Roller.Mentor
+        : User.IsInRole(Roller.Stajyer) ? Roller.Stajyer
+        : "";
+    string rolEtiketi = RolGorunumleri.Ad(kullanicininRolu);
+    string rolRozetSinifi = RolGorunumleri.RozetSinifi(kullanicininRolu);
 
     // Bildirim rozeti: stajyerin cevaplamadığı talep sayısı.
     int bekleyenTalepSayisi = 0;
@@ -91,7 +93,7 @@
                 @if (User.Identity != null && User.Identity.IsAuthenticated)
                 {
                     <span class="stk-user-name">@adSoyad</span>
-                    <span class="badge bg-primary mb-2">@rolEtiketi</span>
+                    <span class="stk-rozet @rolRozetSinifi mb-2">@rolEtiketi</span>
                     <form asp-controller="Account" asp-action="Logout" method="post">
                         <button type="submit" class="btn btn-link">Çıkış Yap</button>
                     </form>

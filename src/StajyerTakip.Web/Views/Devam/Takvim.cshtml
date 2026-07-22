@@ -1,0 +1,86 @@
+@using StajyerTakip.Business.Models
+@using StajyerTakip.Core.Entities
+@model List<GunlukDevamDurumu>
+
+@{
+    var stajyer = (Stajyer)ViewBag.Stajyer;
+    ViewData["Title"] = "Devam Takvimi";
+}
+
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Devam Takvimi",
+             $"{stajyer.Kullanici.AdSoyad} — bu ayki giriş-çıkış kayıtları. Eksik günler için kayıt girebilirsiniz."))" />
+
+@{
+    var ozet = (AylikDevamOzeti)ViewBag.AylikOzet;
+}
+<div class="stk-banner @(ozet.EksikGun > 0 ? "stk-banner-uyari" : "stk-banner-bilgi")">
+    <partial name="_Ikon" model="@("takvim")" />
+    <div>
+        <strong>@ozet.Ay.ToString("00")/@ozet.Yil özeti:</strong>
+        @ozet.ToplamGun iş günü — Onaylanan @ozet.OnaylananGun, Bekleyen @ozet.BekleyenGun, Reddedilen @ozet.ReddedilenGun,
+        <strong>Eksik @ozet.EksikGun</strong>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("takvim")" />
+        <h2>Bu ay için görüntülenecek gün yok</h2>
+        <p>Stajyerlik bu ay içinde henüz başlamamış veya kayıt günü geçmemiş.</p>
+    </div>
+}
+else
+{
+    <div class="stk-tablo-kart">
+        <table class="stk-tablo">
+            <thead>
+                <tr>
+                    <th>Tarih</th>
+                    <th>Giriş</th>
+                    <th>Çıkış</th>
+                    <th>Durum</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var gun in Model)
+                {
+                    <tr>
+                        <td class="stk-hucre-ad">@gun.Tarih.ToString("dd.MM.yyyy (ddd)")</td>
+                        <td>@(gun.Kayit?.GirisSaati?.ToString(@"hh\:mm") ?? "—")</td>
+                        <td>@(gun.Kayit?.CikisSaati?.ToString(@"hh\:mm") ?? "—")</td>
+                        <td>
+                            @if (gun.Kayit is not null)
+                            {
+                                <partial name="_OnayDurumRozet" model="gun.Kayit.OnayDurumu" />
+                            }
+                            else
+                            {
+                                <span class="stk-rozet stk-rozet-kirmizi">Yok</span>
+                            }
+                        </td>
+                        <td>
+                            @if (gun.Kayit is null)
+                            {
+                                <details class="stk-teslim-detay">
+                                    <summary class="stk-btn-hafif stk-btn-hafif-mavi">Kayıt Gir</summary>
+                                    <form asp-action="MentorKayitGir" method="post" class="mt-2 d-flex gap-2 align-items-center flex-wrap">
+                                        <input type="hidden" name="stajyerId" value="@stajyer.Id" />
+                                        <input type="hidden" name="tarih" value="@gun.Tarih.ToString("yyyy-MM-dd")" />
+                                        <input type="time" name="girisSaati" class="form-control form-control-sm" style="width: 110px" required />
+                                        <span class="text-muted">—</span>
+                                        <input type="time" name="cikisSaati" class="form-control form-control-sm" style="width: 110px" required />
+                                        <button type="submit" class="stk-btn-hafif stk-btn-hafif-yesil">Kaydet</button>
+                                    </form>
+                                </details>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

@@ -34,6 +34,13 @@ public class Stajyer
     public int MentorId { get; set; }
     public Mentor Mentor { get; set; } = null!;
 
+    // Basvurunun onaylanip Stajyer profilinin gercekten olusturuldugu an.
+    // Devam takviminin baslangici icin kullanilir - BaslangicTarihi nominal/idari
+    // bir tarih olabilir ama profil bu tarihten once hic var olmamis olabilir.
+    // Bu alan eklenmeden once olusturulan eski kayitlarda null'dir; DevamService
+    // bu durumda BaslangicTarihi'ne geri doner.
+    public DateTime? OlusturmaTarihi { get; set; }
+
     [Display(Name = "Departman")]
     public int DepartmanId { get; set; }
     public Departman Departman { get; set; } = null!;

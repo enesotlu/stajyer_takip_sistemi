@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using StajyerTakip.Business.Interfaces;
 using StajyerTakip.Core.Entities;
 using StajyerTakip.Core.Identity;
+using StajyerTakip.Web.Helpers;
 
 namespace StajyerTakip.Web.Controllers;
 
@@ -14,21 +15,26 @@ namespace StajyerTakip.Web.Controllers;
 [Authorize(Roles = Roller.Mentor)]
 public class GorevController : Controller
 {
+    private const string DosyaAltKlasoru = "Gorevler";
+
     private readonly IGorevService _gorevService;
     private readonly IStajyerService _stajyerService;
     private readonly IMentorService _mentorService;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IWebHostEnvironment _ortam;
 
     public GorevController(
         IGorevService gorevService,
         IStajyerService stajyerService,
         IMentorService mentorService,
-        UserManager<ApplicationUser> userManager)
+        UserManager<ApplicationUser> userManager,
+        IWebHostEnvironment ortam)
     {
         _gorevService = gorevService;
         _stajyerService = stajyerService;
         _mentorService = mentorService;
         _userManager = userManager;
+        _ortam = ortam;
     }
 
     public async Task<IActionResult> Index()
@@ -65,13 +71,76 @@ public class GorevController : Controller
             return View(gorev);
         }
 
-        await _gorevService.CreateAsync(gorev);
-        return RedirectToAction(nameof(Index));
+        try
+        {
+            await _gorevService.CreateAsync(gorev);
+            return RedirectToAction(nameof(Index));
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError(nameof(Gorev.TeslimTarihi), ex.Message);
+            await PopulateStajyerListesiAsync(gorev.StajyerId);
+            return View(gorev);
+        }
+    }
+
+    public async Task<IActionResult> Edit(int id)
+    {
+        var gorev = await _gorevService.GetByIdAsync(id);
+        if (gorev is null)
+        {
+            return NotFound();
+        }
+
+        if (!await BuStajyerBanaMiAitAsync(gorev.StajyerId))
+        {
+            return Forbid();
+        }
+
+        // GetByIdAsync navigasyon yuklemez; stajyer adini basliktabgostermek icin ayrica cekilir.
+        var stajyer = await _stajyerService.GetByIdWithDetailsAsync(gorev.StajyerId);
+        ViewBag.StajyerAdi = stajyer?.Kullanici.AdSoyad ?? "—";
+
+        return View(gorev);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> GeriGonder(int id)
+    public async Task<IActionResult> Edit(int id, string baslik, string? aciklama, DateTime teslimTarihi)
+    {
+        var gorev = await _gorevService.GetByIdAsync(id);
+        if (gorev is null)
+        {
+            return NotFound();
+        }
+
+        if (!await BuStajyerBanaMiAitAsync(gorev.StajyerId))
+        {
+            return Forbid();
+        }
+
+        try
+        {
+            await _gorevService.UpdateAsync(id, baslik, aciklama, teslimTarihi);
+            TempData["BilgiMesaji"] = "Görev güncellendi.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            gorev.Baslik = baslik;
+            gorev.Aciklama = aciklama;
+            gorev.TeslimTarihi = teslimTarihi;
+
+            var stajyer = await _stajyerService.GetByIdWithDetailsAsync(gorev.StajyerId);
+            ViewBag.StajyerAdi = stajyer?.Kullanici.AdSoyad ?? "—";
+            return View(gorev);
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> GeriGonder(int id, string? mentorNotu)
     {
         var gorev = await _gorevService.GetByIdAsync(id);
         if (gorev is null)
@@ -86,7 +155,9 @@ public class GorevController : Controller
 
         try
         {
-            await _gorevService.MentorGeriGonderAsync(id);
+            var eskiDosyaAdi = await _gorevService.MentorGeriGonderAsync(id, mentorNotu);
+            DosyaYukleyici.SilVarsa(_ortam.ContentRootPath, DosyaAltKlasoru, eskiDosyaAdi);
+            TempData["BilgiMesaji"] = "Görev geri gönderildi, stajyer yeniden teslim edebilir.";
         }
         catch (InvalidOperationException ex)
         {
@@ -94,6 +165,30 @@ public class GorevController : Controller
         }
 
         return RedirectToAction(nameof(Index));
+    }
+
+    // Mentör, stajyerin teslim ettiği dosyayı indirir.
+    public async Task<IActionResult> DosyaIndir(int id)
+    {
+        var gorev = await _gorevService.GetByIdAsync(id);
+        if (gorev is null || string.IsNullOrEmpty(gorev.TeslimDosyaAdi))
+        {
+            return NotFound();
+        }
+
+        if (!await BuStajyerBanaMiAitAsync(gorev.StajyerId))
+        {
+            return Forbid();
+        }
+
+        var dosyaYolu = DosyaYukleyici.TamYol(_ortam.ContentRootPath, DosyaAltKlasoru, gorev.TeslimDosyaAdi);
+        if (!System.IO.File.Exists(dosyaYolu))
+        {
+            return NotFound();
+        }
+
+        return PhysicalFile(dosyaYolu, "application/octet-stream",
+            gorev.TeslimDosyaOrijinalAdi ?? gorev.TeslimDosyaAdi);
     }
 
     [HttpPost]

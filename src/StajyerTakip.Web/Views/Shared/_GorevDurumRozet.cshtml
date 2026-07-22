@@ -1,11 +1,18 @@
-@model GorevDurumu
+@model Gorev
 @{
-    var (sinif, metin) = Model switch
-    {
-        GorevDurumu.Baslamadi => ("stk-rozet-gri", "Başlamadı"),
-        GorevDurumu.DevamEdiyor => ("stk-rozet-mavi", "Devam Ediyor"),
-        GorevDurumu.Tamamlandi => ("stk-rozet-yesil", "Tamamlandı"),
-        _ => ("stk-rozet-gri", Model.ToString())
-    };
+    // Son teslim tarihi gecmis ve hala tamamlanmamis gorevler DB'de Durum
+    // degismeden "Yapilmadi" olarak gosterilir - Devam/Talep'teki ayni
+    // "goruntulemede hesapla, veriyi bozma" deseni.
+    var suresiGecti = Model.Durum != GorevDurumu.Tamamlandi && Model.TeslimTarihi.Date < DateTime.Today;
+
+    var (sinif, metin) = suresiGecti
+        ? ("stk-rozet-kirmizi", "Yapılmadı")
+        : Model.Durum switch
+        {
+            GorevDurumu.Baslamadi => ("stk-rozet-gri", "Başlamadı"),
+            GorevDurumu.DevamEdiyor => ("stk-rozet-mavi", "Devam Ediyor"),
+            GorevDurumu.Tamamlandi => ("stk-rozet-yesil", "Tamamlandı"),
+            _ => ("stk-rozet-gri", Model.Durum.ToString())
+        };
 }
 <span class="stk-rozet @sinif">@metin</span>

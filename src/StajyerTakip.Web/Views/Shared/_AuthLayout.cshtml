@@ -10,19 +10,36 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body class="stk-auth-body">
-    <div class="stk-auth-wrap">
-        <div class="stk-auth-card">
-            <div class="stk-auth-brand">
-                <span class="stk-auth-logo">ST</span>
-                <div class="stk-auth-title">Stajyer Takip Sistemi</div>
-                <div class="stk-auth-subtitle">Cumhurbaşkanlığı Yazılım Daire Başkanlığı</div>
-            </div>
+<body class="stk-auth-split-body">
+    <div class="stk-auth-split">
+        <div class="stk-auth-left">
+            <div class="stk-auth-left-inner">
+                <div class="stk-auth-mini-brand">
+                    <span class="stk-auth-logo-sm">ST</span>
+                    <div>
+                        <div class="stk-auth-mini-title">Stajyer Takip Sistemi</div>
+                        <div class="stk-auth-mini-sub">Yazılım Daire Başkanlığı</div>
+                    </div>
+                </div>
 
-            @RenderBody()
+                @RenderBody()
+
+                <div class="stk-auth-left-footer">&copy; 2026 Stajyer Takip Sistemi</div>
+            </div>
         </div>
 
-        <div class="stk-auth-footer">&copy; 2026 Stajyer Takip Sistemi</div>
+        @* Sag panel kod tabanli (gradyan + doku), disaridan gorsel/forsu kullanilmiyor.
+           Sol paneldeki baslik zaten ekran okuyucuda var, bu yuzden dekoratif kabul edip gizliyoruz. *@
+        <div class="stk-auth-right" aria-hidden="true">
+            <div class="stk-auth-right-pattern"></div>
+            <div class="stk-auth-right-content">
+                <div class="stk-auth-right-badge">ST</div>
+                <div class="stk-auth-right-org">Yazılım Daire Başkanlığı</div>
+                <span class="stk-auth-right-divider"></span>
+                <h2 class="stk-auth-right-title">Stajyer Takip Sistemi</h2>
+                <p class="stk-auth-right-desc">Üniversite stajyerleri eğitim programı kapsamında staj süreçlerinin uçtan uca takibi için geliştirilmiştir.</p>
+            </div>
+        </div>
     </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
@@ -36,7 +53,7 @@
         });
 
         // Cift gonderimi engelle: form gecerliyse butonu kilitle ve "yukleniyor" metnini goster.
-        document.querySelectorAll('.stk-auth-card form').forEach(function (form) {
+        document.querySelectorAll('.stk-auth-left-inner form').forEach(function (form) {
             form.addEventListener('submit', function () {
                 if (window.jQuery && jQuery.fn.valid && !jQuery(form).valid()) {
                     return; // istemci dogrulamasi gecmedi, buton serbest kalsin
@@ -53,7 +70,7 @@
         });
 
         // Caps Lock uyarisi: sifre alanlarinin altinda kucuk gri not
-        document.querySelectorAll('.stk-auth-card .stk-parola-alani').forEach(function (input) {
+        document.querySelectorAll('.stk-auth-left-inner .stk-parola-alani').forEach(function (input) {
             var uyari = document.createElement('div');
             uyari.className = 'stk-capslock-uyari';
             uyari.textContent = 'Caps Lock açık';

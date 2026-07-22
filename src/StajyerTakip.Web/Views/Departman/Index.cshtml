@@ -2,12 +2,13 @@
 
 @{
     ViewData["Title"] = "Departmanlar";
+    var mentorlerByDepartman = (Dictionary<int, List<string>>)ViewBag.MentorlerByDepartman;
 }
 
 <partial name="_SayfaBaslik"
          model="@(new SayfaBaslikModel(
              "Departmanlar",
-             "Kurumdaki departmanları oluşturun ve düzenleyin.",
+             "Kurumdaki departmanları oluşturun, düzenleyin ve mentörlerini görüntüleyin.",
              "Yeni Departman", "Departman", "Create"))" />
 
 @if (Model.Count == 0)
@@ -26,15 +27,30 @@ else
                 <tr>
                     <th>Ad</th>
                     <th>Açıklama</th>
+                    <th>Mentörler</th>
                     <th></th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var departman in Model)
                 {
+                    var mentorAdlari = mentorlerByDepartman.TryGetValue(departman.Id, out var liste) ? liste : new List<string>();
                     <tr>
                         <td class="stk-hucre-ad">@departman.Ad</td>
                         <td>@departman.Aciklama</td>
+                        <td>
+                            @if (mentorAdlari.Count == 0)
+                            {
+                                <span class="stk-rozet stk-rozet-gri">Mentör yok</span>
+                            }
+                            else
+                            {
+                                foreach (var ad in mentorAdlari)
+                                {
+                                    <span class="stk-rozet stk-rozet-mavi">@ad</span>
+                                }
+                            }
+                        </td>
                         <td>
                             <span class="stk-islem-hucre">
                                 <a asp-action="Edit" asp-route-id="@departman.Id" class="stk-ikon-btn" title="Düzenle">

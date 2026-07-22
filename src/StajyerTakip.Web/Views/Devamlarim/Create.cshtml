@@ -5,16 +5,16 @@
 }
 
 <partial name="_SayfaBaslik"
-         model="@(new SayfaBaslikModel("Devam Kaydı Gir", "Günün giriş ve çıkış saatlerini kaydedin; mentörünüz onaylayacak."))" />
+         model="@(new SayfaBaslikModel("Devam Kaydı Gir", "Bugünün giriş ve çıkış saatlerini kaydedin; mentörünüz onaylayacak."))" />
 
 <div class="stk-form-kart">
     <form asp-action="Create" method="post">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
         <div class="mb-3">
-            <label asp-for="Tarih" class="form-label"></label>
-            <input asp-for="Tarih" class="form-control" />
-            <span asp-validation-for="Tarih" class="text-danger"></span>
+            <label class="form-label">Tarih</label>
+            <input type="text" class="form-control" value="@DateTime.Today.ToString("dd.MM.yyyy")" disabled />
+            <div class="form-text">Devam kaydı yalnızca bugün için girilebilir. Geçmiş bir günü unuttuysan mentörün girebilir.</div>
         </div>
 
         <div class="row">

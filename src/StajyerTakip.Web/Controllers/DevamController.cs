@@ -73,6 +73,69 @@ public class DevamController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    // Bir stajyerin aylik devam takvimi: girilmis kayitlar + "Yok" gorunen eksik gunler.
+    public async Task<IActionResult> Takvim(int stajyerId)
+    {
+        if (!await BuStajyerBanaMiAitAsync(stajyerId))
+        {
+            return Forbid();
+        }
+
+        var stajyer = await _stajyerService.GetByIdWithDetailsAsync(stajyerId);
+        if (stajyer is null)
+        {
+            return NotFound();
+        }
+
+        var takvim = await _devamService.GetAylikTakvimAsync(stajyerId, DateTime.Today.Year, DateTime.Today.Month);
+        var ozet = await _devamService.GetAylikOzetAsync(stajyerId, DateTime.Today.Year, DateTime.Today.Month);
+        ViewBag.Stajyer = stajyer;
+        ViewBag.AylikOzet = ozet;
+
+        return View(takvim.OrderByDescending(g => g.Tarih).ToList());
+    }
+
+    // Mentor, stajyerin girmeyi unuttugu bir gun icin onun adina devam kaydi girer.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MentorKayitGir(int stajyerId, DateTime tarih, string girisSaati, string cikisSaati)
+    {
+        if (!await BuStajyerBanaMiAitAsync(stajyerId))
+        {
+            return Forbid();
+        }
+
+        if (!TimeSpan.TryParse(girisSaati, out var giris) || !TimeSpan.TryParse(cikisSaati, out var cikis))
+        {
+            TempData["HataMesaji"] = "Saat bilgileri okunamadı.";
+            return RedirectToAction(nameof(Takvim), new { stajyerId });
+        }
+
+        try
+        {
+            await _devamService.MentorKayitGirAsync(stajyerId, tarih, giris, cikis);
+            TempData["BilgiMesaji"] = "Devam kaydı eklendi.";
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["HataMesaji"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(Takvim), new { stajyerId });
+    }
+
+    private async Task<bool> BuStajyerBanaMiAitAsync(int stajyerId)
+    {
+        var girenMentor = await GirisYapanMentorAsync();
+        if (girenMentor is null)
+        {
+            return true;
+        }
+
+        var stajyer = await _stajyerService.GetByIdAsync(stajyerId);
+        return stajyer is not null && stajyer.MentorId == girenMentor.Id;
+    }
+
     private async Task<Mentor?> GirisYapanMentorAsync()
     {
         if (User.IsInRole(Roller.Yonetici))

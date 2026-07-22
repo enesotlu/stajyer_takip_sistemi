@@ -7,7 +7,7 @@
 <partial name="_SayfaBaslik"
          model="@(new SayfaBaslikModel(
              "Görevlerim",
-             "Mentörünüzün size atadığı görevler; durumlarını buradan güncelleyebilirsiniz."))" />
+             "Mentörünüzün size atadığı görevler; teslim ederken dosya ekleyebilirsiniz."))" />
 
 @if ((bool)ViewBag.ProfilYok)
 {
@@ -29,45 +29,86 @@ else if (!Model.Any())
 }
 else
 {
-    <div class="stk-tablo-kart">
-        <table class="stk-tablo">
-            <thead>
-                <tr>
-                    <th>Başlık</th>
-                    <th>Açıklama</th>
-                    <th>Teslim Tarihi</th>
-                    <th>Durum</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var gorev in Model)
-                {
-                    <tr>
-                        <td class="stk-hucre-ad">@gorev.Baslik</td>
-                        <td>@gorev.Aciklama</td>
-                        <td>@gorev.TeslimTarihi.ToString("dd.MM.yyyy")</td>
-                        <td><partial name="_GorevDurumRozet" model="gorev.Durum" /></td>
-                        <td>
-                            @if (gorev.Durum != GorevDurumu.Tamamlandi)
-                            {
-                                <form asp-action="DurumGuncelle" method="post" class="d-inline-flex gap-1">
-                                    <input type="hidden" name="id" value="@gorev.Id" />
-                                    <select name="yeniDurum" class="form-select form-select-sm">
-                                        @foreach (var durum in Enum.GetValues<GorevDurumu>().Where(d => d >= gorev.Durum))
-                                        {
-                                            <option value="@durum" selected="@(durum == gorev.Durum)">
-                                                @(durum switch { GorevDurumu.Baslamadi => "Başlamadı", GorevDurumu.DevamEdiyor => "Devam Ediyor", GorevDurumu.Tamamlandi => "Tamamlandı", _ => durum.ToString() })
-                                            </option>
-                                        }
-                                    </select>
-                                    <button type="submit" class="stk-btn-hafif stk-btn-hafif-mavi">Güncelle</button>
-                                </form>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    @foreach (var gorev in Model)
+    {
+        <div class="stk-kart @(gorev.Durum == GorevDurumu.DevamEdiyor && gorev.MentorNotu is not null ? "stk-kart-bekliyor" : "")">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+                <div>
+                    <h2 class="stk-grafik-baslik mb-1">@gorev.Baslik</h2>
+                    <p class="text-muted mb-1">@gorev.Aciklama</p>
+                    <p class="text-muted mb-0">Teslim tarihi: @gorev.TeslimTarihi.ToString("dd.MM.yyyy")</p>
+                </div>
+                <partial name="_GorevDurumRozet" model="gorev" />
+            </div>
+
+            @if (gorev.MentorNotu is not null)
+            {
+                <div class="stk-banner stk-banner-uyari mt-3 mb-0">
+                    <partial name="_Ikon" model="@("unlem")" />
+                    <div><strong>Mentör geri bildirimi:</strong> @gorev.MentorNotu</div>
+                </div>
+            }
+
+            @if (gorev.Durum == GorevDurumu.Tamamlandi)
+            {
+                <div class="stk-banner stk-banner-basari mt-3 mb-0">
+                    <partial name="_Ikon" model="@("onay-daire")" />
+                    <div>
+                        Teslim edildi (@gorev.TeslimEdilmeTarihi?.ToLocalTime().ToString("dd.MM.yyyy HH:mm")),
+                        mentörünün değerlendirmesi bekleniyor.
+                        @if (!string.IsNullOrWhiteSpace(gorev.TeslimNotu))
+                        {
+                            <div class="mt-1"><strong>Notun:</strong> @gorev.TeslimNotu</div>
+                        }
+                        @if (!string.IsNullOrEmpty(gorev.TeslimDosyaAdi))
+                        {
+                            <div class="mt-2">
+                                <a asp-action="DosyaIndir" asp-route-id="@gorev.Id" class="stk-btn-hafif stk-btn-hafif-mavi">
+                                    <partial name="_Ikon" model="@("indir")" /> @(gorev.TeslimDosyaOrijinalAdi ?? "Dosyan")
+                                </a>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else if (gorev.TeslimTarihi.Date < DateTime.Today)
+            {
+                <div class="stk-banner stk-banner-hata mt-3 mb-0">
+                    <partial name="_Ikon" model="@("unlem")" />
+                    <div>
+                        Bu görevin son teslim tarihi (@gorev.TeslimTarihi.ToString("dd.MM.yyyy")) geçti,
+                        artık teslim edemezsin. Mentörünle iletişime geç.
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="mt-3 d-flex flex-wrap gap-2 align-items-start">
+                    @if (gorev.Durum == GorevDurumu.Baslamadi)
+                    {
+                        <form asp-action="DurumGuncelle" method="post">
+                            <input type="hidden" name="id" value="@gorev.Id" />
+                            <input type="hidden" name="yeniDurum" value="@GorevDurumu.DevamEdiyor" />
+                            <button type="submit" class="stk-btn-hafif stk-btn-hafif-mavi">Başladım</button>
+                        </form>
+                    }
+
+                    <details class="stk-teslim-detay">
+                        <summary class="stk-btn-hafif stk-btn-hafif-yesil">Teslim Et</summary>
+                        <form asp-action="TeslimEt" method="post" enctype="multipart/form-data" class="mt-2">
+                            <input type="hidden" name="id" value="@gorev.Id" />
+                            <textarea name="teslimNotu" class="form-control mb-2" rows="2"
+                                      placeholder="Notun (isteğe bağlı)"></textarea>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <input type="file" name="dosya" class="form-control" style="max-width: 320px"
+                                       accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" />
+                                <button type="submit" class="btn btn-primary btn-sm">Teslim Et</button>
+                            </div>
+                            <div class="form-text">Dosya isteğe bağlı. İzinli türler: PDF, Word, PNG, JPG - en fazla 10 MB.</div>
+                        </form>
+                    </details>
+                </div>
+            }
+        </div>
+    }
 }
