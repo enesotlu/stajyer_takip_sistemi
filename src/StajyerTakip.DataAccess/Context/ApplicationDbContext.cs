@@ -20,6 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Degerlendirme> Degerlendirmeler => Set<Degerlendirme>();
     public DbSet<Duyuru> Duyurular => Set<Duyuru>();
     public DbSet<Talep> Talepler => Set<Talep>();
+    public DbSet<Izin> Izinler => Set<Izin>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,5 +67,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<Gorev>().Property(g => g.Durum).HasConversion<string>();
         modelBuilder.Entity<Devam>().Property(d => d.OnayDurumu).HasConversion<string>();
         modelBuilder.Entity<Talep>().Property(t => t.Durum).HasConversion<string>();
+        modelBuilder.Entity<Izin>().Property(i => i.OnayDurumu).HasConversion<string>();
     }
 }

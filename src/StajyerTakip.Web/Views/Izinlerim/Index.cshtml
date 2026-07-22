@@ -1,0 +1,59 @@
+@model List<Izin>
+
+@{
+    ViewData["Title"] = "İzinlerim";
+    bool profilYok = ViewBag.ProfilYok;
+}
+
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "İzinlerim",
+             "Mentörünüzden aldığınız/talep ettiğiniz izinleri görüntüleyin.",
+             profilYok ? null : "Yeni İzin Talebi", "Izinlerim", "Create"))" />
+
+@if (profilYok)
+{
+    <div class="stk-banner stk-banner-uyari">
+        <partial name="_Ikon" model="@("unlem")" />
+        <div>
+            Hesabına bağlı bir Stajyer profili bulunamadı. Bu genelde kendi kendine "Kayıt Ol" ile hesap açtığında olur —
+            izin talebi oluşturabilmen için Yöneticinin seni Stajyer olarak eklemesi gerekiyor.
+        </div>
+    </div>
+}
+else if (!Model.Any())
+{
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("cikis")" />
+        <h2>Henüz izin talebin yok</h2>
+        <p>"Yeni İzin Talebi" ile mentörüne bir izin talebi gönderebilirsin.</p>
+    </div>
+}
+else
+{
+    <div class="stk-tablo-kart">
+        <table class="stk-tablo">
+            <thead>
+                <tr>
+                    <th>Başlangıç</th>
+                    <th>Bitiş</th>
+                    <th>Açıklama</th>
+                    <th>Durum</th>
+                    <th>Mentör Notu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var izin in Model)
+                {
+                    <tr>
+                        <td class="stk-hucre-ad">@izin.BaslangicTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>@izin.BitisTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>@izin.Aciklama</td>
+                        <td><partial name="_OnayDurumRozet" model="izin.OnayDurumu" /></td>
+                        <td>@(izin.MentorNotu ?? "—")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

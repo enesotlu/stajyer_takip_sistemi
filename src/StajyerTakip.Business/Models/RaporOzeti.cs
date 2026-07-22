@@ -9,7 +9,7 @@ public record RaporOzeti(
     int ToplamDepartman,
     int BekleyenMentorBasvurusu,
     int BekleyenStajyerBasvurusu,
-    int ToplamGorev,
-    Dictionary<string, int> GorevDurumDagilimi,
-    Dictionary<string, int> DevamDurumDagilimi,
+    int BekleyenIzinTalebi,
+    Dictionary<string, int> MentorStajyerDagilimi,
+    Dictionary<string, int> TalepDurumDagilimi,
     Dictionary<string, int> DepartmanStajyerDagilimi);

@@ -23,26 +23,25 @@ public class RaporService : IRaporService
         var bugun = DateTime.Today;
 
         var stajyerler = await _unitOfWork.Stajyerler.GetAllAsync(s => s.Departman);
-        var mentorler = await _unitOfWork.Mentorler.GetAllAsync();
+        var mentorler = await _unitOfWork.Mentorler.GetAllAsync(m => m.Kullanici);
         var departmanlar = await _unitOfWork.Departmanlar.GetAllAsync();
-        var gorevler = await _unitOfWork.Gorevler.GetAllAsync();
-        var devamlar = await _unitOfWork.DevamKayitlari.GetAllAsync();
+        var talepler = await _unitOfWork.Talepler.GetAllAsync();
+        var izinler = await _unitOfWork.Izinler.GetAllAsync();
 
         // Anahtarlar enum adlarıdır (Türkçesi değil): grafiğin renk/etiket haritası
         // (Rapor/Index.cshtml) bu adlarla eşleşiyor; çeviri orada, görünüm katmanında yapılır.
-        var gorevDagilimi = new Dictionary<string, int>
+        var talepDagilimi = new Dictionary<string, int>
         {
-            [nameof(GorevDurumu.Baslamadi)] = gorevler.Count(g => g.Durum == GorevDurumu.Baslamadi),
-            [nameof(GorevDurumu.DevamEdiyor)] = gorevler.Count(g => g.Durum == GorevDurumu.DevamEdiyor),
-            [nameof(GorevDurumu.Tamamlandi)] = gorevler.Count(g => g.Durum == GorevDurumu.Tamamlandi)
+            [nameof(TalepDurumu.Bekliyor)] = talepler.Count(t => t.Durum == TalepDurumu.Bekliyor),
+            [nameof(TalepDurumu.Tamamlandi)] = talepler.Count(t => t.Durum == TalepDurumu.Tamamlandi)
         };
 
-        var devamDagilimi = new Dictionary<string, int>
-        {
-            [nameof(OnayDurumu.Bekliyor)] = devamlar.Count(d => d.OnayDurumu == OnayDurumu.Bekliyor),
-            [nameof(OnayDurumu.Onaylandi)] = devamlar.Count(d => d.OnayDurumu == OnayDurumu.Onaylandi),
-            [nameof(OnayDurumu.Reddedildi)] = devamlar.Count(d => d.OnayDurumu == OnayDurumu.Reddedildi)
-        };
+        // Mentör başına stajyer yükünü gösterir (yöneticinin dağılımı dengelemesine yardımcı olur).
+        var stajyerSayisiByMentorId = stajyerler
+            .GroupBy(s => s.MentorId)
+            .ToDictionary(g => g.Key, g => g.Count());
+        var mentorDagilimi = mentorler
+            .ToDictionary(m => m.Kullanici.AdSoyad, m => stajyerSayisiByMentorId.GetValueOrDefault(m.Id, 0));
 
         var departmanDagilimi = stajyerler
             .GroupBy(s => s.Departman.Ad)
@@ -62,9 +61,9 @@ public class RaporService : IRaporService
             ToplamDepartman: departmanlar.Count,
             BekleyenMentorBasvurusu: bekleyenMentor,
             BekleyenStajyerBasvurusu: bekleyenStajyer,
-            ToplamGorev: gorevler.Count,
-            GorevDurumDagilimi: gorevDagilimi,
-            DevamDurumDagilimi: devamDagilimi,
+            BekleyenIzinTalebi: izinler.Count(i => i.OnayDurumu == OnayDurumu.Bekliyor),
+            MentorStajyerDagilimi: mentorDagilimi,
+            TalepDurumDagilimi: talepDagilimi,
             DepartmanStajyerDagilimi: departmanDagilimi);
     }
 }

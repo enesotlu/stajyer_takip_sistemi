@@ -65,19 +65,28 @@
             </div>
         </div>
     </div>
+    <div class="col">
+        <div class="stk-stat-kart">
+            <span class="stk-stat-ikon stk-stat-ikon-amber"><partial name="_Ikon" model="@("cikis")" /></span>
+            <div>
+                <div class="stk-stat-sayi">@Model.BekleyenIzinTalebi</div>
+                <div class="stk-stat-etiket">Bekleyen İzin Talebi</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="row g-3">
     <div class="col-md-4">
         <div class="stk-kart h-100">
-            <h2 class="stk-grafik-baslik">Görev Durumları (@Model.ToplamGorev görev)</h2>
-            <canvas id="gorevGrafik"></canvas>
+            <h2 class="stk-grafik-baslik">Mentöre Göre Stajyer Dağılımı</h2>
+            <canvas id="mentorGrafik"></canvas>
         </div>
     </div>
     <div class="col-md-4">
         <div class="stk-kart h-100">
-            <h2 class="stk-grafik-baslik">Devam Onay Durumu</h2>
-            <canvas id="devamGrafik"></canvas>
+            <h2 class="stk-grafik-baslik">Talep Durumu</h2>
+            <canvas id="talepGrafik"></canvas>
         </div>
     </div>
     <div class="col-md-4">
@@ -91,27 +100,19 @@
 @section Scripts {
     <script src="~/lib/chartjs/chart.umd.min.js"></script>
     <script>
-        const gorevVerisi = @Json.Serialize(Model.GorevDurumDagilimi);
-        const devamVerisi = @Json.Serialize(Model.DevamDurumDagilimi);
+        const mentorVerisi = @Json.Serialize(Model.MentorStajyerDagilimi);
+        const talepVerisi = @Json.Serialize(Model.TalepDurumDagilimi);
         const departmanVerisi = @Json.Serialize(Model.DepartmanStajyerDagilimi);
 
-        // Rozetlerle ayni anlam-renk eslesmesi: bekleyen=amber, devam=mavi, tamam=yesil, red=kirmizi
+        // Rozetlerle ayni anlam-renk eslesmesi: bekleyen=amber, tamam=yesil
         const durumRenkleri = {
-            'Baslamadi': '#8494a7',
-            'DevamEdiyor': '#2f6fed',
-            'Tamamlandi': '#2f9e5b',
             'Bekliyor': '#e9a23b',
-            'Onaylandi': '#2f9e5b',
-            'Reddedildi': '#c0392b'
+            'Tamamlandi': '#2f9e5b'
         };
 
         const turkceEtiket = {
-            'Baslamadi': 'Başlamadı',
-            'DevamEdiyor': 'Devam Ediyor',
-            'Tamamlandi': 'Tamamlandı',
             'Bekliyor': 'Bekliyor',
-            'Onaylandi': 'Onaylandı',
-            'Reddedildi': 'Reddedildi'
+            'Tamamlandi': 'Tamamlandı'
         };
 
         function halkaGrafik(id, veri) {
@@ -133,28 +134,31 @@
             });
         }
 
-        halkaGrafik('gorevGrafik', gorevVerisi);
-        halkaGrafik('devamGrafik', devamVerisi);
-
-        new Chart(document.getElementById('departmanGrafik'), {
-            type: 'bar',
-            data: {
-                labels: Object.keys(departmanVerisi),
-                datasets: [{
-                    label: 'Stajyer sayısı',
-                    data: Object.values(departmanVerisi),
-                    backgroundColor: '#2f6fed',
-                    borderRadius: 6,
-                    maxBarThickness: 42
-                }]
-            },
-            options: {
-                scales: {
-                    y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#eef2f7' } },
-                    x: { grid: { display: false } }
+        function cubukGrafik(id, veri, etiket, renk) {
+            new Chart(document.getElementById(id), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(veri),
+                    datasets: [{
+                        label: etiket,
+                        data: Object.values(veri),
+                        backgroundColor: renk,
+                        borderRadius: 6,
+                        maxBarThickness: 42
+                    }]
                 },
-                plugins: { legend: { display: false } }
-            }
-        });
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 }, grid: { color: '#eef2f7' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        halkaGrafik('talepGrafik', talepVerisi);
+        cubukGrafik('mentorGrafik', mentorVerisi, 'Stajyer sayısı', '#93731d');
+        cubukGrafik('departmanGrafik', departmanVerisi, 'Stajyer sayısı', '#2f6fed');
     </script>
 }

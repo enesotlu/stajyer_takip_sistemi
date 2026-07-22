@@ -1,0 +1,42 @@
+@model IzinCreateViewModel
+
+@{
+    ViewData["Title"] = "Yeni İzin Talebi";
+}
+
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel("Yeni İzin Talebi", "İşe gelemeyeceğin tarih/saat aralığını ve nedenini belirt; mentörün onaylayacak."))" />
+
+<div class="stk-form-kart">
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label asp-for="BaslangicTarihi" class="form-label"></label>
+                <input asp-for="BaslangicTarihi" type="datetime-local" class="form-control" />
+                <span asp-validation-for="BaslangicTarihi" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label asp-for="BitisTarihi" class="form-label"></label>
+                <input asp-for="BitisTarihi" type="datetime-local" class="form-control" />
+                <span asp-validation-for="BitisTarihi" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Aciklama" class="form-label"></label>
+            <textarea asp-for="Aciklama" class="form-control" rows="3" placeholder="Örn: Sağlık kontrolü nedeniyle yarım gün gelemeyeceğim."></textarea>
+            <span asp-validation-for="Aciklama" class="text-danger"></span>
+        </div>
+
+        <div class="stk-form-eylemler">
+            <button type="submit" class="btn btn-primary">Gönder</button>
+            <a asp-action="Index" class="stk-btn-iptal">Vazgeç</a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -12,6 +12,7 @@ public interface IUnitOfWork : IDisposable
     IRepository<Degerlendirme> Degerlendirmeler { get; }
     IRepository<Duyuru> Duyurular { get; }
     IRepository<Talep> Talepler { get; }
+    IRepository<Izin> Izinler { get; }
 
     Task<int> SaveChangesAsync();
 }

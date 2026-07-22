@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Stajyer Düzenle";
+    bool mentorDegistirebilir = User.IsInRole(Roller.Yonetici);
 }
 
 <partial name="_SayfaBaslik"
@@ -39,10 +40,19 @@
 
         <div class="mb-3">
             <label asp-for="MentorId" class="form-label"></label>
-            <select asp-for="MentorId" asp-items="ViewBag.MentorId" class="form-select">
-                <option value="">-- Seçiniz --</option>
-            </select>
-            <span asp-validation-for="MentorId" class="text-danger"></span>
+            @if (mentorDegistirebilir)
+            {
+                <select asp-for="MentorId" asp-items="ViewBag.MentorId" class="form-select">
+                    <option value="">-- Seçiniz --</option>
+                </select>
+                <span asp-validation-for="MentorId" class="text-danger"></span>
+            }
+            else
+            {
+                <select asp-items="ViewBag.MentorId" class="form-select" disabled></select>
+                <input type="hidden" asp-for="MentorId" />
+                <div class="form-text">Mentör ataması yalnızca yönetici tarafından değiştirilebilir.</div>
+            }
         </div>
 
         <div class="mb-3">
