@@ -13,7 +13,7 @@ public class IzinService : IIzinService
         _unitOfWork = unitOfWork;
     }
 
-    public Task<List<Izin>> GetAllAsync() => _unitOfWork.Izinler.GetAllAsync(i => i.Stajyer);
+    public Task<List<Izin>> GetAllAsync() => _unitOfWork.Izinler.GetAllAsync(i => i.Stajyer.Kullanici);
 
     public Task<Izin?> GetByIdAsync(int id) => _unitOfWork.Izinler.GetByIdAsync(id);
 

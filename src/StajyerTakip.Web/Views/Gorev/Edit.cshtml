@@ -1,11 +1,11 @@
 @model Gorev
 
 @{
-    ViewData["Title"] = "Görevi Düzenle";
+    ViewData["Title"] = "Ödevi Düzenle";
 }
 
 <partial name="_SayfaBaslik"
-         model="@(new SayfaBaslikModel("Görevi Düzenle", $"{ViewBag.StajyerAdi} için görev bilgilerini güncelleyin."))" />
+         model="@(new SayfaBaslikModel("Ödevi Düzenle", $"{ViewBag.StajyerAdi} için ödev bilgilerini güncelleyin."))" />
 
 <div class="stk-form-kart">
     <form asp-action="Edit" asp-route-id="@Model.Id" method="post">

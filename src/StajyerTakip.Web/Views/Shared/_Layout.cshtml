@@ -6,6 +6,8 @@
 @inject StajyerTakip.Business.Interfaces.IMentorService MentorServisi
 @inject StajyerTakip.Business.Interfaces.IKullaniciYonetimService KullaniciYonetimServisi
 @inject StajyerTakip.Business.Interfaces.IToplantiService ToplantiServisi
+@inject StajyerTakip.Business.Interfaces.IDevamService DevamServisi
+@inject StajyerTakip.Business.Interfaces.IGorevService GorevServisi
 @inject UserManager<ApplicationUser> KullaniciYoneticisi
 @{
     string Aktif(string controller) =>
@@ -20,9 +22,11 @@
     string rolEtiketi = RolGorunumleri.Ad(kullanicininRolu);
     string rolRozetSinifi = RolGorunumleri.RozetSinifi(kullanicininRolu);
 
-    // Bildirim rozeti: stajyerin cevaplamadığı talep sayısı ve cevaplamadığı toplantı daveti sayısı.
+    // Bildirim rozeti: stajyerin cevaplamadığı talep, cevaplamadığı toplantı daveti
+    // ve henüz başlamadığı (yeni atanan) görev sayısı.
     int bekleyenTalepSayisi = 0;
     int bekleyenToplantiSayisi = 0;
+    int bekleyenGorevSayisi = 0;
     if (User.IsInRole(Roller.Stajyer))
     {
         var kullaniciId = KullaniciYoneticisi.GetUserId(User);
@@ -31,13 +35,18 @@
         {
             bekleyenTalepSayisi = await TalepServisi.BekleyenSayisiAsync(stajyerProfili.Id);
             bekleyenToplantiSayisi = await ToplantiServisi.BekleyenSayisiAsync(stajyerProfili.Id);
+            bekleyenGorevSayisi = await GorevServisi.BekleyenSayisiAsync(stajyerProfili.Id);
         }
     }
 
-    // Bildirim rozeti: mentörün kendi stajyerlerinden bekleyen izin sayısı
-    // ve kendi departmanına yapılan bekleyen stajyer başvurusu sayısı.
+    // Bildirim rozeti: mentörün kendi stajyerlerinden bekleyen izin sayısı,
+    // kendi departmanına yapılan bekleyen stajyer başvurusu sayısı, bekleyen
+    // devam onayı sayısı ve stajyerlerin yeni teslim ettiği görev/cevapladığı talep sayısı.
     int bekleyenIzinSayisi = 0;
     int bekleyenStajyerBasvuruSayisi = 0;
+    int bekleyenDevamSayisi = 0;
+    int bekleyenGorevIncelemeSayisi = 0;
+    int bekleyenTalepIncelemeSayisi = 0;
     if (User.IsInRole(Roller.Mentor))
     {
         var kullaniciId = KullaniciYoneticisi.GetUserId(User);
@@ -47,6 +56,9 @@
             bekleyenIzinSayisi = await IzinServisi.BekleyenSayisiAsync(mentorProfili.Id);
             bekleyenStajyerBasvuruSayisi =
                 (await KullaniciYonetimServisi.GetStajyerBekleyenlerByDepartmanAsync(mentorProfili.DepartmanId)).Count;
+            bekleyenDevamSayisi = await DevamServisi.BekleyenSayisiAsync(mentorProfili.Id);
+            bekleyenGorevIncelemeSayisi = await GorevServisi.MentorBekleyenSayisiAsync(mentorProfili.Id);
+            bekleyenTalepIncelemeSayisi = await TalepServisi.MentorBekleyenSayisiAsync(mentorProfili.Id);
         }
     }
 
@@ -97,8 +109,20 @@
                 {
                     <div class="stk-nav-section">Staj Takibi</div>
                     <a class="@Aktif("Stajyer")" asp-controller="Stajyer" asp-action="Index"><partial name="_Ikon" model="@("kisiler")" /><span>Stajyerlerim</span></a>
-                    <a class="@Aktif("Gorev")" asp-controller="Gorev" asp-action="Index"><partial name="_Ikon" model="@("liste")" /><span>Görevler</span></a>
-                    <a class="@Aktif("Devam")" asp-controller="Devam" asp-action="Index"><partial name="_Ikon" model="@("takvim")" /><span>Devam Onayı</span></a>
+                    <a class="@Aktif("Gorev")" asp-controller="Gorev" asp-action="Index">
+                        <partial name="_Ikon" model="@("liste")" /><span>Ödevler</span>
+                        @if (bekleyenGorevIncelemeSayisi > 0)
+                        {
+                            <span class="badge rounded-pill bg-danger">@bekleyenGorevIncelemeSayisi</span>
+                        }
+                    </a>
+                    <a class="@Aktif("Devam")" asp-controller="Devam" asp-action="Index">
+                        <partial name="_Ikon" model="@("takvim")" /><span>Devam Onayı</span>
+                        @if (bekleyenDevamSayisi > 0)
+                        {
+                            <span class="badge rounded-pill bg-danger">@bekleyenDevamSayisi</span>
+                        }
+                    </a>
                     <a class="@Aktif("Toplanti")" asp-controller="Toplanti" asp-action="Index"><partial name="_Ikon" model="@("kisiler")" /><span>Toplantılar</span></a>
                     <a class="@Aktif("Izin")" asp-controller="Izin" asp-action="Index">
                         <partial name="_Ikon" model="@("cikis")" /><span>İzin Talepleri</span>
@@ -107,7 +131,13 @@
                             <span class="badge rounded-pill bg-danger">@bekleyenIzinSayisi</span>
                         }
                     </a>
-                    <a class="@Aktif("Talep")" asp-controller="Talep" asp-action="Index"><partial name="_Ikon" model="@("dosya")" /><span>Talepler</span></a>
+                    <a class="@Aktif("Talep")" asp-controller="Talep" asp-action="Index">
+                        <partial name="_Ikon" model="@("dosya")" /><span>Talepler</span>
+                        @if (bekleyenTalepIncelemeSayisi > 0)
+                        {
+                            <span class="badge rounded-pill bg-danger">@bekleyenTalepIncelemeSayisi</span>
+                        }
+                    </a>
                     <a class="@Aktif("StajyerBasvuru")" asp-controller="StajyerBasvuru" asp-action="Index">
                         <partial name="_Ikon" model="@("kisi-arti")" /><span>Stajyer Başvuruları</span>
                         @if (bekleyenStajyerBasvuruSayisi > 0)
@@ -120,7 +150,13 @@
                 @if (User.IsInRole(Roller.Stajyer))
                 {
                     <div class="stk-nav-section">Staj İşlemlerim</div>
-                    <a class="@Aktif("Gorevlerim")" asp-controller="Gorevlerim" asp-action="Index"><partial name="_Ikon" model="@("liste")" /><span>Görevlerim</span></a>
+                    <a class="@Aktif("Gorevlerim")" asp-controller="Gorevlerim" asp-action="Index">
+                        <partial name="_Ikon" model="@("liste")" /><span>Ödevlerim</span>
+                        @if (bekleyenGorevSayisi > 0)
+                        {
+                            <span class="badge rounded-pill bg-danger">@bekleyenGorevSayisi</span>
+                        }
+                    </a>
                     <a class="@Aktif("Devamlarim")" asp-controller="Devamlarim" asp-action="Index"><partial name="_Ikon" model="@("takvim")" /><span>Devam Kayıtlarım</span></a>
                     <a class="@Aktif("Izinlerim")" asp-controller="Izinlerim" asp-action="Index"><partial name="_Ikon" model="@("cikis")" /><span>İzinlerim</span></a>
                     <a class="@Aktif("Toplantilarim")" asp-controller="Toplantilarim" asp-action="Index">

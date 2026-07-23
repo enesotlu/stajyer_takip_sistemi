@@ -25,4 +25,7 @@ public interface IDevamService
     // Mentorun, stajyerin girmeyi unuttugu bir gun icin onun adina girdigi
     // kayit; mentor kendisi girdigi icin dogrudan onayli olusturulur.
     Task MentorKayitGirAsync(int stajyerId, DateTime tarih, TimeSpan girisSaati, TimeSpan cikisSaati);
+
+    // Bildirim rozeti: mentörün kendi stajyerlerinden bekleyen devam kaydı sayısı.
+    Task<int> BekleyenSayisiAsync(int mentorId);
 }

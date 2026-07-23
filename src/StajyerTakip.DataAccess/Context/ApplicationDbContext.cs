@@ -17,7 +17,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Stajyer> Stajyerler => Set<Stajyer>();
     public DbSet<Gorev> Gorevler => Set<Gorev>();
     public DbSet<Devam> DevamKayitlari => Set<Devam>();
-    public DbSet<Degerlendirme> Degerlendirmeler => Set<Degerlendirme>();
     public DbSet<Duyuru> Duyurular => Set<Duyuru>();
     public DbSet<Talep> Talepler => Set<Talep>();
     public DbSet<Izin> Izinler => Set<Izin>();
@@ -46,12 +45,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             .HasOne(m => m.Departman)
             .WithMany(d => d.Mentorler)
             .HasForeignKey(m => m.DepartmanId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<Degerlendirme>()
-            .HasOne(d => d.Mentor)
-            .WithMany()
-            .HasForeignKey(d => d.MentorId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Mentor>()

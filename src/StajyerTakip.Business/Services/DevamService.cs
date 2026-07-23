@@ -193,4 +193,13 @@ public class DevamService : IDevamService
         await _unitOfWork.DevamKayitlari.AddAsync(devam);
         await _unitOfWork.SaveChangesAsync();
     }
+
+    public async Task<int> BekleyenSayisiAsync(int mentorId)
+    {
+        var stajyerler = await _unitOfWork.Stajyerler.FindAsync(s => s.MentorId == mentorId);
+        var stajyerIdleri = stajyerler.Select(s => s.Id).ToHashSet();
+
+        var bekleyenler = await _unitOfWork.DevamKayitlari.FindAsync(d => d.OnayDurumu == OnayDurumu.Bekliyor);
+        return bekleyenler.Count(d => stajyerIdleri.Contains(d.StajyerId));
+    }
 }

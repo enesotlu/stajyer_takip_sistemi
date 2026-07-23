@@ -1,11 +1,11 @@
 @model Gorev
 
 @{
-    ViewData["Title"] = "Yeni Görev Ata";
+    ViewData["Title"] = "Yeni Ödev Ata";
 }
 
 <partial name="_SayfaBaslik"
-         model="@(new SayfaBaslikModel("Yeni Görev Ata", "Stajyerinize başlık, açıklama ve teslim tarihiyle görev atayın."))" />
+         model="@(new SayfaBaslikModel("Yeni Ödev Ata", "Stajyerinize başlık, açıklama ve teslim tarihiyle ödev atayın."))" />
 
 <div class="stk-form-kart">
     <form asp-action="Create" method="post">

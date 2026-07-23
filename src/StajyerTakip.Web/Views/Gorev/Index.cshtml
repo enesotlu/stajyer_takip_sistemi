@@ -1,21 +1,21 @@
 @model List<Gorev>
 
 @{
-    ViewData["Title"] = "Görevler";
+    ViewData["Title"] = "Ödevler";
 }
 
 <partial name="_SayfaBaslik"
          model="@(new SayfaBaslikModel(
-             "Görevler",
-             "Stajyerlerinize atadığınız görevleri takip edin, tesliminizi inceleyin.",
-             "Yeni Görev Ata", "Gorev", "Create"))" />
+             "Ödevler",
+             "Stajyerlerinize atadığınız ödevleri takip edin, tesliminizi inceleyin.",
+             "Yeni Ödev Ata", "Gorev", "Create"))" />
 
 @if (Model.Count == 0)
 {
     <div class="stk-bos-durum">
         <partial name="_Ikon" model="@("liste")" />
-        <h2>Henüz görev yok</h2>
-        <p>"Yeni Görev Ata" ile stajyerlerinize ilk görevi atayabilirsiniz.</p>
+        <h2>Henüz ödev yok</h2>
+        <p>"Yeni Ödev Ata" ile stajyerlerinize ilk ödevi atayabilirsiniz.</p>
     </div>
 }
 else

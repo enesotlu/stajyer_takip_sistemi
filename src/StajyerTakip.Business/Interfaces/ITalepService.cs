@@ -34,4 +34,8 @@ public interface ITalepService
 
     // Bildirim rozeti için: stajyerin bekleyen talep sayısı.
     Task<int> BekleyenSayisiAsync(int stajyerId);
+
+    // Bildirim rozeti için: mentörün henüz incelemediği (stajyer tarafından
+    // cevaplanmış, Tamamlandı durumundaki) talep sayısı.
+    Task<int> MentorBekleyenSayisiAsync(int mentorId);
 }

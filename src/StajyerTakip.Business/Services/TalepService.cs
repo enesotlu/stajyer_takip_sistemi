@@ -178,4 +178,11 @@ public class TalepService : ITalepService
             t => t.StajyerId == stajyerId && t.Durum == TalepDurumu.Bekliyor);
         return bekleyenler.Count;
     }
+
+    public async Task<int> MentorBekleyenSayisiAsync(int mentorId)
+    {
+        var cevaplananlar = await _unitOfWork.Talepler.FindAsync(
+            t => t.Stajyer.MentorId == mentorId && t.Durum == TalepDurumu.Tamamlandi);
+        return cevaplananlar.Count;
+    }
 }

@@ -1,12 +1,12 @@
 @model List<Gorev>
 
 @{
-    ViewData["Title"] = "Görevlerim";
+    ViewData["Title"] = "Ödevlerim";
 }
 
 <partial name="_SayfaBaslik"
          model="@(new SayfaBaslikModel(
-             "Görevlerim",
+             "Ödevlerim",
              "Mentörünüzün size atadığı görevler; teslim ederken dosya ekleyebilirsiniz."))" />
 
 @if ((bool)ViewBag.ProfilYok)

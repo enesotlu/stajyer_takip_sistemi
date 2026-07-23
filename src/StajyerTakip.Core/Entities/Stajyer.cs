@@ -47,5 +47,4 @@ public class Stajyer
 
     public ICollection<Gorev> Gorevler { get; set; } = new List<Gorev>();
     public ICollection<Devam> DevamKayitlari { get; set; } = new List<Devam>();
-    public ICollection<Degerlendirme> Degerlendirmeler { get; set; } = new List<Degerlendirme>();
 }

@@ -172,7 +172,7 @@ Migration eklerken de uygulamanın çalışmıyor olması gerekir (yukarıdaki d
 
 ## 🎯 Gelecek Planları
 
-- [ ] Değerlendirme ve Duyuru ekranları (entity'ler hazır, arayüz henüz yok)
+- [ ] Duyuru ekranları (entity hazır, arayüz henüz yok)
 - [ ] Reddedilen başvurular için yeniden başvuru akışı
 - [ ] Docker (uygulama + SQL Server için Dockerfile/docker-compose)
 - [ ] PDF/Excel export (rapor ve staj belgesi)

@@ -26,4 +26,11 @@ public interface IGorevService
     // Mentör, "Tamamlandı" olarak işaretlenmiş bir görevi geri gönderir (yetersiz bulursa).
     // Eski teslim dosyası temizlenir; dönüş değeri controller'ın diskten silmesi için eski dosya adıdır.
     Task<string?> MentorGeriGonderAsync(int gorevId, string? mentorNotu);
+
+    // Bildirim rozeti: stajyerin henüz başlamadığı (yeni atanmış) görev sayısı.
+    Task<int> BekleyenSayisiAsync(int stajyerId);
+
+    // Bildirim rozeti için: mentörün henüz incelemediği (stajyer tarafından
+    // teslim edilmiş, Tamamlandı durumundaki) görev sayısı.
+    Task<int> MentorBekleyenSayisiAsync(int mentorId);
 }

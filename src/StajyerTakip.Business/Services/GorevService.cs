@@ -163,4 +163,18 @@ public class GorevService : IGorevService
 
         return eskiDosyaAdi;
     }
+
+    public async Task<int> BekleyenSayisiAsync(int stajyerId)
+    {
+        var yeniGorevler = await _unitOfWork.Gorevler.FindAsync(
+            g => g.StajyerId == stajyerId && g.Durum == GorevDurumu.Baslamadi);
+        return yeniGorevler.Count;
+    }
+
+    public async Task<int> MentorBekleyenSayisiAsync(int mentorId)
+    {
+        var teslimEdilenler = await _unitOfWork.Gorevler.FindAsync(
+            g => g.Stajyer.MentorId == mentorId && g.Durum == GorevDurumu.Tamamlandi);
+        return teslimEdilenler.Count;
+    }
 }
