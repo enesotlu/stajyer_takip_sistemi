@@ -1,0 +1,65 @@
+@model List<Toplanti>
+
+@{
+    ViewData["Title"] = "Toplantılar";
+    var katilimlarByToplanti = (Dictionary<int, List<ToplantiKatilimi>>)ViewBag.KatilimlarByToplanti;
+}
+
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Toplantılar",
+             "Stajyerlerinize toplantı daveti gönderin; kim kabul etti, kim reddetti buradan görün.",
+             "Yeni Toplantı", "Toplanti", "Create"))" />
+
+@if (Model.Count == 0)
+{
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("takvim")" />
+        <h2>Henüz toplantı oluşturmadınız</h2>
+        <p>"Yeni Toplantı" ile stajyerlerinize davet gönderebilirsiniz.</p>
+    </div>
+}
+else
+{
+    @foreach (var toplanti in Model)
+    {
+        var katilimlar = katilimlarByToplanti.GetValueOrDefault(toplanti.Id, new List<ToplantiKatilimi>());
+        var kabulSayisi = katilimlar.Count(k => k.Durum == OnayDurumu.Onaylandi);
+        var retSayisi = katilimlar.Count(k => k.Durum == OnayDurumu.Reddedildi);
+        var bekleyenSayisi = katilimlar.Count(k => k.Durum == OnayDurumu.Bekliyor);
+
+        <div class="stk-kart">
+            <div class="d-flex justify-content-between align-items-start">
+                <h5 class="mb-1">@toplanti.Baslik</h5>
+                <span class="text-muted small">@toplanti.Tarih.ToString("dd.MM.yyyy HH:mm")</span>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(toplanti.Aciklama))
+            {
+                <p class="mb-2">@toplanti.Aciklama</p>
+            }
+
+            <p class="mb-2">
+                <span class="stk-rozet stk-rozet-yesil">Kabul: @kabulSayisi</span>
+                <span class="stk-rozet stk-rozet-kirmizi">Ret: @retSayisi</span>
+                <span class="stk-rozet stk-rozet-amber">Bekliyor: @bekleyenSayisi</span>
+            </p>
+
+            <div>
+                @foreach (var katilim in katilimlar)
+                {
+                    <div class="d-flex justify-content-between align-items-center border-top py-2">
+                        <span>@katilim.Stajyer.Kullanici.AdSoyad</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <partial name="_OnayDurumRozet" model="katilim.Durum" />
+                            @if (!string.IsNullOrWhiteSpace(katilim.RetSebebi))
+                            {
+                                <span class="text-muted small">@katilim.RetSebebi</span>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}

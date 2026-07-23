@@ -21,6 +21,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public DbSet<Duyuru> Duyurular => Set<Duyuru>();
     public DbSet<Talep> Talepler => Set<Talep>();
     public DbSet<Izin> Izinler => Set<Izin>();
+    public DbSet<Toplanti> Toplantilar => Set<Toplanti>();
+    public DbSet<ToplantiKatilimi> ToplantiKatilimlari => Set<ToplantiKatilimi>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,5 +70,21 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         modelBuilder.Entity<Devam>().Property(d => d.OnayDurumu).HasConversion<string>();
         modelBuilder.Entity<Talep>().Property(t => t.Durum).HasConversion<string>();
         modelBuilder.Entity<Izin>().Property(i => i.OnayDurumu).HasConversion<string>();
+        modelBuilder.Entity<ToplantiKatilimi>().Property(k => k.Durum).HasConversion<string>();
+
+        // ToplantiKatilimi'nin hem Toplanti hem Stajyer'e FK'i var - ikisini de
+        // Restrict yapmazsak SQL Server "coklu cascade path" hatasi verir
+        // (Stajyer'deki Mentor/Departman FK'larinda da ayni sebeple Restrict var).
+        modelBuilder.Entity<ToplantiKatilimi>()
+            .HasOne(k => k.Toplanti)
+            .WithMany(t => t.Katilimlar)
+            .HasForeignKey(k => k.ToplantiId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ToplantiKatilimi>()
+            .HasOne(k => k.Stajyer)
+            .WithMany()
+            .HasForeignKey(k => k.StajyerId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

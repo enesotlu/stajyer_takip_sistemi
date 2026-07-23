@@ -18,6 +18,8 @@ public class UnitOfWork : IUnitOfWork
     private IRepository<Duyuru>? _duyurular;
     private IRepository<Talep>? _talepler;
     private IRepository<Izin>? _izinler;
+    private IRepository<Toplanti>? _toplantilar;
+    private IRepository<ToplantiKatilimi>? _toplantiKatilimlari;
 
     public UnitOfWork(ApplicationDbContext context)
     {
@@ -33,6 +35,9 @@ public class UnitOfWork : IUnitOfWork
     public IRepository<Duyuru> Duyurular => _duyurular ??= new Repository<Duyuru>(_context);
     public IRepository<Talep> Talepler => _talepler ??= new Repository<Talep>(_context);
     public IRepository<Izin> Izinler => _izinler ??= new Repository<Izin>(_context);
+    public IRepository<Toplanti> Toplantilar => _toplantilar ??= new Repository<Toplanti>(_context);
+    public IRepository<ToplantiKatilimi> ToplantiKatilimlari =>
+        _toplantiKatilimlari ??= new Repository<ToplantiKatilimi>(_context);
 
     public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
 

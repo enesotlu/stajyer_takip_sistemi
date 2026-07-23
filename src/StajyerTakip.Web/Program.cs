@@ -49,6 +49,7 @@ builder.Services.AddScoped<IDevamService, DevamService>();
 builder.Services.AddScoped<IKullaniciYonetimService, KullaniciYonetimService>();
 builder.Services.AddScoped<ITalepService, TalepService>();
 builder.Services.AddScoped<IIzinService, IzinService>();
+builder.Services.AddScoped<IToplantiService, ToplantiService>();
 builder.Services.AddScoped<IRaporService, RaporService>();
 
 var app = builder.Build();

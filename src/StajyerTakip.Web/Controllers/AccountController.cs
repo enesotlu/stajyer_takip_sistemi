@@ -12,15 +12,18 @@ public class AccountController : Controller
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IDepartmanService _departmanService;
+    private readonly IStajyerService _stajyerService;
 
     public AccountController(
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
-        IDepartmanService departmanService)
+        IDepartmanService departmanService,
+        IStajyerService stajyerService)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _departmanService = departmanService;
+        _stajyerService = stajyerService;
     }
 
     [HttpGet]
@@ -48,6 +51,19 @@ public class AccountController : Controller
 
         if (sonuc.Succeeded)
         {
+            // Stajı bitiş tarihini geçmiş bir stajyer artık giriş yapamaz.
+            var girisYapanKullanici = await _userManager.FindByEmailAsync(model.Email);
+            var stajyerProfili = girisYapanKullanici is null
+                ? null
+                : await _stajyerService.GetByKullaniciIdAsync(girisYapanKullanici.Id);
+
+            if (stajyerProfili is not null && stajyerProfili.BitisTarihi.Date < DateTime.Today)
+            {
+                await _signInManager.SignOutAsync();
+                ModelState.AddModelError(string.Empty, "Stajınız sona erdiği için sisteme giriş yapamazsınız.");
+                return View(model);
+            }
+
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             {
                 return Redirect(model.ReturnUrl);

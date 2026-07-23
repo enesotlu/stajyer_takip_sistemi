@@ -1,0 +1,71 @@
+@model List<ToplantiKatilimi>
+
+@{
+    ViewData["Title"] = "Toplantılarım";
+    bool profilYok = ViewBag.ProfilYok;
+}
+
+<partial name="_SayfaBaslik"
+         model="@(new SayfaBaslikModel(
+             "Toplantılarım",
+             "Mentörünün gönderdiği toplantı davetlerini görüntüle, kabul et veya reddet."))" />
+
+@if (profilYok)
+{
+    <div class="stk-banner stk-banner-uyari">
+        <partial name="_Ikon" model="@("unlem")" />
+        <div>Hesabına bağlı bir Stajyer profili bulunamadı.</div>
+    </div>
+}
+else if (!Model.Any())
+{
+    <div class="stk-bos-durum">
+        <partial name="_Ikon" model="@("takvim")" />
+        <h2>Henüz bir toplantı davetin yok</h2>
+        <p>Mentörün toplantı daveti gönderdiğinde burada görünecek.</p>
+    </div>
+}
+else
+{
+    @foreach (var katilim in Model)
+    {
+        <div class="stk-kart @(katilim.Durum == OnayDurumu.Bekliyor ? "stk-kart-bekliyor" : "")">
+            <div class="d-flex justify-content-between align-items-start">
+                <h5 class="mb-1">@katilim.Toplanti.Baslik</h5>
+                <partial name="_OnayDurumRozet" model="katilim.Durum" />
+            </div>
+            <p class="text-muted mb-2">@katilim.Toplanti.Tarih.ToString("dd.MM.yyyy HH:mm")</p>
+
+            @if (!string.IsNullOrWhiteSpace(katilim.Toplanti.Aciklama))
+            {
+                <p>@katilim.Toplanti.Aciklama</p>
+            }
+
+            @if (katilim.Durum == OnayDurumu.Bekliyor)
+            {
+                <div class="d-flex gap-2 align-items-start flex-wrap">
+                    <form asp-action="KabulEt" asp-route-id="@katilim.Id" method="post" class="d-inline">
+                        <button type="submit" class="stk-btn-hafif stk-btn-hafif-yesil">
+                            <partial name="_Ikon" model="@("onay")" />
+                            Kabul Et
+                        </button>
+                    </form>
+                    <form asp-action="Reddet" asp-route-id="@katilim.Id" method="post" class="d-flex gap-2 align-items-start">
+                        <input type="text" name="sebep" class="form-control form-control-sm" placeholder="Reddetme sebebi (zorunlu)" required style="max-width: 280px" />
+                        <button type="submit" class="stk-btn-hafif stk-btn-hafif-kirmizi">
+                            <partial name="_Ikon" model="@("kapat")" />
+                            Reddet
+                        </button>
+                    </form>
+                </div>
+            }
+            else if (katilim.Durum == OnayDurumu.Reddedildi && !string.IsNullOrWhiteSpace(katilim.RetSebebi))
+            {
+                <div class="stk-banner stk-banner-uyari mb-0">
+                    <partial name="_Ikon" model="@("unlem")" />
+                    <div><strong>Ret sebebin:</strong> @katilim.RetSebebi</div>
+                </div>
+            }
+        </div>
+    }
+}
