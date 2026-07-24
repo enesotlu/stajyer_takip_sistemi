@@ -18,4 +18,9 @@ public class LoginViewModel
     public bool BeniHatirla { get; set; }
 
     public string? ReturnUrl { get; set; }
+
+    // Stajyer girişinde tarayıcıdan alınan konum (JS ile dolduruluyor).
+    // string tutuluyor ki InvariantCulture ile biz parse edelim (bkz. AccountController.Login).
+    public string? Enlem { get; set; }
+    public string? Boylam { get; set; }
 }

@@ -14,44 +14,57 @@ public class DevamService : IDevamService
         _unitOfWork = unitOfWork;
     }
 
-    public Task<List<Devam>> GetAllAsync() => _unitOfWork.DevamKayitlari.GetAllAsync(d => d.Stajyer);
+    public Task<List<Devam>> GetAllAsync() => _unitOfWork.DevamKayitlari.GetAllAsync(d => d.Stajyer.Kullanici);
 
     public Task<Devam?> GetByIdAsync(int id) => _unitOfWork.DevamKayitlari.GetByIdAsync(id);
 
     public Task<List<Devam>> GetByStajyerIdAsync(int stajyerId) =>
         _unitOfWork.DevamKayitlari.FindAsync(d => d.StajyerId == stajyerId);
 
-    public async Task CreateAsync(string kullaniciId, TimeSpan girisSaati, TimeSpan cikisSaati)
+    public async Task<DevamOtomatikSonucu> OtomatikOlusturAsync(string kullaniciId, double? enlem, double? boylam)
     {
+        // Konum hic gelmemis (izin verilmedi/tarayici desteklemiyor) - giris reddedilir.
+        if (enlem is null || boylam is null)
+        {
+            return new DevamOtomatikSonucu(false, "Giriş yapabilmen için konumunu açman gerekiyor.");
+        }
+
+        // Konum Kulliye yaricapi disindaysa giris reddedilir - bu, kayit olusturmanin
+        // otesinde artik bir GIRIS SARTI (bkz. AccountController.Login).
+        var mesafeMetre = MesafeMetre(enlem.Value, boylam.Value, IDevamService.KulliyeEnlem, IDevamService.KulliyeBoylam);
+        if (mesafeMetre > IDevamService.KulliyeYaricapMetre)
+        {
+            return new DevamOtomatikSonucu(false,
+                $"Külliye dışındasın (yaklaşık {mesafeMetre / 1000:F1} km uzakta). Giriş yapabilmek için Külliye'de olmalısın.");
+        }
+
         var stajyerEslesenleri = await _unitOfWork.Stajyerler.FindAsync(s => s.KullaniciId == kullaniciId);
         var stajyer = stajyerEslesenleri.SingleOrDefault();
         if (stajyer is null)
         {
-            throw new InvalidOperationException("Bu kullanıcıya bağlı bir stajyer profili bulunamadı.");
+            return new DevamOtomatikSonucu(true, "Stajyer profili bulunamadı.");
         }
 
-        if (cikisSaati <= girisSaati)
-        {
-            throw new InvalidOperationException("Çıkış saati, giriş saatinden sonra olmalıdır.");
-        }
-
-        // Mesai bittikten (18:00) sonra bugun icin kendi kaydini giremez -
-        // o saatten sonra unutulan gun sayilir, mentoru ertesi gun girer.
-        if (DateTime.Now.TimeOfDay > IDevamService.GunSonuKayitSiniri)
-        {
-            throw new InvalidOperationException(
-                $"Bugün için kayıt girme süresi ({IDevamService.GunSonuKayitSiniri:hh\\:mm}) geçti. Mentörün senin adına girebilir.");
-        }
-
-        // Stajyer yalnizca BUGUN icin kayit girebilir; gecmis/gelecek gunler icin
-        // (unutulan gunler dahil) yalnizca mentoru MentorKayitGirAsync ile girebilir.
+        // Bundan sonraki durumlar giris'i engellemez, sadece o gun icin
+        // devam kaydi acilmamasina sebep olur (hafta sonu, zaten kayit var, mesai bitmis).
         var bugun = DateTime.Today;
+        if (bugun.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+        {
+            return new DevamOtomatikSonucu(true, "Hafta sonu, devam kaydı açılmadı.");
+        }
 
         var ayniGunKaydiVarMi = (await _unitOfWork.DevamKayitlari.FindAsync(
             d => d.StajyerId == stajyer.Id && d.Tarih.Date == bugun)).Any();
         if (ayniGunKaydiVarMi)
         {
-            throw new InvalidOperationException("Bugün için zaten bir devam kaydın var.");
+            return new DevamOtomatikSonucu(true, "Bugün için zaten bir devam kaydın var.");
+        }
+
+        // Giris saati, gercek anda giris yapilan saattir - sabit 09:00 degil.
+        var girisSaati = DateTime.Now.TimeOfDay;
+        if (girisSaati >= IDevamService.MesaiBitis)
+        {
+            return new DevamOtomatikSonucu(true, "Mesai bitti, bugün için devam kaydı açılmadı.");
         }
 
         var devam = new Devam
@@ -59,13 +72,34 @@ public class DevamService : IDevamService
             StajyerId = stajyer.Id,
             Tarih = bugun,
             GirisSaati = girisSaati,
-            CikisSaati = cikisSaati,
-            OnayDurumu = OnayDurumu.Bekliyor
+            CikisSaati = IDevamService.MesaiBitis,
+            OnayDurumu = OnayDurumu.Bekliyor,
+            Enlem = enlem,
+            Boylam = boylam
         };
 
         await _unitOfWork.DevamKayitlari.AddAsync(devam);
         await _unitOfWork.SaveChangesAsync();
+
+        return new DevamOtomatikSonucu(true, $"Devam kaydın oluşturuldu (giriş: {girisSaati:hh\\:mm}).");
     }
+
+    // Haversine formulu: iki enlem/boylam noktasi arasindaki mesafeyi metre cinsinden dondurur.
+    private static double MesafeMetre(double enlem1, double boylam1, double enlem2, double boylam2)
+    {
+        const double dunyaYaricapiMetre = 6371000;
+        var enlemFarkiRadyan = DegreeToRadian(enlem2 - enlem1);
+        var boylamFarkiRadyan = DegreeToRadian(boylam2 - boylam1);
+
+        var a = Math.Sin(enlemFarkiRadyan / 2) * Math.Sin(enlemFarkiRadyan / 2)
+            + Math.Cos(DegreeToRadian(enlem1)) * Math.Cos(DegreeToRadian(enlem2))
+            * Math.Sin(boylamFarkiRadyan / 2) * Math.Sin(boylamFarkiRadyan / 2);
+        var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+        return dunyaYaricapiMetre * c;
+    }
+
+    private static double DegreeToRadian(double derece) => derece * Math.PI / 180;
 
     public async Task OnaylaAsync(int id)
     {
@@ -90,6 +124,37 @@ public class DevamService : IDevamService
 
         devam.OnayDurumu = OnayDurumu.Reddedildi;
         _unitOfWork.DevamKayitlari.Update(devam);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UpdateSaatleriAsync(int id, TimeSpan girisSaati, TimeSpan cikisSaati)
+    {
+        var devam = await _unitOfWork.DevamKayitlari.GetByIdAsync(id);
+        if (devam is null)
+        {
+            throw new InvalidOperationException("Devam kaydı bulunamadı.");
+        }
+
+        if (cikisSaati <= girisSaati)
+        {
+            throw new InvalidOperationException("Çıkış saati, giriş saatinden sonra olmalıdır.");
+        }
+
+        devam.GirisSaati = girisSaati;
+        devam.CikisSaati = cikisSaati;
+        _unitOfWork.DevamKayitlari.Update(devam);
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var devam = await _unitOfWork.DevamKayitlari.GetByIdAsync(id);
+        if (devam is null)
+        {
+            return;
+        }
+
+        _unitOfWork.DevamKayitlari.Remove(devam);
         await _unitOfWork.SaveChangesAsync();
     }
 
@@ -199,7 +264,30 @@ public class DevamService : IDevamService
         var stajyerler = await _unitOfWork.Stajyerler.FindAsync(s => s.MentorId == mentorId);
         var stajyerIdleri = stajyerler.Select(s => s.Id).ToHashSet();
 
-        var bekleyenler = await _unitOfWork.DevamKayitlari.FindAsync(d => d.OnayDurumu == OnayDurumu.Bekliyor);
+        var bekleyenler = await _unitOfWork.DevamKayitlari.FindAsync(d => d.OnayDurumu == OnayDurumu.Bekliyor && !d.MentorGordu);
         return bekleyenler.Count(d => stajyerIdleri.Contains(d.StajyerId));
+    }
+
+    public async Task MentorGorduIsaretleAsync(int mentorId)
+    {
+        var stajyerler = await _unitOfWork.Stajyerler.FindAsync(s => s.MentorId == mentorId);
+        var stajyerIdleri = stajyerler.Select(s => s.Id).ToHashSet();
+
+        var gorulmemisler = await _unitOfWork.DevamKayitlari.FindAsync(
+            d => d.OnayDurumu == OnayDurumu.Bekliyor && !d.MentorGordu);
+        var kendiKayitlari = gorulmemisler.Where(d => stajyerIdleri.Contains(d.StajyerId)).ToList();
+
+        if (kendiKayitlari.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var devam in kendiKayitlari)
+        {
+            devam.MentorGordu = true;
+            _unitOfWork.DevamKayitlari.Update(devam);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 }

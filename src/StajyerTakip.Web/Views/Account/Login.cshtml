@@ -16,8 +16,10 @@
     </div>
 }
 
-<form asp-action="Login" method="post">
+<form asp-action="Login" method="post" id="stkGirisFormu">
     <input type="hidden" asp-for="ReturnUrl" />
+    <input type="hidden" asp-for="Enlem" />
+    <input type="hidden" asp-for="Boylam" />
     <div asp-validation-summary="ModelOnly"></div>
 
     <div class="stk-input-grup mb-1">
@@ -49,4 +51,39 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Stajyer girisi icin konum sarti: form ilk gonderildiginde yakalanir,
+        // taraycidan konum al(may)ana kadar gercek gonderim ertelenir. Kimin
+        // stajyer oldugunu burada bilmiyoruz (henuz giris yapilmadi) - o yuzden
+        // herkes icin konum denenir, sunucu tarafinda yalnizca stajyer ise sarta baglanir.
+        (function () {
+            var form = document.getElementById('stkGirisFormu');
+            form.addEventListener('submit', function (e) {
+                if (form.dataset.konumHazir === '1') {
+                    return; // ikinci gecis: konum zaten eklendi, normal gonderim devam etsin
+                }
+
+                e.preventDefault();
+
+                function gonder() {
+                    form.dataset.konumHazir = '1';
+                    form.requestSubmit();
+                }
+
+                if (!navigator.geolocation) {
+                    gonder();
+                    return;
+                }
+
+                navigator.geolocation.getCurrentPosition(function (konum) {
+                    form.querySelector('[name="Enlem"]').value = konum.coords.latitude;
+                    form.querySelector('[name="Boylam"]').value = konum.coords.longitude;
+                    gonder();
+                }, function () {
+                    // Izin verilmedi/alinamadi: alanlar bos kalir, sunucu stajyerse reddedecek.
+                    gonder();
+                });
+            });
+        })();
+    </script>
 }

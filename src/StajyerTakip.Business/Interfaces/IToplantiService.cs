@@ -25,4 +25,7 @@ public interface IToplantiService
 
     // Bildirim rozeti: stajyerin cevaplamadığı toplantı daveti sayısı.
     Task<int> BekleyenSayisiAsync(int stajyerId);
+
+    // Stajyer "Toplantılarım" listesini açtığında çağrılır: rozet sıfırlanır.
+    Task StajyerGorduIsaretleAsync(int stajyerId);
 }

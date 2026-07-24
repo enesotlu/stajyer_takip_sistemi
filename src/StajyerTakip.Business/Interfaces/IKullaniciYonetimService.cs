@@ -27,5 +27,12 @@ public interface IKullaniciYonetimService
 
     // Başvuruyu reddeder: hesabı kilitler ve onayDurumu = "Reddedildi" yapar.
     Task ReddetAsync(string kullaniciId);
+
+    // Bildirim rozeti için: Yönetici mentör başvuruları listesini açtığında çağrılır.
+    Task MentorBasvurulariGorulduIsaretleAsync();
+
+    // Bildirim rozeti için: Mentör kendi departmanına gelen stajyer başvuruları
+    // listesini açtığında çağrılır.
+    Task StajyerBasvurulariGorulduIsaretleAsync(int departmanId);
 }
 

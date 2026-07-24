@@ -32,6 +32,7 @@ public class ToplantilarimController : Controller
         }
 
         var katilimlar = await _toplantiService.GetByStajyerAsync(stajyer.Id);
+        await _toplantiService.StajyerGorduIsaretleAsync(stajyer.Id);
         return View(katilimlar.OrderByDescending(k => k.Toplanti.Tarih).ToList());
     }
 

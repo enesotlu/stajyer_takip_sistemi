@@ -77,6 +77,26 @@ else
                                     </form>
                                 </details>
                             }
+                            else
+                            {
+                                <span class="stk-islem-hucre">
+                                    <details class="stk-teslim-detay">
+                                        <summary class="stk-btn-hafif stk-btn-hafif-amber">Düzenle</summary>
+                                        <form asp-controller="Devam" asp-action="Edit" asp-route-id="@gun.Kayit.Id" method="post" class="mt-2 d-flex gap-2 align-items-center flex-wrap">
+                                            <input type="time" name="girisSaati" class="form-control form-control-sm" style="width: 110px" value="@gun.Kayit.GirisSaati?.ToString(@"hh\:mm")" required />
+                                            <span class="text-muted">—</span>
+                                            <input type="time" name="cikisSaati" class="form-control form-control-sm" style="width: 110px" value="@gun.Kayit.CikisSaati?.ToString(@"hh\:mm")" required />
+                                            <button type="submit" class="stk-btn-hafif stk-btn-hafif-amber">Kaydet</button>
+                                        </form>
+                                    </details>
+                                    <form asp-controller="Devam" asp-action="Delete" asp-route-id="@gun.Kayit.Id" method="post" class="d-inline"
+                                          onsubmit="return confirm('Bu devam kaydını kaldırmak istediğinize emin misiniz?');">
+                                        <button type="submit" class="stk-ikon-btn stk-ikon-btn-tehlike" title="Kaldır (Yok yap)">
+                                            <partial name="_Ikon" model="@("cop")" />
+                                        </button>
+                                    </form>
+                                </span>
+                            }
                         </td>
                     </tr>
                 }

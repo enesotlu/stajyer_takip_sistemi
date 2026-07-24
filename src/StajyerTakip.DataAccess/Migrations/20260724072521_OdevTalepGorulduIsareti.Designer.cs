@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StajyerTakip.DataAccess.Context;
 
@@ -11,9 +12,11 @@ using StajyerTakip.DataAccess.Context;
 namespace StajyerTakip.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260724072521_OdevTalepGorulduIsareti")]
+    partial class OdevTalepGorulduIsareti
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -185,20 +188,11 @@ namespace StajyerTakip.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<double?>("Boylam")
-                        .HasColumnType("float");
-
                     b.Property<TimeSpan?>("CikisSaati")
                         .HasColumnType("time");
 
-                    b.Property<double?>("Enlem")
-                        .HasColumnType("float");
-
                     b.Property<TimeSpan?>("GirisSaati")
                         .HasColumnType("time");
-
-                    b.Property<bool>("MentorGordu")
-                        .HasColumnType("bit");
 
                     b.Property<string>("OnayDurumu")
                         .IsRequired()
@@ -269,9 +263,6 @@ namespace StajyerTakip.DataAccess.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<bool>("StajyerGordu")
-                        .HasColumnType("bit");
-
                     b.Property<int>("StajyerId")
                         .HasColumnType("int");
 
@@ -316,9 +307,6 @@ namespace StajyerTakip.DataAccess.Migrations
 
                     b.Property<DateTime>("BitisTarihi")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("MentorGordu")
-                        .HasColumnType("bit");
 
                     b.Property<string>("MentorNotu")
                         .HasMaxLength(500)
@@ -468,9 +456,6 @@ namespace StajyerTakip.DataAccess.Migrations
                     b.Property<DateTime?>("SonTarih")
                         .HasColumnType("datetime2");
 
-                    b.Property<bool>("StajyerGordu")
-                        .HasColumnType("bit");
-
                     b.Property<int>("StajyerId")
                         .HasColumnType("int");
 
@@ -533,9 +518,6 @@ namespace StajyerTakip.DataAccess.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<bool>("StajyerGordu")
-                        .HasColumnType("bit");
-
                     b.Property<int>("StajyerId")
                         .HasColumnType("int");
 
@@ -563,9 +545,6 @@ namespace StajyerTakip.DataAccess.Migrations
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
-
-                    b.Property<bool>("BasvuruGorulduMu")
-                        .HasColumnType("bit");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()

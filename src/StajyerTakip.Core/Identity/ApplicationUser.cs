@@ -22,4 +22,8 @@ public class ApplicationUser : IdentityUser
     // "Bekliyor" | "Onaylandi" | "Reddedildi"
     [StringLength(20)]
     public string OnayDurumu { get; set; } = OnayDurumlari.Bekliyor;
+
+    // Bildirim rozeti için: onaylayacak kişi (Yönetici/Mentör) başvuru
+    // listesini bir kez açtığında true olur, rozet sıfırlanır.
+    public bool BasvuruGorulduMu { get; set; }
 }

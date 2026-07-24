@@ -54,8 +54,8 @@
         if (mentorProfili is not null)
         {
             bekleyenIzinSayisi = await IzinServisi.BekleyenSayisiAsync(mentorProfili.Id);
-            bekleyenStajyerBasvuruSayisi =
-                (await KullaniciYonetimServisi.GetStajyerBekleyenlerByDepartmanAsync(mentorProfili.DepartmanId)).Count;
+            bekleyenStajyerBasvuruSayisi = (await KullaniciYonetimServisi.GetStajyerBekleyenlerByDepartmanAsync(mentorProfili.DepartmanId))
+                .Count(k => !k.BasvuruGorulduMu);
             bekleyenDevamSayisi = await DevamServisi.BekleyenSayisiAsync(mentorProfili.Id);
             bekleyenGorevIncelemeSayisi = await GorevServisi.MentorBekleyenSayisiAsync(mentorProfili.Id);
             bekleyenTalepIncelemeSayisi = await TalepServisi.MentorBekleyenSayisiAsync(mentorProfili.Id);
@@ -66,7 +66,7 @@
     int bekleyenMentorBasvuruSayisi = 0;
     if (User.IsInRole(Roller.Yonetici))
     {
-        bekleyenMentorBasvuruSayisi = (await KullaniciYonetimServisi.GetMentorBekleyenlerAsync()).Count;
+        bekleyenMentorBasvuruSayisi = (await KullaniciYonetimServisi.GetMentorBekleyenlerAsync()).Count(k => !k.BasvuruGorulduMu);
     }
 }
 <!DOCTYPE html>

@@ -30,6 +30,7 @@ public class OnayBekleyenlerController : Controller
     public async Task<IActionResult> Index()
     {
         var bekleyenler = await _kullaniciYonetimService.GetMentorBekleyenlerAsync();
+        await _kullaniciYonetimService.MentorBasvurulariGorulduIsaretleAsync();
 
         // Listede departman Id'si değil adı görünsün diye Id→Ad sözlüğü.
         var departmanlar = await _departmanService.GetAllAsync();

@@ -28,6 +28,9 @@ public class Izin
 
     public OnayDurumu OnayDurumu { get; set; } = OnayDurumu.Bekliyor;
 
+    // Bildirim rozeti için: mentör "İzin Talepleri" listesini açtığında true olur, rozet sıfırlanır.
+    public bool MentorGordu { get; set; }
+
     // Mentörün reddederken bıraktığı kısa gerekçe (Talep.MentorNotu ile aynı desen).
     [StringLength(500)]
     [Display(Name = "Mentör Notu")]

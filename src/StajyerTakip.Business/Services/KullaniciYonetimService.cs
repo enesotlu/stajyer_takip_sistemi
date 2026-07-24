@@ -170,6 +170,26 @@ public class KullaniciYonetimService : IKullaniciYonetimService
         await _userManager.SetLockoutEndDateAsync(kullanici, null);
     }
 
+    public async Task MentorBasvurulariGorulduIsaretleAsync()
+    {
+        var bekleyenler = await GetMentorBekleyenlerAsync();
+        foreach (var kullanici in bekleyenler.Where(k => !k.BasvuruGorulduMu))
+        {
+            kullanici.BasvuruGorulduMu = true;
+            await _userManager.UpdateAsync(kullanici);
+        }
+    }
+
+    public async Task StajyerBasvurulariGorulduIsaretleAsync(int departmanId)
+    {
+        var bekleyenler = await GetStajyerBekleyenlerByDepartmanAsync(departmanId);
+        foreach (var kullanici in bekleyenler.Where(k => !k.BasvuruGorulduMu))
+        {
+            kullanici.BasvuruGorulduMu = true;
+            await _userManager.UpdateAsync(kullanici);
+        }
+    }
+
     private async Task KilitleAsync(ApplicationUser kullanici)
     {
         // Kilitleme mekanizmasıyla girişi kapatıyoruz; hesabı silmiyoruz ki

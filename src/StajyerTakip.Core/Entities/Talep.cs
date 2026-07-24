@@ -53,4 +53,11 @@ public class Talep
     [StringLength(1000)]
     [Display(Name = "Mentör Notu")]
     public string? MentorNotu { get; set; }
+
+    // Bildirim rozeti için: mentör "Talepler" listesini açtığında, o an
+    // Tamamlandı görünen cevaplar true'ya çekilir (bkz. TalepService.MentorGorduIsaretleAsync).
+    public bool MentorGordu { get; set; }
+
+    // Bildirim rozeti için: stajyer "Taleplerim" listesini açtığında true olur, rozet sıfırlanır.
+    public bool StajyerGordu { get; set; }
 }

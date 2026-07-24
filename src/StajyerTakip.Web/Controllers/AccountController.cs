@@ -13,17 +13,20 @@ public class AccountController : Controller
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IDepartmanService _departmanService;
     private readonly IStajyerService _stajyerService;
+    private readonly IDevamService _devamService;
 
     public AccountController(
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
         IDepartmanService departmanService,
-        IStajyerService stajyerService)
+        IStajyerService stajyerService,
+        IDevamService devamService)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _departmanService = departmanService;
         _stajyerService = stajyerService;
+        _devamService = devamService;
     }
 
     [HttpGet]
@@ -62,6 +65,25 @@ public class AccountController : Controller
                 await _signInManager.SignOutAsync();
                 ModelState.AddModelError(string.Empty, "Stajınız sona erdiği için sisteme giriş yapamazsınız.");
                 return View(model);
+            }
+
+            // Stajyer icin konum sarti: Kulliye disindaysa ya da konum hic
+            // gelmediyse giris reddedilir. Konum gecerliyse ayni cagri bugunun
+            // devam kaydini da olusturur (bkz. IDevamService.OtomatikOlusturAsync).
+            if (stajyerProfili is not null)
+            {
+                double? enlemDeger = double.TryParse(
+                    model.Enlem, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var e) ? e : null;
+                double? boylamDeger = double.TryParse(
+                    model.Boylam, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var b) ? b : null;
+
+                var konumSonucu = await _devamService.OtomatikOlusturAsync(girisYapanKullanici!.Id, enlemDeger, boylamDeger);
+                if (!konumSonucu.Basarili)
+                {
+                    await _signInManager.SignOutAsync();
+                    ModelState.AddModelError(string.Empty, konumSonucu.Mesaj);
+                    return View(model);
+                }
             }
 
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))

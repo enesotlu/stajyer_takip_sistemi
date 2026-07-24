@@ -42,6 +42,7 @@ public class TaleplerimController : Controller
         }
 
         var talepler = await _talepService.GetByStajyerAsync(stajyer.Id);
+        await _talepService.StajyerGorduIsaretleAsync(stajyer.Id);
         return View(talepler);
     }
 

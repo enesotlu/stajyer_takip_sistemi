@@ -97,7 +97,26 @@ public class ToplantiService : IToplantiService
     public async Task<int> BekleyenSayisiAsync(int stajyerId)
     {
         var bekleyenler = await _unitOfWork.ToplantiKatilimlari.FindAsync(
-            k => k.StajyerId == stajyerId && k.Durum == OnayDurumu.Bekliyor);
+            k => k.StajyerId == stajyerId && k.Durum == OnayDurumu.Bekliyor && !k.StajyerGordu);
         return bekleyenler.Count;
+    }
+
+    public async Task StajyerGorduIsaretleAsync(int stajyerId)
+    {
+        var gorulmemisler = await _unitOfWork.ToplantiKatilimlari.FindAsync(
+            k => k.StajyerId == stajyerId && k.Durum == OnayDurumu.Bekliyor && !k.StajyerGordu);
+
+        if (gorulmemisler.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var katilim in gorulmemisler)
+        {
+            katilim.StajyerGordu = true;
+            _unitOfWork.ToplantiKatilimlari.Update(katilim);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 }

@@ -14,4 +14,7 @@ public interface IIzinService
 
     // Bildirim rozeti için: mentörün kendi stajyerlerinden bekleyen izin sayısı.
     Task<int> BekleyenSayisiAsync(int mentorId);
+
+    // Mentör "İzin Talepleri" listesini açtığında çağrılır: rozet sıfırlanır.
+    Task MentorGorduIsaretleAsync(int mentorId);
 }

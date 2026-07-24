@@ -44,6 +44,7 @@ public class TalepController : Controller
         }
 
         var talepler = await _talepService.GetByMentorAsync(mentor.Id);
+        await _talepService.MentorGorduIsaretleAsync(mentor.Id);
         return View(talepler);
     }
 

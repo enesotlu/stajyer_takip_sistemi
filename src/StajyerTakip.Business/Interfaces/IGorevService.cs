@@ -30,7 +30,14 @@ public interface IGorevService
     // Bildirim rozeti: stajyerin henüz başlamadığı (yeni atanmış) görev sayısı.
     Task<int> BekleyenSayisiAsync(int stajyerId);
 
+    // Stajyer "Ödevlerim" listesini açtığında çağrılır: rozet sıfırlanır.
+    Task StajyerGorduIsaretleAsync(int stajyerId);
+
     // Bildirim rozeti için: mentörün henüz incelemediği (stajyer tarafından
     // teslim edilmiş, Tamamlandı durumundaki) görev sayısı.
     Task<int> MentorBekleyenSayisiAsync(int mentorId);
+
+    // Mentör "Ödevler" listesini açtığında çağrılır: o an gösterilen
+    // teslimleri "görüldü" işaretler, rozet sıfırlanır.
+    Task MentorGorduIsaretleAsync(int mentorId);
 }

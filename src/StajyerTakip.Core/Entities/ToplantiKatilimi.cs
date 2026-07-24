@@ -22,4 +22,7 @@ public class ToplantiKatilimi
     public string? RetSebebi { get; set; }
 
     public DateTime? CevapTarihi { get; set; }
+
+    // Bildirim rozeti için: stajyer "Toplantılarım" listesini açtığında true olur, rozet sıfırlanır.
+    public bool StajyerGordu { get; set; }
 }

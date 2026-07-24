@@ -43,4 +43,11 @@ public class Gorev
     [StringLength(1000)]
     [Display(Name = "Mentör Notu")]
     public string? MentorNotu { get; set; }
+
+    // Bildirim rozeti için: mentör "Ödevler" listesini açtığında, o an
+    // Tamamlandı görünen teslimler true'ya çekilir (bkz. GorevService.MentorGorduIsaretleAsync).
+    public bool MentorGordu { get; set; }
+
+    // Bildirim rozeti için: stajyer "Ödevlerim" listesini açtığında true olur, rozet sıfırlanır.
+    public bool StajyerGordu { get; set; }
 }

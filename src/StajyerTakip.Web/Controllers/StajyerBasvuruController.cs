@@ -39,6 +39,7 @@ public class StajyerBasvuruController : Controller
         }
 
         var bekleyenler = await _kullaniciYonetimService.GetStajyerBekleyenlerByDepartmanAsync(mentor.DepartmanId);
+        await _kullaniciYonetimService.StajyerBasvurulariGorulduIsaretleAsync(mentor.DepartmanId);
         return View(bekleyenler);
     }
 

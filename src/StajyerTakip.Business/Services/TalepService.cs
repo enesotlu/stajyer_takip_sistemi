@@ -123,6 +123,8 @@ public class TalepService : ITalepService
         talep.CevapDosyaAdi = null;
         talep.CevapDosyaOrijinalAdi = null;
         talep.CevapTarihi = null;
+        talep.MentorGordu = false;
+        talep.StajyerGordu = false;
 
         _unitOfWork.Talepler.Update(talep);
         await _unitOfWork.SaveChangesAsync();
@@ -167,6 +169,7 @@ public class TalepService : ITalepService
         talep.CevapDosyaOrijinalAdi = orijinalDosyaAdi;
         talep.CevapTarihi = DateTime.UtcNow;
         talep.Durum = TalepDurumu.Tamamlandi;
+        talep.MentorGordu = false;
 
         _unitOfWork.Talepler.Update(talep);
         await _unitOfWork.SaveChangesAsync();
@@ -175,14 +178,52 @@ public class TalepService : ITalepService
     public async Task<int> BekleyenSayisiAsync(int stajyerId)
     {
         var bekleyenler = await _unitOfWork.Talepler.FindAsync(
-            t => t.StajyerId == stajyerId && t.Durum == TalepDurumu.Bekliyor);
+            t => t.StajyerId == stajyerId && t.Durum == TalepDurumu.Bekliyor && !t.StajyerGordu);
         return bekleyenler.Count;
+    }
+
+    public async Task StajyerGorduIsaretleAsync(int stajyerId)
+    {
+        var gorulmemisler = await _unitOfWork.Talepler.FindAsync(
+            t => t.StajyerId == stajyerId && t.Durum == TalepDurumu.Bekliyor && !t.StajyerGordu);
+
+        if (gorulmemisler.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var talep in gorulmemisler)
+        {
+            talep.StajyerGordu = true;
+            _unitOfWork.Talepler.Update(talep);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<int> MentorBekleyenSayisiAsync(int mentorId)
     {
         var cevaplananlar = await _unitOfWork.Talepler.FindAsync(
-            t => t.Stajyer.MentorId == mentorId && t.Durum == TalepDurumu.Tamamlandi);
+            t => t.Stajyer.MentorId == mentorId && t.Durum == TalepDurumu.Tamamlandi && !t.MentorGordu);
         return cevaplananlar.Count;
+    }
+
+    public async Task MentorGorduIsaretleAsync(int mentorId)
+    {
+        var gorulmemisler = await _unitOfWork.Talepler.FindAsync(
+            t => t.Stajyer.MentorId == mentorId && t.Durum == TalepDurumu.Tamamlandi && !t.MentorGordu);
+
+        if (gorulmemisler.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var talep in gorulmemisler)
+        {
+            talep.MentorGordu = true;
+            _unitOfWork.Talepler.Update(talep);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 }

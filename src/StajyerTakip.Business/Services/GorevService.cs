@@ -131,6 +131,7 @@ public class GorevService : IGorevService
         gorev.TeslimDosyaAdi = dosyaAdi;
         gorev.TeslimDosyaOrijinalAdi = orijinalDosyaAdi;
         gorev.TeslimEdilmeTarihi = DateTime.UtcNow;
+        gorev.MentorGordu = false;
 
         _unitOfWork.Gorevler.Update(gorev);
         await _unitOfWork.SaveChangesAsync();
@@ -157,6 +158,7 @@ public class GorevService : IGorevService
         gorev.TeslimDosyaOrijinalAdi = null;
         gorev.TeslimNotu = null;
         gorev.TeslimEdilmeTarihi = null;
+        gorev.MentorGordu = false;
 
         _unitOfWork.Gorevler.Update(gorev);
         await _unitOfWork.SaveChangesAsync();
@@ -167,14 +169,52 @@ public class GorevService : IGorevService
     public async Task<int> BekleyenSayisiAsync(int stajyerId)
     {
         var yeniGorevler = await _unitOfWork.Gorevler.FindAsync(
-            g => g.StajyerId == stajyerId && g.Durum == GorevDurumu.Baslamadi);
+            g => g.StajyerId == stajyerId && g.Durum == GorevDurumu.Baslamadi && !g.StajyerGordu);
         return yeniGorevler.Count;
+    }
+
+    public async Task StajyerGorduIsaretleAsync(int stajyerId)
+    {
+        var gorulmemisler = await _unitOfWork.Gorevler.FindAsync(
+            g => g.StajyerId == stajyerId && g.Durum == GorevDurumu.Baslamadi && !g.StajyerGordu);
+
+        if (gorulmemisler.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var gorev in gorulmemisler)
+        {
+            gorev.StajyerGordu = true;
+            _unitOfWork.Gorevler.Update(gorev);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 
     public async Task<int> MentorBekleyenSayisiAsync(int mentorId)
     {
         var teslimEdilenler = await _unitOfWork.Gorevler.FindAsync(
-            g => g.Stajyer.MentorId == mentorId && g.Durum == GorevDurumu.Tamamlandi);
+            g => g.Stajyer.MentorId == mentorId && g.Durum == GorevDurumu.Tamamlandi && !g.MentorGordu);
         return teslimEdilenler.Count;
+    }
+
+    public async Task MentorGorduIsaretleAsync(int mentorId)
+    {
+        var gorulmemisler = await _unitOfWork.Gorevler.FindAsync(
+            g => g.Stajyer.MentorId == mentorId && g.Durum == GorevDurumu.Tamamlandi && !g.MentorGordu);
+
+        if (gorulmemisler.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var gorev in gorulmemisler)
+        {
+            gorev.MentorGordu = true;
+            _unitOfWork.Gorevler.Update(gorev);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 }

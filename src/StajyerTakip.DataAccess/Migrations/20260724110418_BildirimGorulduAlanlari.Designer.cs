@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StajyerTakip.DataAccess.Context;
 
@@ -11,9 +12,11 @@ using StajyerTakip.DataAccess.Context;
 namespace StajyerTakip.DataAccess.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260724110418_BildirimGorulduAlanlari")]
+    partial class BildirimGorulduAlanlari
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -185,14 +188,8 @@ namespace StajyerTakip.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<double?>("Boylam")
-                        .HasColumnType("float");
-
                     b.Property<TimeSpan?>("CikisSaati")
                         .HasColumnType("time");
-
-                    b.Property<double?>("Enlem")
-                        .HasColumnType("float");
 
                     b.Property<TimeSpan?>("GirisSaati")
                         .HasColumnType("time");

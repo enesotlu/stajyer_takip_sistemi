@@ -37,6 +37,7 @@ public class DevamController : Controller
         if (girenMentor is not null)
         {
             kayitlar = kayitlar.Where(d => d.Stajyer.MentorId == girenMentor.Id).ToList();
+            await _devamService.MentorGorduIsaretleAsync(girenMentor.Id);
         }
 
         var siraliKayitlar = kayitlar
@@ -70,6 +71,50 @@ public class DevamController : Controller
         }
 
         await _devamService.ReddetAsync(id);
+        return RedirectToAction(nameof(Index));
+    }
+
+    // Mentör, otomatik olusan kaydin saatlerini duzenler (orn. stajyer izin alip erken ciktiysa).
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, string girisSaati, string cikisSaati)
+    {
+        if (!await BuKayitBanaMiAitAsync(id))
+        {
+            return Forbid();
+        }
+
+        if (!TimeSpan.TryParse(girisSaati, out var giris) || !TimeSpan.TryParse(cikisSaati, out var cikis))
+        {
+            TempData["HataMesaji"] = "Saat bilgileri okunamadı.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        try
+        {
+            await _devamService.UpdateSaatleriAsync(id, giris, cikis);
+            TempData["BilgiMesaji"] = "Devam kaydı güncellendi.";
+        }
+        catch (InvalidOperationException ex)
+        {
+            TempData["HataMesaji"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    // Mentör, hatali/gecersiz bir kaydi kaldirir - o gun takvimde "Yok" gorunur.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Delete(int id)
+    {
+        if (!await BuKayitBanaMiAitAsync(id))
+        {
+            return Forbid();
+        }
+
+        await _devamService.DeleteAsync(id);
+        TempData["BilgiMesaji"] = "Devam kaydı kaldırıldı.";
         return RedirectToAction(nameof(Index));
     }
 

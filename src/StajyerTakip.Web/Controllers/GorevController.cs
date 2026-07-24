@@ -45,6 +45,7 @@ public class GorevController : Controller
         if (girenMentor is not null)
         {
             gorevler = gorevler.Where(g => g.Stajyer.MentorId == girenMentor.Id).ToList();
+            await _gorevService.MentorGorduIsaretleAsync(girenMentor.Id);
         }
 
         return View(gorevler);

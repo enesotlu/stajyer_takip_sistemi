@@ -11,4 +11,12 @@ public class Devam
     public TimeSpan? GirisSaati { get; set; }
     public TimeSpan? CikisSaati { get; set; }
     public OnayDurumu OnayDurumu { get; set; } = OnayDurumu.Bekliyor;
+
+    // Stajyerin giriş yaptığı anda taranıp doğrulanan konum (Külliye içinde miydi?).
+    // Mentörün elle girdiği kayıtlarda (MentorKayitGirAsync) null kalır.
+    public double? Enlem { get; set; }
+    public double? Boylam { get; set; }
+
+    // Bildirim rozeti için: mentör "Devam Onayı" listesini açtığında true olur, rozet sıfırlanır.
+    public bool MentorGordu { get; set; }
 }

@@ -7,14 +7,14 @@
 <partial name="_SayfaBaslik"
          model="@(new SayfaBaslikModel(
              "Devam / Puantaj Onayı",
-             "Stajyerlerinizin giriş-çıkış kayıtlarını onaylayın veya reddedin."))" />
+             "Stajyerlerinizin Külliye'ye giriş yaptığında otomatik oluşan devam kayıtlarını onaylayın, gerekirse saatini düzenleyin ya da kaldırın."))" />
 
 @if (Model.Count == 0)
 {
     <div class="stk-bos-durum">
         <partial name="_Ikon" model="@("takvim")" />
-        <h2>Bekleyen devam kaydı yok</h2>
-        <p>Stajyerleriniz devam kaydı girdiğinde burada görünür.</p>
+        <h2>Henüz devam kaydı yok</h2>
+        <p>Stajyerleriniz Külliye'ye giriş yapıp konumu doğrulandığında burada görünür.</p>
     </div>
 }
 else
@@ -27,6 +27,7 @@ else
                     <th>Tarih</th>
                     <th>Giriş</th>
                     <th>Çıkış</th>
+                    <th>Konum</th>
                     <th>Durum</th>
                     <th></th>
                 </tr>
@@ -35,10 +36,24 @@ else
                 @foreach (var devam in Model)
                 {
                     <tr>
-                        <td class="stk-hucre-ad">@devam.Stajyer.Okul / @devam.Stajyer.Bolum</td>
+                        <td class="stk-hucre-ad">@devam.Stajyer.Kullanici.AdSoyad</td>
                         <td>@devam.Tarih.ToString("dd.MM.yyyy")</td>
-                        <td>@devam.GirisSaati</td>
-                        <td>@devam.CikisSaati</td>
+                        <td>@(devam.GirisSaati?.ToString(@"hh\:mm") ?? "—")</td>
+                        <td>@(devam.CikisSaati?.ToString(@"hh\:mm") ?? "—")</td>
+                        <td>
+                            @if (devam.Enlem.HasValue && devam.Boylam.HasValue)
+                            {
+                                <a href="https://www.google.com/maps?q=@devam.Enlem.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),@devam.Boylam.Value.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                   target="_blank" rel="noopener" class="stk-btn-hafif stk-btn-hafif-mavi">
+                                    <partial name="_Ikon" model="@("bilgi")" />
+                                    Haritada Gör
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Mentör girdi</span>
+                            }
+                        </td>
                         <td><partial name="_OnayDurumRozet" model="devam.OnayDurumu" /></td>
                         <td>
                             <span class="stk-islem-hucre">
@@ -57,6 +72,26 @@ else
                                         </button>
                                     </form>
                                 }
+                                <details class="stk-teslim-detay">
+                                    <summary class="stk-btn-hafif stk-btn-hafif-amber">Düzenle</summary>
+                                    <form asp-action="Edit" asp-route-id="@devam.Id" method="post" class="mt-2 d-flex gap-2 align-items-end flex-wrap">
+                                        <div>
+                                            <label class="form-label small mb-1">Giriş</label>
+                                            <input type="time" name="girisSaati" class="form-control form-control-sm" value="@devam.GirisSaati?.ToString(@"hh\:mm")" required />
+                                        </div>
+                                        <div>
+                                            <label class="form-label small mb-1">Çıkış</label>
+                                            <input type="time" name="cikisSaati" class="form-control form-control-sm" value="@devam.CikisSaati?.ToString(@"hh\:mm")" required />
+                                        </div>
+                                        <button type="submit" class="stk-btn-hafif stk-btn-hafif-amber">Kaydet</button>
+                                    </form>
+                                </details>
+                                <form asp-action="Delete" asp-route-id="@devam.Id" method="post" class="d-inline"
+                                      onsubmit="return confirm('Bu devam kaydını kaldırmak istediğinize emin misiniz? Gün \'Yok\' olarak görünecek.');">
+                                    <button type="submit" class="stk-ikon-btn stk-ikon-btn-tehlike" title="Kaldır (Yok yap)">
+                                        <partial name="_Ikon" model="@("cop")" />
+                                    </button>
+                                </form>
                             </span>
                         </td>
                     </tr>

@@ -36,6 +36,7 @@ public class IzinController : Controller
         if (girenMentor is not null)
         {
             izinler = izinler.Where(i => i.Stajyer.MentorId == girenMentor.Id).ToList();
+            await _izinService.MentorGorduIsaretleAsync(girenMentor.Id);
         }
 
         var siraliIzinler = izinler

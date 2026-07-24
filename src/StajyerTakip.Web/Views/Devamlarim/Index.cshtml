@@ -9,8 +9,7 @@
 <partial name="_SayfaBaslik"
          model="@(new SayfaBaslikModel(
              "Devam Kayıtlarım",
-             "Günlük giriş-çıkış kayıtlarınız; girmediğiniz iş günleri \"Yok\" olarak görünür.",
-             profilYok ? null : "Bugün İçin Kayıt Gir", "Devamlarim", "Create"))" />
+             "Külliye'ye giriş yaptığında konumun doğrulanıp devam kaydın otomatik oluşturulur; girmediğin iş günleri \"Yok\" olarak görünür."))" />
 
 @if (profilYok)
 {
@@ -38,7 +37,7 @@ else
         <div class="stk-bos-durum">
             <partial name="_Ikon" model="@("takvim")" />
             <h2>Henüz devam kaydın yok</h2>
-            <p>"Bugün İçin Kayıt Gir" ile ilk kaydını oluşturabilirsin.</p>
+            <p>Külliye'ye giriş yaptığında konumun doğrulanınca ilk kaydın otomatik oluşacak.</p>
         </div>
     }
     else

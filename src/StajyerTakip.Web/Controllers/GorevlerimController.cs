@@ -41,6 +41,7 @@ public class GorevlerimController : Controller
         }
 
         var gorevler = await _gorevService.GetByStajyerIdAsync(stajyer.Id);
+        await _gorevService.StajyerGorduIsaretleAsync(stajyer.Id);
         return View(gorevler);
     }
 

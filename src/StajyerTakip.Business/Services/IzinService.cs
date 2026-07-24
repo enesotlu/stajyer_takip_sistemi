@@ -85,7 +85,29 @@ public class IzinService : IIzinService
         var stajyerler = await _unitOfWork.Stajyerler.FindAsync(s => s.MentorId == mentorId);
         var stajyerIdleri = stajyerler.Select(s => s.Id).ToHashSet();
 
-        var bekleyenIzinler = await _unitOfWork.Izinler.FindAsync(i => i.OnayDurumu == OnayDurumu.Bekliyor);
+        var bekleyenIzinler = await _unitOfWork.Izinler.FindAsync(i => i.OnayDurumu == OnayDurumu.Bekliyor && !i.MentorGordu);
         return bekleyenIzinler.Count(i => stajyerIdleri.Contains(i.StajyerId));
+    }
+
+    public async Task MentorGorduIsaretleAsync(int mentorId)
+    {
+        var stajyerler = await _unitOfWork.Stajyerler.FindAsync(s => s.MentorId == mentorId);
+        var stajyerIdleri = stajyerler.Select(s => s.Id).ToHashSet();
+
+        var gorulmemisler = await _unitOfWork.Izinler.FindAsync(i => i.OnayDurumu == OnayDurumu.Bekliyor && !i.MentorGordu);
+        var kendiIzinleri = gorulmemisler.Where(i => stajyerIdleri.Contains(i.StajyerId)).ToList();
+
+        if (kendiIzinleri.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var izin in kendiIzinleri)
+        {
+            izin.MentorGordu = true;
+            _unitOfWork.Izinler.Update(izin);
+        }
+
+        await _unitOfWork.SaveChangesAsync();
     }
 }
