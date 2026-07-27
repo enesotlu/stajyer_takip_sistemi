@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using StajyerTakip.Business.Interfaces;
 using StajyerTakip.Core.Entities;
 using StajyerTakip.Core.Interfaces;
@@ -7,10 +8,34 @@ namespace StajyerTakip.Business.Services;
 public class TalepService : ITalepService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEmailSender _emailSender;
+    private readonly ILogger<TalepService> _logger;
 
-    public TalepService(IUnitOfWork unitOfWork)
+    public TalepService(IUnitOfWork unitOfWork, IEmailSender emailSender, ILogger<TalepService> logger)
     {
         _unitOfWork = unitOfWork;
+        _emailSender = emailSender;
+        _logger = logger;
+    }
+
+    // E-posta gönderimi talep oluşturma/cevaplama akışını bloklamamalı: SMTP
+    // ayarlanmamışsa ya da geçici bir hata olursa sessizce loglanır, işlem
+    // başarıyla devam eder.
+    private async Task GuvenliGonderAsync(string? aliciEmail, string konu, string govdeHtml)
+    {
+        if (string.IsNullOrWhiteSpace(aliciEmail))
+        {
+            return;
+        }
+
+        try
+        {
+            await _emailSender.GonderAsync(aliciEmail, konu, govdeHtml);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Talep bildirim e-postası gönderilemedi: {Alici}", aliciEmail);
+        }
     }
 
     public async Task<List<Talep>> GetByMentorAsync(int mentorId)
@@ -34,10 +59,10 @@ public class TalepService : ITalepService
     public async Task CreateAsync(
         int mentorId, int stajyerId, string baslik, string? aciklama, bool dosyaIstensin, DateTime sonTarih)
     {
-        var stajyer = await _unitOfWork.Stajyerler.GetByIdAsync(stajyerId)
-            ?? throw new InvalidOperationException("Stajyer bulunamadı.");
+        var stajyerBulunan = (await _unitOfWork.Stajyerler.FindAsync(s => s.Id == stajyerId, s => s.Kullanici))
+            .SingleOrDefault() ?? throw new InvalidOperationException("Stajyer bulunamadı.");
 
-        if (stajyer.MentorId != mentorId)
+        if (stajyerBulunan.MentorId != mentorId)
         {
             throw new InvalidOperationException("Yalnızca kendi stajyerine talep açabilirsin.");
         }
@@ -60,6 +85,13 @@ public class TalepService : ITalepService
 
         await _unitOfWork.Talepler.AddAsync(talep);
         await _unitOfWork.SaveChangesAsync();
+
+        await GuvenliGonderAsync(
+            stajyerBulunan.Kullanici?.Email,
+            "Yeni Talep",
+            $"<p><strong>{baslik}</strong> başlıklı yeni bir talep sana açıldı.</p>" +
+            $"<p>Son tarih: {sonTarih.Date:dd.MM.yyyy}</p>" +
+            (string.IsNullOrWhiteSpace(aciklama) ? "" : $"<p>{aciklama}</p>"));
     }
 
     public async Task UpdateAsync(
@@ -173,6 +205,16 @@ public class TalepService : ITalepService
 
         _unitOfWork.Talepler.Update(talep);
         await _unitOfWork.SaveChangesAsync();
+
+        var stajyerBulunan = (await _unitOfWork.Stajyerler.FindAsync(
+            s => s.Id == stajyerId, s => s.Mentor.Kullanici, s => s.Kullanici)).SingleOrDefault();
+
+        await GuvenliGonderAsync(
+            stajyerBulunan?.Mentor?.Kullanici?.Email,
+            "Talep Cevaplandı",
+            $"<p><strong>{stajyerBulunan?.Kullanici?.AdSoyad}</strong>, " +
+            $"<strong>{talep.Baslik}</strong> başlıklı talebi cevapladı.</p>" +
+            (string.IsNullOrWhiteSpace(cevapMetni) ? "" : $"<p>{cevapMetni}</p>"));
     }
 
     public async Task<int> BekleyenSayisiAsync(int stajyerId)

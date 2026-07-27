@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using StajyerTakip.Business.Interfaces;
 using StajyerTakip.Core.Entities;
 using StajyerTakip.Core.Interfaces;
@@ -7,10 +8,34 @@ namespace StajyerTakip.Business.Services;
 public class ToplantiService : IToplantiService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEmailSender _emailSender;
+    private readonly ILogger<ToplantiService> _logger;
 
-    public ToplantiService(IUnitOfWork unitOfWork)
+    public ToplantiService(IUnitOfWork unitOfWork, IEmailSender emailSender, ILogger<ToplantiService> logger)
     {
         _unitOfWork = unitOfWork;
+        _emailSender = emailSender;
+        _logger = logger;
+    }
+
+    // E-posta gönderimi toplantı daveti/cevap akışını bloklamamalı: SMTP
+    // ayarlanmamışsa ya da geçici bir hata olursa sessizce loglanır, işlem
+    // başarıyla devam eder.
+    private async Task GuvenliGonderAsync(string? aliciEmail, string konu, string govdeHtml)
+    {
+        if (string.IsNullOrWhiteSpace(aliciEmail))
+        {
+            return;
+        }
+
+        try
+        {
+            await _emailSender.GonderAsync(aliciEmail, konu, govdeHtml);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Toplantı bildirim e-postası gönderilemedi: {Alici}", aliciEmail);
+        }
     }
 
     public Task<List<Toplanti>> GetByMentorAsync(int mentorId) =>
@@ -29,7 +54,7 @@ public class ToplantiService : IToplantiService
 
     public async Task CreateAsync(int mentorId, string baslik, string? aciklama, DateTime tarih)
     {
-        var stajyerler = await _unitOfWork.Stajyerler.FindAsync(s => s.MentorId == mentorId);
+        var stajyerler = await _unitOfWork.Stajyerler.FindAsync(s => s.MentorId == mentorId, s => s.Kullanici);
         if (stajyerler.Count == 0)
         {
             throw new InvalidOperationException("Sorumlu olduğunuz bir stajyer yok, toplantı daveti gönderilemez.");
@@ -58,11 +83,22 @@ public class ToplantiService : IToplantiService
         }
 
         await _unitOfWork.SaveChangesAsync();
+
+        foreach (var stajyer in stajyerler)
+        {
+            await GuvenliGonderAsync(
+                stajyer.Kullanici?.Email,
+                "Yeni Toplantı Daveti",
+                $"<p><strong>{baslik}</strong> başlıklı yeni bir toplantı daveti aldın.</p>" +
+                $"<p>Tarih: {tarih:dd.MM.yyyy HH:mm}</p>" +
+                (string.IsNullOrWhiteSpace(aciklama) ? "" : $"<p>{aciklama}</p>"));
+        }
     }
 
     public async Task KabulEtAsync(int katilimId)
     {
-        var katilim = await _unitOfWork.ToplantiKatilimlari.GetByIdAsync(katilimId);
+        var katilim = (await _unitOfWork.ToplantiKatilimlari.FindAsync(
+            k => k.Id == katilimId, k => k.Stajyer.Kullanici, k => k.Toplanti.Mentor.Kullanici)).SingleOrDefault();
         if (katilim is null)
         {
             throw new InvalidOperationException("Katılım kaydı bulunamadı.");
@@ -72,6 +108,12 @@ public class ToplantiService : IToplantiService
         katilim.CevapTarihi = DateTime.Now;
         _unitOfWork.ToplantiKatilimlari.Update(katilim);
         await _unitOfWork.SaveChangesAsync();
+
+        await GuvenliGonderAsync(
+            katilim.Toplanti.Mentor?.Kullanici?.Email,
+            "Toplantı Daveti Kabul Edildi",
+            $"<p><strong>{katilim.Stajyer.Kullanici?.AdSoyad}</strong>, " +
+            $"<strong>{katilim.Toplanti.Baslik}</strong> toplantısını kabul etti.</p>");
     }
 
     public async Task ReddetAsync(int katilimId, string sebep)
@@ -81,7 +123,8 @@ public class ToplantiService : IToplantiService
             throw new InvalidOperationException("Reddetme sebebi zorunludur.");
         }
 
-        var katilim = await _unitOfWork.ToplantiKatilimlari.GetByIdAsync(katilimId);
+        var katilim = (await _unitOfWork.ToplantiKatilimlari.FindAsync(
+            k => k.Id == katilimId, k => k.Stajyer.Kullanici, k => k.Toplanti.Mentor.Kullanici)).SingleOrDefault();
         if (katilim is null)
         {
             throw new InvalidOperationException("Katılım kaydı bulunamadı.");
@@ -92,6 +135,13 @@ public class ToplantiService : IToplantiService
         katilim.CevapTarihi = DateTime.Now;
         _unitOfWork.ToplantiKatilimlari.Update(katilim);
         await _unitOfWork.SaveChangesAsync();
+
+        await GuvenliGonderAsync(
+            katilim.Toplanti.Mentor?.Kullanici?.Email,
+            "Toplantı Daveti Reddedildi",
+            $"<p><strong>{katilim.Stajyer.Kullanici?.AdSoyad}</strong>, " +
+            $"<strong>{katilim.Toplanti.Baslik}</strong> toplantısını reddetti.</p>" +
+            $"<p><strong>Sebep:</strong> {sebep}</p>");
     }
 
     public async Task<int> BekleyenSayisiAsync(int stajyerId)
