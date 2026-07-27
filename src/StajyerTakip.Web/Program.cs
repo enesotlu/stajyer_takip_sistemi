@@ -41,6 +41,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddClaimsPrincipalFactory<UygulamaClaimsFactory>()
     .AddDefaultTokenProviders();
 
+// Şifre sıfırlama linkindeki token'ın geçerlilik süresi (varsayılan 1 gündü).
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    options.TokenLifespan = TimeSpan.FromMinutes(15);
+});
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
