@@ -26,4 +26,12 @@ public class ApplicationUser : IdentityUser
     // Bildirim rozeti için: onaylayacak kişi (Yönetici/Mentör) başvuru
     // listesini bir kez açtığında true olur, rozet sıfırlanır.
     public bool BasvuruGorulduMu { get; set; }
+
+    // Kayıt sırasında e-postanın gerçek olduğunu doğrulamak için gönderilen
+    // 6 haneli kod ve son geçerlilik zamanı. Doğrulandıktan sonra ikisi de temizlenir.
+    // Bu alanlar eklenmeden önce oluşturulan hesaplar zaten EmailConfirmed=true
+    // olduğu için bu akıştan etkilenmez (bkz. AccountController.Register).
+    [StringLength(6)]
+    public string? EmailDogrulamaKodu { get; set; }
+    public DateTime? EmailDogrulamaKoduSonGecerlilik { get; set; }
 }

@@ -1,0 +1,34 @@
+@model EmailDogrulaViewModel
+
+@{
+    ViewData["Title"] = "E-postanı Doğrula";
+    Layout = "_AuthLayout";
+}
+
+<h1>E-postanı Doğrula</h1>
+<p class="stk-auth-lead">
+    <strong>@Model.Email</strong> adresine gönderdiğimiz 6 haneli kodu gir.
+</p>
+
+<form asp-action="EmailDogrula" method="post">
+    <input type="hidden" asp-for="Email" />
+    <div asp-validation-summary="ModelOnly" class="text-danger text-center mb-3"></div>
+
+    <div class="stk-input-grup mb-1">
+        <label asp-for="Kod" class="visually-hidden"></label>
+        <svg class="stk-input-ikon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 10h8M8 14h5"/></svg>
+        <input asp-for="Kod" class="form-control" placeholder="6 haneli kod" inputmode="numeric" maxlength="6" autofocus autocomplete="one-time-code" />
+    </div>
+    <span asp-validation-for="Kod" class="text-danger d-block mb-2"></span>
+
+    <button type="submit" class="btn btn-primary" data-yukleniyor="Doğrulanıyor...">Doğrula</button>
+</form>
+
+<form asp-action="KoduTekrarGonder" method="post" class="mt-2">
+    <input type="hidden" name="email" value="@Model.Email" />
+    <button type="submit" class="btn btn-link px-0">Kodu tekrar gönder</button>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

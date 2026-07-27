@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Logging;
 using StajyerTakip.Business.Interfaces;
 using StajyerTakip.Core.Identity;
 using StajyerTakip.Web.Models;
@@ -14,19 +15,28 @@ public class AccountController : Controller
     private readonly IDepartmanService _departmanService;
     private readonly IStajyerService _stajyerService;
     private readonly IDevamService _devamService;
+    private readonly IEmailSender _emailSender;
+    private readonly ILogger<AccountController> _logger;
+
+    // Kayıt doğrulama kodunun geçerlilik süresi.
+    private static readonly TimeSpan DogrulamaKoduGecerlilikSuresi = TimeSpan.FromMinutes(15);
 
     public AccountController(
         SignInManager<ApplicationUser> signInManager,
         UserManager<ApplicationUser> userManager,
         IDepartmanService departmanService,
         IStajyerService stajyerService,
-        IDevamService devamService)
+        IDevamService devamService,
+        IEmailSender emailSender,
+        ILogger<AccountController> logger)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _departmanService = departmanService;
         _stajyerService = stajyerService;
         _devamService = devamService;
+        _emailSender = emailSender;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -98,6 +108,13 @@ public class AccountController : Controller
         {
             ModelState.AddModelError(string.Empty, "Hesabınız kilitli veya pasifleştirilmiş durumda. Yöneticinizle iletişime geçin.");
         }
+        else if (sonuc.IsNotAllowed)
+        {
+            // RequireConfirmedEmail=true nedeniyle e-postasını doğrulamamış kullanıcı
+            // için PasswordSignInAsync başarısız döner (bkz. Program.cs Identity ayarları).
+            TempData["HataMesaji"] = "E-posta adresini henüz doğrulamadın. Sana gönderdiğimiz kodu gir.";
+            return RedirectToAction(nameof(EmailDogrula), new { email = model.Email });
+        }
         else
         {
             ModelState.AddModelError(string.Empty, "E-posta veya şifre hatalı.");
@@ -136,7 +153,8 @@ public class AccountController : Controller
             UserName = model.Email,
             Email = model.Email,
             AdSoyad = model.AdSoyad,
-            EmailConfirmed = true,
+            // E-postanın gerçek olduğunu doğrulamadan giriş yapamaz (bkz. EmailDogrula).
+            EmailConfirmed = false,
             KayitTarihi = DateTime.UtcNow,
             TalepEdilenRol = model.TalepEdilenRol,
             TalepEdilenDepartmanId = model.TalepEdilenDepartmanId,
@@ -150,8 +168,9 @@ public class AccountController : Controller
             // Bilinçli olarak rol atamıyoruz: hesap "onay bekliyor" durumunda kalır.
             // Mentör başvurusu → Yönetici onaylar.
             // Stajyer başvurusu → Aynı departmandaki Mentör(ler) onaylar.
-            await _signInManager.SignInAsync(kullanici, isPersistent: false);
-            return RedirectToAction("Index", "Home");
+            // Ama önce e-postasını doğrulamalı - oturum burada açılmıyor.
+            await KoduOlusturVeGonderAsync(kullanici);
+            return RedirectToAction(nameof(EmailDogrula), new { email = kullanici.Email });
         }
 
         foreach (var hata in sonuc.Errors)
@@ -160,6 +179,160 @@ public class AccountController : Controller
         }
 
         await PopulateDepartmanListesiAsync(model.TalepEdilenDepartmanId);
+        return View(model);
+    }
+
+    [HttpGet]
+    public IActionResult EmailDogrula(string email)
+    {
+        return View(new EmailDogrulaViewModel { Email = email });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EmailDogrula(EmailDogrulaViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var kullanici = await _userManager.FindByEmailAsync(model.Email);
+        if (kullanici is null || kullanici.EmailConfirmed)
+        {
+            // Zaten doğrulanmış ya da hesap yok - kod tahmin denemesine bilgi sızdırma.
+            return RedirectToAction(nameof(Login));
+        }
+
+        var kodGecerli = kullanici.EmailDogrulamaKodu == model.Kod
+            && kullanici.EmailDogrulamaKoduSonGecerlilik is not null
+            && kullanici.EmailDogrulamaKoduSonGecerlilik.Value > DateTime.UtcNow;
+
+        if (!kodGecerli)
+        {
+            ModelState.AddModelError(string.Empty, "Kod hatalı veya süresi dolmuş. Yeni kod isteyebilirsin.");
+            return View(model);
+        }
+
+        kullanici.EmailConfirmed = true;
+        kullanici.EmailDogrulamaKodu = null;
+        kullanici.EmailDogrulamaKoduSonGecerlilik = null;
+        await _userManager.UpdateAsync(kullanici);
+
+        await _signInManager.SignInAsync(kullanici, isPersistent: false);
+        return RedirectToAction("Index", "Home");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> KoduTekrarGonder(string email)
+    {
+        var kullanici = await _userManager.FindByEmailAsync(email);
+        if (kullanici is not null && !kullanici.EmailConfirmed)
+        {
+            await KoduOlusturVeGonderAsync(kullanici);
+            TempData["BilgiMesaji"] = "Yeni kod gönderildi.";
+        }
+
+        return RedirectToAction(nameof(EmailDogrula), new { email });
+    }
+
+    private async Task KoduOlusturVeGonderAsync(ApplicationUser kullanici)
+    {
+        var kod = System.Security.Cryptography.RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+        kullanici.EmailDogrulamaKodu = kod;
+        kullanici.EmailDogrulamaKoduSonGecerlilik = DateTime.UtcNow.Add(DogrulamaKoduGecerlilikSuresi);
+        await _userManager.UpdateAsync(kullanici);
+
+        try
+        {
+            await _emailSender.GonderAsync(
+                kullanici.Email!,
+                "E-posta Doğrulama Kodun",
+                $"<p>Stajyer Takip Sistemi'ne hoş geldin.</p>" +
+                $"<p>E-postanı doğrulamak için kod: <strong style=\"font-size:20px\">{kod}</strong></p>" +
+                $"<p>Bu kod {DogrulamaKoduGecerlilikSuresi.TotalMinutes:0} dakika geçerlidir.</p>");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Doğrulama kodu e-postası gönderilemedi: {Email}", kullanici.Email);
+        }
+    }
+
+    [HttpGet]
+    public IActionResult ForgotPassword() => View(new ForgotPasswordViewModel());
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var kullanici = await _userManager.FindByEmailAsync(model.Email);
+        if (kullanici is not null && kullanici.EmailConfirmed)
+        {
+            var token = await _userManager.GeneratePasswordResetTokenAsync(kullanici);
+            var link = Url.Action(
+                nameof(ResetPassword), "Account",
+                new { email = model.Email, token }, Request.Scheme);
+
+            try
+            {
+                await _emailSender.GonderAsync(
+                    model.Email,
+                    "Şifre Sıfırlama",
+                    $"<p>Şifreni sıfırlamak için <a href=\"{link}\">buraya tıkla</a>.</p>" +
+                    "<p>Bu isteği sen yapmadıysan bu e-postayı yok sayabilirsin.</p>");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Şifre sıfırlama e-postası gönderilemedi: {Email}", model.Email);
+            }
+        }
+
+        // Kullanıcının sistemde olup olmadığını sızdırmamak için her durumda aynı mesaj.
+        TempData["BilgiMesaji"] = "Bu e-posta sistemde kayıtlıysa, şifre sıfırlama bağlantısı gönderildi.";
+        return RedirectToAction(nameof(Login));
+    }
+
+    [HttpGet]
+    public IActionResult ResetPassword(string email, string token)
+    {
+        return View(new ResetPasswordViewModel { Email = email, Token = token });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(model);
+        }
+
+        var kullanici = await _userManager.FindByEmailAsync(model.Email);
+        if (kullanici is null)
+        {
+            // Var olmayan kullanıcı için de başarılıymış gibi davran (numaralandırma saldırısını önlemek için).
+            TempData["BilgiMesaji"] = "Şifren güncellendi, şimdi giriş yapabilirsin.";
+            return RedirectToAction(nameof(Login));
+        }
+
+        var sonuc = await _userManager.ResetPasswordAsync(kullanici, model.Token, model.Sifre);
+        if (sonuc.Succeeded)
+        {
+            TempData["BilgiMesaji"] = "Şifren güncellendi, şimdi giriş yapabilirsin.";
+            return RedirectToAction(nameof(Login));
+        }
+
+        foreach (var hata in sonuc.Errors)
+        {
+            ModelState.AddModelError(string.Empty, hata.Description);
+        }
+
         return View(model);
     }
 

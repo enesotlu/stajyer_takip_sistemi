@@ -8,14 +8,6 @@
 <h1>Giriş</h1>
 <p class="stk-auth-lead">Hesabınıza giriş yapın.</p>
 
-@if (TempData["BasariMesaji"] != null)
-{
-    <div class="stk-banner stk-banner-basari" role="status">
-        <partial name="_Ikon" model="@("onay-daire")" />
-        <div>@TempData["BasariMesaji"]</div>
-    </div>
-}
-
 <form asp-action="Login" method="post" id="stkGirisFormu">
     <input type="hidden" asp-for="ReturnUrl" />
     <input type="hidden" asp-for="Enlem" />
@@ -39,9 +31,12 @@
     </div>
     <span asp-validation-for="Sifre" class="text-danger d-block mb-2"></span>
 
-    <div class="form-check my-3">
-        <input asp-for="BeniHatirla" class="form-check-input" />
-        <label asp-for="BeniHatirla" class="form-check-label"></label>
+    <div class="d-flex justify-content-between align-items-center my-3">
+        <div class="form-check">
+            <input asp-for="BeniHatirla" class="form-check-input" />
+            <label asp-for="BeniHatirla" class="form-check-label"></label>
+        </div>
+        <a asp-action="ForgotPassword" class="small">Şifremi unuttum</a>
     </div>
 
     <button type="submit" class="btn btn-primary" data-yukleniyor="Giriş yapılıyor...">Giriş Yap</button>

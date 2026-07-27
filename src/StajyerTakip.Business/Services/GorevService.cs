@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using StajyerTakip.Business.Interfaces;
 using StajyerTakip.Core.Entities;
 using StajyerTakip.Core.Interfaces;
@@ -7,10 +8,33 @@ namespace StajyerTakip.Business.Services;
 public class GorevService : IGorevService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IEmailSender _emailSender;
+    private readonly ILogger<GorevService> _logger;
 
-    public GorevService(IUnitOfWork unitOfWork)
+    public GorevService(IUnitOfWork unitOfWork, IEmailSender emailSender, ILogger<GorevService> logger)
     {
         _unitOfWork = unitOfWork;
+        _emailSender = emailSender;
+        _logger = logger;
+    }
+
+    // E-posta gönderimi görev atama/teslim akışını bloklamamalı: SMTP ayarlanmamışsa
+    // ya da geçici bir hata olursa sessizce loglanır, işlem başarıyla devam eder.
+    private async Task GuvenliGonderAsync(string? aliciEmail, string konu, string govdeHtml)
+    {
+        if (string.IsNullOrWhiteSpace(aliciEmail))
+        {
+            return;
+        }
+
+        try
+        {
+            await _emailSender.GonderAsync(aliciEmail, konu, govdeHtml);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Görev bildirim e-postası gönderilemedi: {Alici}", aliciEmail);
+        }
     }
 
     // Mentör listesinde stajyerin adı gösterilir; nested include (Stajyer.Kullanici)
@@ -33,6 +57,16 @@ public class GorevService : IGorevService
         gorev.Durum = GorevDurumu.Baslamadi;
         await _unitOfWork.Gorevler.AddAsync(gorev);
         await _unitOfWork.SaveChangesAsync();
+
+        var stajyer = (await _unitOfWork.Stajyerler.FindAsync(s => s.Id == gorev.StajyerId, s => s.Kullanici))
+            .SingleOrDefault();
+
+        await GuvenliGonderAsync(
+            stajyer?.Kullanici?.Email,
+            "Yeni Görev Atandı",
+            $"<p><strong>{gorev.Baslik}</strong> başlıklı yeni bir görev sana atandı.</p>" +
+            $"<p>Son teslim tarihi: {gorev.TeslimTarihi:dd.MM.yyyy}</p>" +
+            (string.IsNullOrWhiteSpace(gorev.Aciklama) ? "" : $"<p>{gorev.Aciklama}</p>"));
     }
 
     public async Task UpdateAsync(int gorevId, string baslik, string? aciklama, DateTime teslimTarihi)
@@ -135,6 +169,16 @@ public class GorevService : IGorevService
 
         _unitOfWork.Gorevler.Update(gorev);
         await _unitOfWork.SaveChangesAsync();
+
+        var stajyerTamDetay = (await _unitOfWork.Stajyerler.FindAsync(
+            s => s.Id == gorev.StajyerId, s => s.Mentor.Kullanici, s => s.Kullanici)).SingleOrDefault();
+
+        await GuvenliGonderAsync(
+            stajyerTamDetay?.Mentor?.Kullanici?.Email,
+            "Görev Teslim Edildi",
+            $"<p><strong>{stajyerTamDetay?.Kullanici?.AdSoyad}</strong>, " +
+            $"<strong>{gorev.Baslik}</strong> başlıklı görevi teslim etti.</p>" +
+            (string.IsNullOrWhiteSpace(teslimNotu) ? "" : $"<p>{teslimNotu}</p>"));
     }
 
     public async Task<string?> MentorGeriGonderAsync(int gorevId, string? mentorNotu)

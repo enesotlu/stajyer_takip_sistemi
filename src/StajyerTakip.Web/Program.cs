@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StajyerTakip.Business.Interfaces;
+using StajyerTakip.Business.Options;
 using StajyerTakip.Business.Services;
 using StajyerTakip.Core.Identity;
 using StajyerTakip.Core.Interfaces;
@@ -29,6 +30,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
         options.Password.RequireUppercase = true;
         options.Password.RequireNonAlphanumeric = false;
         options.User.RequireUniqueEmail = true;
+
+        // Yeni kayıt olan hesaplar e-postasını 6 haneli kodla doğrulamadan
+        // giriş yapamaz (bkz. AccountController.Register/EmailDogrula). Bu
+        // alan eklenmeden önceki hesaplar EmailConfirmed=true ile oluşturulduğu
+        // için (IdentitySeeder, eski Register akışı) bu kısıttan etkilenmez.
+        options.SignIn.RequireConfirmedEmail = true;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddClaimsPrincipalFactory<UygulamaClaimsFactory>()
@@ -39,6 +46,9 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
 });
+
+builder.Services.Configure<EmailAyarlari>(builder.Configuration.GetSection("EmailAyarlari"));
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IDepartmanService, DepartmanService>();
