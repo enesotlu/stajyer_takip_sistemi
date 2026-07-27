@@ -92,6 +92,25 @@ Stajyer Takip Sistemi, bir kurumun aldığı stajyerlerin süreçlerini (başvur
 
 > 💡 **Not:** İlk çalıştırmada bir yönetici hesabı otomatik seed edilir (bkz. `Data/IdentitySeeder.cs`) — giriş bilgilerini oradan öğrenip **prod ortamına almadan önce şifresini değiştir.**
 
+### 🐳 Docker ile Çalıştırma (Alternatif)
+
+SQL Server'ı kendi makinene kurmadan, hem uygulamayı hem veritabanını container'larda çalıştırabilirsin.
+
+**Gereksinimler:** Docker Desktop (Windows'ta WSL2 backend'i etkin olmalı)
+
+1. `.env.example` dosyasını `.env` olarak kopyala ve `MSSQL_SA_PASSWORD` değerini kendi şifrenle değiştir.
+2. Container'ları build edip başlat:
+   ```bash
+   docker compose up --build
+   ```
+3. İlk çalıştırmada veritabanı boş olur; migration'ları `db` servisinin dışa açtığı 1433 portu üzerinden host makineden uygula:
+   ```bash
+   dotnet ef database update --project src/StajyerTakip.DataAccess --startup-project src/StajyerTakip.Web --connection "Server=localhost,1433;Database=StajyerTakipDb;User Id=sa;Password=<.env'deki şifren>;TrustServerCertificate=True"
+   ```
+4. Tarayıcıda `http://localhost:8080` adresine git.
+
+`docker-compose.yml`, `web` (çok aşamalı `Dockerfile` ile derlenen ASP.NET Core uygulaması) ve `db` (SQL Server 2022 Linux) servislerini tanımlar. `db` servisindeki `healthcheck`, SQL Server gerçekten bağlantı kabul edecek hâle gelene kadar `web`'in başlamasını bekletir. Veritabanı dosyaları kalıcı bir Docker volume'ünde (`stajyer-takip-db-data`) tutulur — `docker compose down` ile container'ları kaldırsan bile veri kaybolmaz (`down -v` volume'ü de siler).
+
 ## 📸 Ekranlar
 
 - **Giriş/Kayıt** — split-screen tasarım, rol+departman seçimli kayıt formu
@@ -129,7 +148,10 @@ Katmanlar arası bağımlılık tek yönlü: `Web → Business → DataAccess �
 Hepsi `wwwroot/lib/` altında **yerel olarak paketli** — CDN bağımlılığı yok.
 
 ### Database
-- **SQL Server** (Express dahil)
+- **SQL Server** (Express dahil, veya Docker container'ında SQL Server 2022 Linux)
+
+### DevOps
+- **Docker / docker-compose** — çok aşamalı `Dockerfile` + `web`/`db` servislerini birlikte ayağa kaldıran `docker-compose.yml`
 
 ## 📊 Veritabanı Şeması (özet)
 
@@ -153,7 +175,7 @@ Hepsi `wwwroot/lib/` altında **yerel olarak paketli** — CDN bağımlılığı
 - **Sahiplik kontrolü** — bir mentör yalnızca kendi stajyerlerinin kayıtlarını görebilir/onaylayabilir
 - EF Core (parametreli sorgular) ile **SQL Injection** koruması, Razor'un otomatik encode'u ile **XSS** koruması
 - Dosya yüklemelerinde uzantı beyaz listesi + boyut sınırı (Talep sistemi)
-- Veritabanı bağlantısı Windows Authentication ile — bağlantı dizesinde şifre yok
+- Yerel geliştirmede veritabanı bağlantısı Windows Authentication ile — bağlantı dizesinde şifre yok. Docker ortamında SQL kimlik doğrulaması kullanılır; şifre `.env` dosyasında tutulur, `.gitignore` ile repoya dahil edilmez (bkz. `.env.example`)
 
 ## 🚨 Sorun Giderme
 
@@ -170,11 +192,18 @@ Migration eklerken de uygulamanın çalışmıyor olması gerekir (yukarıdaki d
 ### Veritabanına bağlanamıyor
 `appsettings.json`'daki `Server=...` değerinin kendi SQL Server instance adınla eşleştiğinden emin ol (SSMS veya `sqlcmd -L` ile instance adını görebilirsin).
 
+### Docker Desktop açılmıyor ("unable to start")
+Windows'ta genelde WSL2 kurulu/etkin değildir. Yönetici olarak PowerShell'de `wsl --install` çalıştır, bilgisayarı yeniden başlat, tekrar dene.
+
+### `docker compose up` sonrası `web` container'ı veritabanına bağlanamıyor
+İki farklı sebebi olabilir:
+- **"Login failed" / bağlantı hatası hemen başlangıçta:** `db` servisi henüz tam açılmamışken `web` bağlanmayı deniyor olabilir. `docker-compose.yml`'deki `healthcheck` + `depends_on: db: condition: service_healthy` bunu önler.
+- **"Cannot open database":** Veritabanı boş, migration hiç uygulanmamış. Bkz. yukarıdaki "Docker ile Çalıştırma" adım 3.
+
 ## 🎯 Gelecek Planları
 
 - [ ] Duyuru ekranları (entity hazır, arayüz henüz yok)
 - [ ] Reddedilen başvurular için yeniden başvuru akışı
-- [ ] Docker (uygulama + SQL Server için Dockerfile/docker-compose)
 - [ ] PDF/Excel export (rapor ve staj belgesi)
 - [ ] Unit test kapsamı
 
