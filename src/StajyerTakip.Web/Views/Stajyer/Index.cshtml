@@ -12,11 +12,24 @@
                  ? "Sorumlu olduğunuz stajyerleri görüntüleyin ve yönetin."
                  : "Sistemdeki stajyerleri görüntüleyin ve yönetin."))" />
 
+<form method="get" asp-action="Index" class="stk-tablo-kart mb-3 d-flex gap-2 align-items-end flex-wrap" style="padding: 1rem">
+    <div>
+        <label class="form-label small mb-1">İsimle ara</label>
+        <input type="search" name="ad" value="@ViewBag.AramaAd" class="form-control form-control-sm" style="width: 220px" placeholder="Ad Soyad..." />
+    </div>
+    <div>
+        <label class="form-label small mb-1">Tarihte stajda olan</label>
+        <input type="date" name="tarih" value="@ViewBag.AramaTarih" class="form-control form-control-sm" style="width: 170px" />
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm">Filtrele</button>
+    <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Temizle</a>
+</form>
+
 @if (Model.Count == 0)
 {
     <div class="stk-bos-durum">
         <partial name="_Ikon" model="@("kutu")" />
-        <h2>Henüz stajyer yok</h2>
+        <h2>@(string.IsNullOrWhiteSpace((string?)ViewBag.AramaAd) && ViewBag.AramaTarih is null ? "Henüz stajyer yok" : "Filtreye uyan stajyer bulunamadı")</h2>
         <p>Stajyerler, başvuruları onaylandığında burada listelenir.</p>
     </div>
 }

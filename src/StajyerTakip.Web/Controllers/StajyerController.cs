@@ -31,7 +31,7 @@ public class StajyerController : Controller
         _userManager = userManager;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string? ad, DateTime? tarih)
     {
         var stajyerler = await _stajyerService.GetAllAsync();
 
@@ -41,6 +41,24 @@ public class StajyerController : Controller
         {
             stajyerler = stajyerler.Where(s => s.MentorId == girenMentor.Id).ToList();
         }
+
+        if (!string.IsNullOrWhiteSpace(ad))
+        {
+            stajyerler = stajyerler
+                .Where(s => s.Kullanici.AdSoyad.Contains(ad, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+        }
+
+        // Secilen tarihte stajda olan (baslangic-bitis araligina giren) stajyerleri bulur.
+        if (tarih.HasValue)
+        {
+            stajyerler = stajyerler
+                .Where(s => s.BaslangicTarihi.Date <= tarih.Value.Date && tarih.Value.Date <= s.BitisTarihi.Date)
+                .ToList();
+        }
+
+        ViewBag.AramaAd = ad;
+        ViewBag.AramaTarih = tarih?.ToString("yyyy-MM-dd");
 
         return View(stajyerler);
     }
