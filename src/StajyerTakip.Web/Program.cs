@@ -92,6 +92,12 @@ app.MapControllerRoute(
 
 using (var scope = app.Services.CreateScope())
 {
+    // Uygulama açılışta bekleyen migration'ları kendi kendine uygular - Docker
+    // gibi ortamlarda host makinede .NET SDK/dotnet-ef kurulu olmadan da
+    // veritabanı şeması otomatik hazır hale gelir.
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await dbContext.Database.MigrateAsync();
+
     await IdentitySeeder.SeedAsync(scope.ServiceProvider);
 }
 

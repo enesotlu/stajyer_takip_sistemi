@@ -77,39 +77,34 @@ Stajyer Takip Sistemi, bir kurumun aldığı stajyerlerin süreçlerini (başvur
 
 1. **Bağlantı dizesini ayarla** — `src/StajyerTakip.Web/appsettings.json` içindeki `ConnectionStrings:DefaultConnection` değerini kendi SQL Server instance'ına göre düzenle (varsayılan Windows kimlik doğrulaması kullanır, şifre gerekmez).
 
-2. **Veritabanını oluştur:**
-   ```bash
-   dotnet tool install --global dotnet-ef   # ilk kurulumda gerekli
-   dotnet ef database update --project src/StajyerTakip.DataAccess --startup-project src/StajyerTakip.Web
-   ```
-
-3. **Uygulamayı çalıştır:**
+2. **Uygulamayı çalıştır:**
    ```bash
    dotnet run --project src/StajyerTakip.Web
    ```
+   Bekleyen migration'lar açılışta **otomatik uygulanır** (`Program.cs`, `Database.MigrateAsync()`) — ayrıca `dotnet ef database update` çalıştırmana gerek yok.
 
-4. Tarayıcıda açılan adrese git ve `/Account/Register` üzerinden bir hesap oluştur.
+3. Tarayıcıda açılan adrese git ve `/Account/Register` üzerinden bir hesap oluştur.
 
 > 💡 **Not:** İlk çalıştırmada bir yönetici hesabı otomatik seed edilir (bkz. `Data/IdentitySeeder.cs`) — giriş bilgilerini oradan öğrenip **prod ortamına almadan önce şifresini değiştir.**
 
 ### 🐳 Docker ile Çalıştırma (Alternatif)
 
-SQL Server'ı kendi makinene kurmadan, hem uygulamayı hem veritabanını container'larda çalıştırabilirsin.
+SQL Server'ı kendi makinene kurmadan, hem uygulamayı hem veritabanını container'larda çalıştırabilirsin — **.NET SDK'nın host makinede kurulu olmasına bile gerek yok**, tek bağımlılık Docker Desktop.
 
 **Gereksinimler:** Docker Desktop (Windows'ta WSL2 backend'i etkin olmalı)
 
-1. `.env.example` dosyasını `.env` olarak kopyala ve `MSSQL_SA_PASSWORD` değerini kendi şifrenle değiştir.
+1. `.env.example` dosyasını `.env` olarak kopyala; `MSSQL_SA_PASSWORD` ve (e-posta göndermek istiyorsan) `SMTP_*` değerlerini kendi bilgilerinle değiştir.
 2. Container'ları build edip başlat:
    ```bash
    docker compose up --build
    ```
-3. İlk çalıştırmada veritabanı boş olur; migration'ları `db` servisinin dışa açtığı 1433 portu üzerinden host makineden uygula:
-   ```bash
-   dotnet ef database update --project src/StajyerTakip.DataAccess --startup-project src/StajyerTakip.Web --connection "Server=localhost,1433;Database=StajyerTakipDb;User Id=sa;Password=<.env'deki şifren>;TrustServerCertificate=True"
-   ```
-4. Tarayıcıda `http://localhost:8080` adresine git.
+3. Tarayıcıda `http://localhost:8080` adresine git.
 
-`docker-compose.yml`, `web` (çok aşamalı `Dockerfile` ile derlenen ASP.NET Core uygulaması) ve `db` (SQL Server 2022 Linux) servislerini tanımlar. `db` servisindeki `healthcheck`, SQL Server gerçekten bağlantı kabul edecek hâle gelene kadar `web`'in başlamasını bekletir. Veritabanı dosyaları kalıcı bir Docker volume'ünde (`stajyer-takip-db-data`) tutulur — `docker compose down` ile container'ları kaldırsan bile veri kaybolmaz (`down -v` volume'ü de siler).
+Veritabanı şeması ve yönetici hesabı **otomatik oluşur** — ayrıca migration komutu çalıştırman gerekmez (yukarıdaki "Uygulamayı çalıştır" notuyla aynı otomatik migration mekanizması).
+
+`docker-compose.yml`, `web` (çok aşamalı `Dockerfile` ile derlenen ASP.NET Core uygulaması) ve `db` (SQL Server 2022 Linux) servislerini tanımlar. `db` servisindeki `healthcheck`, SQL Server gerçekten bağlantı kabul edecek hâle gelene kadar `web`'in başlamasını bekletir. Veritabanı dosyaları ve antiforgery/cookie şifreleme anahtarları kalıcı Docker volume'lerinde tutulur — `docker compose down` ile container'ları kaldırsan bile veri kaybolmaz (`down -v` volume'leri de siler).
+
+> ⚠️ **Not:** Docker'daki veritabanı, senin yerel (Windows) SQL Server'ından tamamen ayrı ve bağımsızdır. `dotnet run` ile oluşturduğun hesaplar Docker'da görünmez, aynı şekilde tersi de geçerlidir — ikisi birbirinden habersiz iki farklı ortam.
 
 ## 📸 Ekranlar
 
@@ -196,9 +191,13 @@ Migration eklerken de uygulamanın çalışmıyor olması gerekir (yukarıdaki d
 Windows'ta genelde WSL2 kurulu/etkin değildir. Yönetici olarak PowerShell'de `wsl --install` çalıştır, bilgisayarı yeniden başlat, tekrar dene.
 
 ### `docker compose up` sonrası `web` container'ı veritabanına bağlanamıyor
-İki farklı sebebi olabilir:
-- **"Login failed" / bağlantı hatası hemen başlangıçta:** `db` servisi henüz tam açılmamışken `web` bağlanmayı deniyor olabilir. `docker-compose.yml`'deki `healthcheck` + `depends_on: db: condition: service_healthy` bunu önler.
-- **"Cannot open database":** Veritabanı boş, migration hiç uygulanmamış. Bkz. yukarıdaki "Docker ile Çalıştırma" adım 3.
+- **"Login failed" / bağlantı hatası hemen başlangıçta:** `db` servisi henüz tam açılmamışken `web` bağlanmayı deniyor olabilir. `docker-compose.yml`'deki `healthcheck` + `depends_on: db: condition: service_healthy` bunu önler; yine de görürsen `db`'nin loglarını (`docker compose logs db`) kontrol et.
+
+### Docker'da e-posta gönderilmiyor / hesap bulunamıyor
+Docker'daki veritabanı yerelden tamamen ayrı (yukarıdaki uyarıya bak). Ayrıca `.env`'deki `SMTP_*` değerlerinin dolu olduğundan emin ol — boşsa e-posta gönderimi sessizce başarısız olur (`docker compose logs web` içinde "gönderilemedi" uyarısı arayabilirsin).
+
+### Docker container'ı yeniden başlayınca "antiforgery token could not be decrypted" hatası
+`web` servisinin `docker-compose.yml`'deki DataProtection anahtar volume'ü (`stajyer-takip-dataprotection-keys`) kaldırılmış/bozulmuş olabilir. Sayfayı yenile (F5) — tarayıcın yeni bir token alır, sorun geçer.
 
 ## 🎯 Gelecek Planları
 
