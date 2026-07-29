@@ -21,9 +21,20 @@ services:
       - "8080:8080"
     environment:
       ConnectionStrings__DefaultConnection: "Server=db;Database=StajyerTakipDb;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
+      EmailAyarlari__SmtpSunucu: "${SMTP_SUNUCU}"
+      EmailAyarlari__SmtpPort: "${SMTP_PORT}"
+      EmailAyarlari__KullaniciAdi: "${SMTP_KULLANICI_ADI}"
+      EmailAyarlari__Sifre: "${SMTP_SIFRE}"
+      EmailAyarlari__GonderenEmail: "${SMTP_GONDEREN_EMAIL}"
+    volumes:
+      # Antiforgery/cookie sifreleme anahtarlari kalici olmazsa, container her
+      # yeniden basladiginda acik kalan sekmelerdeki formlar "token decrypt
+      # edilemedi" hatasi verir - bu volume o anahtarlari kalici tutuyor.
+      - stajyer-takip-dataprotection-keys:/root/.aspnet/DataProtection-Keys
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   stajyer-takip-db-data:
+  stajyer-takip-dataprotection-keys:
