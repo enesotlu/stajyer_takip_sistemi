@@ -1,8 +1,12 @@
 services:
   web:
     build: .
+    # Sol taraf (80), disaridan gelen normal http trafiginin portu - bu
+    # sayede kullanicilar ":8080" yazmadan sadece domain adiyla erisebilir.
+    # Sag taraf (8080), container'in icinde uygulamanin dinledigi port -
+    # degismedi, sadece disariya acilan kapiyi degistirdik.
     ports:
-      - "8080:8080"
+      - "80:8080"
     environment:
       # Veritabani artik yerel bir container'da degil, Amazon RDS'te (SQL
       # Server Express, ucretsiz kota) - bu yuzden burada "db" servisi yok,
