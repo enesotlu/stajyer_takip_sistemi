@@ -1,0 +1,21 @@
+services:
+  web:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # Veritabani artik yerel bir container'da degil, Amazon RDS'te (SQL
+      # Server Express, ucretsiz kota) - bu yuzden burada "db" servisi yok,
+      # dogrudan RDS endpoint'ine baglaniyoruz.
+      ConnectionStrings__DefaultConnection: "Server=${RDS_ENDPOINT};Database=StajyerTakipDb;User Id=${RDS_KULLANICI_ADI};Password=${RDS_SIFRE};TrustServerCertificate=True"
+      EmailAyarlari__SmtpSunucu: "${SMTP_SUNUCU}"
+      EmailAyarlari__SmtpPort: "${SMTP_PORT}"
+      EmailAyarlari__KullaniciAdi: "${SMTP_KULLANICI_ADI}"
+      EmailAyarlari__Sifre: "${SMTP_SIFRE}"
+      EmailAyarlari__GonderenEmail: "${SMTP_GONDEREN_EMAIL}"
+    volumes:
+      - stajyer-takip-dataprotection-keys:/root/.aspnet/DataProtection-Keys
+    restart: unless-stopped
+
+volumes:
+  stajyer-takip-dataprotection-keys:
