@@ -243,13 +243,6 @@ DNS değişiklikleri anında yayılmaz (dakikalar-saatler sürebilir), farklı a
 ### Stajyer girişinde konum isteği hiç çıkmıyor / "konumu açamıyorum"
 Tarayıcılar, `navigator.geolocation` API'sini yalnızca **güvenli bağlamda** (HTTPS ya da `localhost`) çalıştırır. Düz HTTP ile canlıya alınmış bir domain'de bu istek sessizce engellenir. Çözüm: HTTPS kur (bkz. "Canlı Deploy" bölümündeki Caddy kurulumu).
 
-## 🎯 Gelecek Planları
-
-- [ ] Duyuru ekranları (entity hazır, arayüz henüz yok)
-- [ ] Reddedilen başvurular için yeniden başvuru akışı
-- [ ] PDF/Excel export (rapor ve staj belgesi)
-- [ ] Unit test kapsamı
-
 ---
 
 **Durum:** Temel akışların tamamı (kayıt/onay, görev, devam, talep, izin, toplantı, raporlama, e-posta bildirimleri) tamamlandı; proje Docker ile paketlenip AWS'e (EC2 + RDS + Caddy/HTTPS) canlı olarak deploy edildi.
