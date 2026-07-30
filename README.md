@@ -1,6 +1,6 @@
 # 🎓 Stajyer Takip Sistemi
 
-Kurumların kendi bünyelerinde yürüttükleri staj programlarını uçtan uca (kayıt/onay → görevlendirme → devam takibi → izin → toplantı → değerlendirme) dijital ortamda yönetebileceği, **rol tabanlı** bir ASP.NET Core web uygulaması.
+Kurumların kendi bünyelerinde yürüttükleri staj programlarını uçtan uca (kayıt/onay → görevlendirme → devam takibi → izin → toplantı) dijital ortamda yönetebileceği, **rol tabanlı** bir ASP.NET Core web uygulaması.
 
 ## 📖 Proje Tanıtımı
 
@@ -18,20 +18,24 @@ Stajyer Takip Sistemi, bir kurumun aldığı stajyerlerin süreçlerini (başvur
 
 - **Rol Bazlı Başvuru/Onay Akışı** — kayıt olan kullanıcı Mentör ya da Stajyer rolü talep eder, ilgili yetkili onaylar
 - **Görev Yönetimi** — mentör stajyerine görev atar, durumunu takip eder
-- **Devam/Puantaj** — günlük giriş-çıkış kaydı, mentör onayı, aylık özet
+- **Devam/Puantaj** — konum doğrulamalı otomatik giriş kaydı, mentör onayı, aylık özet
 - **Talep Sistemi** — mentörün stajyerden belge/CV istemesi, dosya yükleyerek cevaplama
 - **İzin Sistemi** — stajyerin izin talep etmesi, mentörün onaylaması/reddetmesi
 - **Toplantı Sistemi** — mentörün topluca toplantı daveti göndermesi, stajyerlerin kabul/ret vermesi
+- **E-posta Bildirimleri** — kayıt doğrulama, şifre sıfırlama, izin/görev/talep/toplantı olaylarında otomatik mail
 - **Raporlama** — yönetici için özet sayılar ve grafiklerle genel durum paneli
 
 ## ✨ Özellikler
 
 ### 👥 Kullanıcı / Rol Yönetimi
 - ✅ Kayıt olurken rol (Mentör/Stajyer) + departman talebi
+- ✅ Yeni kayıtlar e-postaya gönderilen **6 haneli kodla doğrulanmadan** giriş yapamaz
+- ✅ **Şifremi Unuttum** — e-postaya gönderilen linkle (15 dk geçerli) şifre sıfırlama
 - ✅ Mentör başvurusu → Yönetici onayı, Stajyer başvurusu → ilgili departmandaki Mentör onayı
 - ✅ Tek yöneticili model: yetki devri (bir sonraki yöneticiye), devreden otomatik oturumdan atılır
 - ✅ Hesap pasifleştirme/aktifleştirme (silme değil — denetim izi korunur)
 - ✅ Staj bitiş tarihi geçen stajyerin girişi otomatik engellenir
+- ✅ Stajyer listesinde **isimle arama** ve **tarihe göre filtreleme** (seçilen tarihte stajı devam edenler)
 
 ### 📝 Görev Yönetimi
 - ✅ Mentör kendi stajyerine görev atar (başlık, açıklama, son tarih)
@@ -39,8 +43,9 @@ Stajyer Takip Sistemi, bir kurumun aldığı stajyerlerin süreçlerini (başvur
 - ✅ Mentör, yetersiz bulduğu görevi geri gönderebilir
 
 ### 🕒 Devam / Puantaj
-- ✅ Stajyer günlük giriş/çıkış saati girer (yalnızca bugün için, mesai saatine kadar)
-- ✅ Mentör onaylar/reddeder; unutulan günü mentör kendisi (onaylı olarak) girebilir
+- ✅ Stajyer manuel saat girmez — **girişte konum doğrulanır** (belirlenen referans noktaya belirli bir yarıçap içindeyse) ve devam kaydı otomatik açılır; konum dışındaysa ya da izin verilmediyse giriş reddedilir
+- ✅ Mentör onaylar/reddeder; otomatik açılan kaydın saatini düzenleyebilir ya da tamamen kaldırabilir (unutulan/hatalı gün "Yok" olarak görünür)
+- ✅ Onay listesinde kayıt konumu haritada görüntülenebilir (mentörün elle girdiği kayıtlarda konum yok, ayrıca belirtilir)
 - ✅ Aylık takvim görünümü + özet (onaylanan/bekleyen/reddedilen/eksik gün sayısı)
 
 ### 📁 Talep Sistemi
@@ -57,6 +62,14 @@ Stajyer Takip Sistemi, bir kurumun aldığı stajyerlerin süreçlerini (başvur
 - ✅ Mentör toplantı daveti oluşturduğunda, sorumlu olduğu **tüm stajyerlere otomatik davet gider**
 - ✅ Her stajyer ayrı ayrı kabul eder veya **sebep yazarak** reddeder
 - ✅ Mentör, tek ekrandan kimin kabul kimin reddettiğini görür
+
+### 📧 E-posta Bildirimleri
+- ✅ Kayıt doğrulama kodu, şifre sıfırlama linki
+- ✅ İzin talebi açılınca mentöre, onaylanınca/reddedilince stajyere
+- ✅ Görev atanınca stajyere, teslim edilince mentöre
+- ✅ Talep açılınca stajyere, cevaplanınca mentöre
+- ✅ Toplantı daveti açılınca davetli stajyerlere, kabul/red edilince mentöre
+- ✅ SMTP hatası (yanlış ayar, geçici kesinti vb.) ana işlemi **bloklamaz** — sessizce loglanır, uygulama akışı bozulmaz
 
 ### 📊 Raporlama (Yönetici Paneli)
 - ✅ Toplam/aktif stajyer, mentör, departman sayıları
@@ -106,6 +119,22 @@ Veritabanı şeması ve yönetici hesabı **otomatik oluşur** — ayrıca migra
 
 > ⚠️ **Not:** Docker'daki veritabanı, senin yerel (Windows) SQL Server'ından tamamen ayrı ve bağımsızdır. `dotnet run` ile oluşturduğun hesaplar Docker'da görünmez, aynı şekilde tersi de geçerlidir — ikisi birbirinden habersiz iki farklı ortam.
 
+### ☁️ Canlı Deploy (AWS)
+
+Proje, `docker-compose.prod.yml` ile bir AWS EC2 sunucusuna deploy edilecek şekilde de yapılandırılmış:
+
+- **EC2** (`t2.micro`/`t3.micro`, ücretsiz kota) — sadece `web` ve `caddy` container'larını çalıştırır.
+- **Amazon RDS** (SQL Server Express, ücretsiz kota) — veritabanı EC2'nin üzerinde değil, ayrı, yönetilen bir serviste. Sebebi: SQL Server'ın kendisi en az 2GB RAM istiyor, `t2.micro`/`t3.micro`'nun 1GB'ı buna yetmiyor (swap bu kontrolü atlatmıyor).
+- **Caddy** — reverse proxy; Let's Encrypt sertifikasını **otomatik** alıp yeniliyor, `web` servisi dışarıya doğrudan port açmıyor. Bu **zorunlu**: stajyer girişindeki konum doğrulaması (`navigator.geolocation`) tarayıcılarda yalnızca HTTPS (ya da `localhost`) üzerinde çalışıyor, düz HTTP'de tarayıcı isteği tamamen engelliyor.
+
+**Kurulum özeti** (sunucuda, kod çekildikten sonra):
+```bash
+cp .env.example .env
+nano .env   # RDS_ENDPOINT, RDS_KULLANICI_ADI, RDS_SIFRE, SMTP_* değerlerini gir
+docker compose -f docker-compose.prod.yml up --build -d
+```
+`Caddyfile`'daki domain adını kendi alan adınla değiştirmen gerekir.
+
 ## 📸 Ekranlar
 
 - **Giriş/Kayıt** — split-screen tasarım, rol+departman seçimli kayıt formu
@@ -130,8 +159,9 @@ Katmanlar arası bağımlılık tek yönlü: `Web → Business → DataAccess �
 
 ### Backend
 - **ASP.NET Core 8** — MVC / Razor Views
-- **Entity Framework Core** — Repository + Unit of Work deseni, code-first migrations
-- **ASP.NET Core Identity** — rol tabanlı yetkilendirme, claim tabanlı görünen ad
+- **Entity Framework Core** — Repository + Unit of Work deseni, code-first migrations, açılışta otomatik migration
+- **ASP.NET Core Identity** — rol tabanlı yetkilendirme, e-posta doğrulamalı hesaplar, claim tabanlı görünen ad
+- **SMTP (System.Net.Mail)** — kayıt doğrulama, şifre sıfırlama, izin/görev/talep/toplantı bildirimleri
 
 ### Frontend
 - **Razor Views** — sunucu taraflı render, ayrı bir frontend framework'ü yok
@@ -143,21 +173,23 @@ Katmanlar arası bağımlılık tek yönlü: `Web → Business → DataAccess �
 Hepsi `wwwroot/lib/` altında **yerel olarak paketli** — CDN bağımlılığı yok.
 
 ### Database
-- **SQL Server** (Express dahil, veya Docker container'ında SQL Server 2022 Linux)
+- **SQL Server** — yerelde Express, Docker'da SQL Server 2022 Linux container'ı, canlıda Amazon RDS (SQL Server Express)
 
 ### DevOps
-- **Docker / docker-compose** — çok aşamalı `Dockerfile` + `web`/`db` servislerini birlikte ayağa kaldıran `docker-compose.yml`
+- **Docker / docker-compose** — çok aşamalı `Dockerfile`; yerel geliştirme için `docker-compose.yml` (`web`+`db`), deploy için `docker-compose.prod.yml` (`web`+`caddy`, veritabanı RDS'te)
+- **Caddy** — canlıda otomatik Let's Encrypt HTTPS sağlayan reverse proxy
+- **AWS (EC2 + RDS)** — deploy edilen ortam
 
 ## 📊 Veritabanı Şeması (özet)
 
 | Tablo | Açıklama |
 |---|---|
-| `AspNetUsers` | Identity kullanıcıları — ad soyad, talep edilen rol/departman, onay durumu |
+| `AspNetUsers` | Identity kullanıcıları — ad soyad, talep edilen rol/departman, onay durumu, e-posta doğrulama kodu |
 | `Departmanlar` | Departman listesi |
 | `Mentorler` | Mentör profili — unvan, departman, bağlı kullanıcı |
 | `Stajyerler` | Stajyer profili — okul, bölüm, başlangıç/bitiş tarihi, mentör, departman |
 | `Gorevler` | Görev — başlık, açıklama, son tarih, durum |
-| `DevamKayitlari` | Günlük giriş/çıkış kaydı, onay durumu |
+| `DevamKayitlari` | Konum doğrulamalı giriş/çıkış kaydı, onay durumu, enlem/boylam |
 | `Talepler` | Mentörden stajyere belge talebi, cevap + dosya bilgisi |
 | `Izinler` | Stajyer izin talebi, onay durumu, mentör notu |
 | `Toplantilar` / `ToplantiKatilimlari` | Toplantı daveti ve her stajyer için ayrı katılım durumu |
@@ -199,6 +231,18 @@ Docker'daki veritabanı yerelden tamamen ayrı (yukarıdaki uyarıya bak). Ayrı
 ### Docker container'ı yeniden başlayınca "antiforgery token could not be decrypted" hatası
 `web` servisinin `docker-compose.yml`'deki DataProtection anahtar volume'ü (`stajyer-takip-dataprotection-keys`) kaldırılmış/bozulmuş olabilir. Sayfayı yenile (F5) — tarayıcın yeni bir token alır, sorun geçer.
 
+### `db` container'ı "requires a machine with at least 2000 megabytes of memory" hatasıyla çöküyor
+SQL Server'ın sabit bir minimum fiziksel RAM kontrolü var (**swap bunu atlatmaz**, sadece fiziksel RAM'e bakar). `t2.micro`/`t3.micro` gibi 1GB'lık sunucularda bu her zaman başarısız olur — çözüm, veritabanını Amazon RDS gibi ayrı, yönetilen bir servise taşımak (bkz. "Canlı Deploy" bölümü) ya da en az 2GB RAM'li bir instance kullanmak.
+
+### EC2'de `docker compose` çalışırken "No space left on device"
+Varsayılan EC2 kök disk boyutu (genelde 8GB) Docker imajları için yetersiz kalabilir. AWS Console'dan volume'ü büyüt (Free tier 30GB'a kadar izin verir), sonra sunucuda: `sudo growpart /dev/nvme0n1 1 && sudo resize2fs /dev/nvme0n1p1`.
+
+### Domain bağladım ama site açılmıyor / bazı cihazlarda açılıyor bazılarında açılmıyor
+DNS değişiklikleri anında yayılmaz (dakikalar-saatler sürebilir), farklı ağlar/cihazlar farklı zamanlarda güncel kaydı görür. `ipconfig /flushdns` (Windows) ile yerel önbelleği temizlemek çoğu zaman yardımcı olur. Ayrıca alan adını GitHub Student Pack gibi bir kaynaktan aldıysan, varsayılan olarak eklenmiş GitHub Pages A/CNAME kayıtları olabilir — DNS ayarlarında sadece kendi sunucunun IP'sine giden tek bir kayıt kalana kadar fazlalıkları sil.
+
+### Stajyer girişinde konum isteği hiç çıkmıyor / "konumu açamıyorum"
+Tarayıcılar, `navigator.geolocation` API'sini yalnızca **güvenli bağlamda** (HTTPS ya da `localhost`) çalıştırır. Düz HTTP ile canlıya alınmış bir domain'de bu istek sessizce engellenir. Çözüm: HTTPS kur (bkz. "Canlı Deploy" bölümündeki Caddy kurulumu).
+
 ## 🎯 Gelecek Planları
 
 - [ ] Duyuru ekranları (entity hazır, arayüz henüz yok)
@@ -208,4 +252,4 @@ Docker'daki veritabanı yerelden tamamen ayrı (yukarıdaki uyarıya bak). Ayrı
 
 ---
 
-**Durum:** Temel akışların tamamı (kayıt/onay, görev, devam, talep, izin, toplantı, raporlama) tamamlandı; geliştirme sürecinin sonuna yaklaşılıyor.
+**Durum:** Temel akışların tamamı (kayıt/onay, görev, devam, talep, izin, toplantı, raporlama, e-posta bildirimleri) tamamlandı; proje Docker ile paketlenip AWS'e (EC2 + RDS + Caddy/HTTPS) canlı olarak deploy edildi.
