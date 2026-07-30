@@ -1,0 +1,3 @@
+stajyertakip.me, www.stajyertakip.me {
+    reverse_proxy web:8080
+}
