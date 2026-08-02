@@ -31,9 +31,10 @@ public class DevamlarimController : Controller
             return View(new List<Business.Models.GunlukDevamDurumu>());
         }
 
-        var takvim = await _devamService.GetAylikTakvimAsync(stajyer.Id, DateTime.Today.Year, DateTime.Today.Month);
-        var ozet = await _devamService.GetAylikOzetAsync(stajyer.Id, DateTime.Today.Year, DateTime.Today.Month);
-        ViewBag.AylikOzet = ozet;
+        var takvim = await _devamService.GetTumDonemTakvimAsync(stajyer.Id);
+        var ozet = await _devamService.GetTumDonemOzetiAsync(stajyer.Id);
+        ViewBag.DonemOzeti = ozet;
+        ViewBag.Stajyer = stajyer;
 
         return View(takvim.OrderByDescending(g => g.Tarih).ToList());
     }

@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StajyerTakip.Business.Interfaces;
@@ -8,6 +9,14 @@ using StajyerTakip.Core.Interfaces;
 using StajyerTakip.DataAccess;
 using StajyerTakip.DataAccess.Context;
 using StajyerTakip.Web.Data;
+
+// Sunucunun isletim sistemi kulturu ortama gore degisebilir (Windows'ta
+// Turkce, Linux/Docker container'inda genelde Ingilizce) - gun/ay adlari
+// gibi kultur bazli metinlerin her ortamda ayni (Turkce) gorunmesi icin
+// varsayilan kulturu sabitliyoruz.
+var turkceKultur = new CultureInfo("tr-TR");
+CultureInfo.DefaultThreadCurrentCulture = turkceKultur;
+CultureInfo.DefaultThreadCurrentUICulture = turkceKultur;
 
 var builder = WebApplication.CreateBuilder(args);
 
