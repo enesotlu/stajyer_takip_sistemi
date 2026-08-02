@@ -132,10 +132,10 @@ public class DevamController : Controller
             return NotFound();
         }
 
-        var takvim = await _devamService.GetAylikTakvimAsync(stajyerId, DateTime.Today.Year, DateTime.Today.Month);
-        var ozet = await _devamService.GetAylikOzetAsync(stajyerId, DateTime.Today.Year, DateTime.Today.Month);
+        var takvim = await _devamService.GetTumDonemTakvimAsync(stajyerId);
+        var ozet = await _devamService.GetTumDonemOzetiAsync(stajyerId);
         ViewBag.Stajyer = stajyer;
-        ViewBag.AylikOzet = ozet;
+        ViewBag.DonemOzeti = ozet;
 
         return View(takvim.OrderByDescending(g => g.Tarih).ToList());
     }

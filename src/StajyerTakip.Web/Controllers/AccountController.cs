@@ -77,9 +77,11 @@ public class AccountController : Controller
                 return View(model);
             }
 
-            // Stajyer icin konum sarti: Kulliye disindaysa ya da konum hic
-            // gelmediyse giris reddedilir. Konum gecerliyse ayni cagri bugunun
-            // devam kaydini da olusturur (bkz. IDevamService.OtomatikOlusturAsync).
+            // Stajyer, konumundan bağımsız her zaman giriş yapabilir - konum
+            // yalnızca bugünün devam kaydının otomatik açılıp açılmayacağını
+            // belirler (Külliye dışındaysa/konum yoksa kayıt sessizce açılmaz,
+            // bkz. IDevamService.OtomatikOlusturAsync). Akşam/hafta sonu evden
+            // ödev indirmek gibi işler için giriş her koşulda serbest kalmalı.
             if (stajyerProfili is not null)
             {
                 double? enlemDeger = double.TryParse(
@@ -87,13 +89,7 @@ public class AccountController : Controller
                 double? boylamDeger = double.TryParse(
                     model.Boylam, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var b) ? b : null;
 
-                var konumSonucu = await _devamService.OtomatikOlusturAsync(girisYapanKullanici!.Id, enlemDeger, boylamDeger);
-                if (!konumSonucu.Basarili)
-                {
-                    await _signInManager.SignOutAsync();
-                    ModelState.AddModelError(string.Empty, konumSonucu.Mesaj);
-                    return View(model);
-                }
+                await _devamService.OtomatikOlusturAsync(girisYapanKullanici!.Id, enlemDeger, boylamDeger);
             }
 
             if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))

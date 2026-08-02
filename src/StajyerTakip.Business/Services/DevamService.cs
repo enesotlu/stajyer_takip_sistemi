@@ -21,50 +21,47 @@ public class DevamService : IDevamService
     public Task<List<Devam>> GetByStajyerIdAsync(int stajyerId) =>
         _unitOfWork.DevamKayitlari.FindAsync(d => d.StajyerId == stajyerId);
 
-    public async Task<DevamOtomatikSonucu> OtomatikOlusturAsync(string kullaniciId, double? enlem, double? boylam)
+    public async Task OtomatikOlusturAsync(string kullaniciId, double? enlem, double? boylam)
     {
-        // Konum hic gelmemis (izin verilmedi/tarayici desteklemiyor) - giris reddedilir.
+        // Konum hic gelmemis (izin verilmedi/tarayici desteklemiyor) - giris
+        // engellenmez, sadece bugun icin devam kaydi acilmaz.
         if (enlem is null || boylam is null)
         {
-            return new DevamOtomatikSonucu(false, "Giriş yapabilmen için konumunu açman gerekiyor.");
+            return;
         }
 
-        // Konum Kulliye yaricapi disindaysa giris reddedilir - bu, kayit olusturmanin
-        // otesinde artik bir GIRIS SARTI (bkz. AccountController.Login).
+        // Konum Kulliye yaricapi disindaysa da ayni sekilde - sadece kayit acilmaz.
         var mesafeMetre = MesafeMetre(enlem.Value, boylam.Value, IDevamService.KulliyeEnlem, IDevamService.KulliyeBoylam);
         if (mesafeMetre > IDevamService.KulliyeYaricapMetre)
         {
-            return new DevamOtomatikSonucu(false,
-                $"Külliye dışındasın (yaklaşık {mesafeMetre / 1000:F1} km uzakta). Giriş yapabilmek için Külliye'de olmalısın.");
+            return;
         }
 
         var stajyerEslesenleri = await _unitOfWork.Stajyerler.FindAsync(s => s.KullaniciId == kullaniciId);
         var stajyer = stajyerEslesenleri.SingleOrDefault();
         if (stajyer is null)
         {
-            return new DevamOtomatikSonucu(true, "Stajyer profili bulunamadı.");
+            return;
         }
 
-        // Bundan sonraki durumlar giris'i engellemez, sadece o gun icin
-        // devam kaydi acilmamasina sebep olur (hafta sonu, zaten kayit var, mesai bitmis).
         var bugun = DateTime.Today;
         if (bugun.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
         {
-            return new DevamOtomatikSonucu(true, "Hafta sonu, devam kaydı açılmadı.");
+            return;
         }
 
         var ayniGunKaydiVarMi = (await _unitOfWork.DevamKayitlari.FindAsync(
             d => d.StajyerId == stajyer.Id && d.Tarih.Date == bugun)).Any();
         if (ayniGunKaydiVarMi)
         {
-            return new DevamOtomatikSonucu(true, "Bugün için zaten bir devam kaydın var.");
+            return;
         }
 
         // Giris saati, gercek anda giris yapilan saattir - sabit 09:00 degil.
         var girisSaati = DateTime.Now.TimeOfDay;
         if (girisSaati >= IDevamService.MesaiBitis)
         {
-            return new DevamOtomatikSonucu(true, "Mesai bitti, bugün için devam kaydı açılmadı.");
+            return;
         }
 
         var devam = new Devam
@@ -80,8 +77,6 @@ public class DevamService : IDevamService
 
         await _unitOfWork.DevamKayitlari.AddAsync(devam);
         await _unitOfWork.SaveChangesAsync();
-
-        return new DevamOtomatikSonucu(true, $"Devam kaydın oluşturuldu (giriş: {girisSaati:hh\\:mm}).");
     }
 
     // Haversine formulu: iki enlem/boylam noktasi arasindaki mesafeyi metre cinsinden dondurur.
@@ -215,6 +210,54 @@ public class DevamService : IDevamService
         }
 
         return sonuc;
+    }
+
+    public async Task<List<GunlukDevamDurumu>> GetTumDonemTakvimAsync(int stajyerId)
+    {
+        var stajyer = await _unitOfWork.Stajyerler.GetByIdAsync(stajyerId);
+        if (stajyer is null)
+        {
+            throw new InvalidOperationException("Stajyer bulunamadı.");
+        }
+
+        // Ay siniri yok - GetAylikTakvimAsync'teki aynı mantık (BaslangicTarihi/
+        // OlusturmaTarihi'nden geç olanı esas al, bugüne kadar olan günleri göster).
+        var altSinir = new[] { stajyer.BaslangicTarihi.Date, stajyer.OlusturmaTarihi?.Date ?? DateTime.MinValue }.Max();
+        var ustSinir = new[] { stajyer.BitisTarihi.Date, DateTime.Today }.Min();
+
+        if (altSinir > ustSinir)
+        {
+            return new List<GunlukDevamDurumu>();
+        }
+
+        var kayitlar = await _unitOfWork.DevamKayitlari.FindAsync(d => d.StajyerId == stajyerId);
+        var kayitlarTariheGore = kayitlar.ToDictionary(d => d.Tarih.Date);
+
+        var sonuc = new List<GunlukDevamDurumu>();
+        for (var gun = altSinir; gun <= ustSinir; gun = gun.AddDays(1))
+        {
+            if (gun.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
+            {
+                continue;
+            }
+
+            kayitlarTariheGore.TryGetValue(gun, out var kayit);
+            sonuc.Add(new GunlukDevamDurumu(gun, kayit));
+        }
+
+        return sonuc;
+    }
+
+    public async Task<DonemDevamOzeti> GetTumDonemOzetiAsync(int stajyerId)
+    {
+        var takvim = await GetTumDonemTakvimAsync(stajyerId);
+
+        return new DonemDevamOzeti(
+            ToplamGun: takvim.Count,
+            OnaylananGun: takvim.Count(g => g.Kayit?.OnayDurumu == OnayDurumu.Onaylandi),
+            BekleyenGun: takvim.Count(g => g.Kayit?.OnayDurumu == OnayDurumu.Bekliyor),
+            ReddedilenGun: takvim.Count(g => g.Kayit?.OnayDurumu == OnayDurumu.Reddedildi),
+            EksikGun: takvim.Count(g => g.Kayit is null));
     }
 
     public async Task MentorKayitGirAsync(int stajyerId, DateTime tarih, TimeSpan girisSaati, TimeSpan cikisSaati)

@@ -20,11 +20,11 @@ public interface IDevamService
     Task<Devam?> GetByIdAsync(int id);
     Task<List<Devam>> GetByStajyerIdAsync(int stajyerId);
 
-    // Stajyer giriş yaparken tarayıcıdan alınan konumla çağrılır.
-    // Basarili=false ise (konum verilmedi ya da Külliye dışında) giriş
-    // AccountController tarafından reddedilir - bu artık yalnızca bir devam
-    // kaydı oluşturma değil, aynı zamanda bir giriş şartı kontrolüdür.
-    Task<DevamOtomatikSonucu> OtomatikOlusturAsync(string kullaniciId, double? enlem, double? boylam);
+    // Stajyer giriş yaparken tarayıcıdan alınan konumla çağrılır. Giriş
+    // yapmasını hiçbir zaman engellemez - sadece konum Külliye içindeyse
+    // bugünün devam kaydını oluşturur; konum yoksa/dışarıdaysa kayıt
+    // sessizce açılmaz (o gün takvimde "Yok" görünür).
+    Task OtomatikOlusturAsync(string kullaniciId, double? enlem, double? boylam);
 
     Task OnaylaAsync(int id);
     Task ReddetAsync(int id);
@@ -40,6 +40,12 @@ public interface IDevamService
     // Stajyerin baslangic-bitis araligindaki her is gunu icin, o gune ait
     // kayit varsa onu, yoksa null (=Yok) dondurur - eksik gunleri gorunur kilar.
     Task<List<GunlukDevamDurumu>> GetAylikTakvimAsync(int stajyerId, int yil, int ay);
+
+    // Mentorun "Devam Takvimi" ekraninda kullanilir: tek bir ay yerine,
+    // stajin basladigi gunden (ya da bugune kadar) bitis tarihine/bugune
+    // kadar TUM donemi gosterir - gecmis kayitlar ve eksik gunler dahil.
+    Task<List<GunlukDevamDurumu>> GetTumDonemTakvimAsync(int stajyerId);
+    Task<DonemDevamOzeti> GetTumDonemOzetiAsync(int stajyerId);
 
     // Mentorun, stajyerin girmeyi unuttugu bir gun icin onun adina girdigi
     // kayit; mentor kendisi girdigi icin dogrudan onayli olusturulur.

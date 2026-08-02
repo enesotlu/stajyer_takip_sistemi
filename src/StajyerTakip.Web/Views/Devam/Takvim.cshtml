@@ -10,15 +10,15 @@
 <partial name="_SayfaBaslik"
          model="@(new SayfaBaslikModel(
              "Devam Takvimi",
-             $"{stajyer.Kullanici.AdSoyad} — bu ayki giriş-çıkış kayıtları. Eksik günler için kayıt girebilirsiniz."))" />
+             $"{stajyer.Kullanici.AdSoyad} — stajın başladığı günden bugüne tüm giriş-çıkış kayıtları. Eksik günler için kayıt girebilirsiniz."))" />
 
 @{
-    var ozet = (AylikDevamOzeti)ViewBag.AylikOzet;
+    var ozet = (DonemDevamOzeti)ViewBag.DonemOzeti;
 }
 <div class="stk-banner @(ozet.EksikGun > 0 ? "stk-banner-uyari" : "stk-banner-bilgi")">
     <partial name="_Ikon" model="@("takvim")" />
     <div>
-        <strong>@ozet.Ay.ToString("00")/@ozet.Yil özeti:</strong>
+        <strong>@stajyer.BaslangicTarihi.ToString("dd.MM.yyyy") — @stajyer.BitisTarihi.ToString("dd.MM.yyyy") özeti:</strong>
         @ozet.ToplamGun iş günü — Onaylanan @ozet.OnaylananGun, Bekleyen @ozet.BekleyenGun, Reddedilen @ozet.ReddedilenGun,
         <strong>Eksik @ozet.EksikGun</strong>
     </div>
@@ -28,8 +28,8 @@
 {
     <div class="stk-bos-durum">
         <partial name="_Ikon" model="@("takvim")" />
-        <h2>Bu ay için görüntülenecek gün yok</h2>
-        <p>Stajyerlik bu ay içinde henüz başlamamış veya kayıt günü geçmemiş.</p>
+        <h2>Görüntülenecek gün yok</h2>
+        <p>Stajyerlik henüz başlamamış olabilir.</p>
     </div>
 }
 else
