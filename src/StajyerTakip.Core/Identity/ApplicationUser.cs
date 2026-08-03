@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Identity;
 
 namespace StajyerTakip.Core.Identity;
@@ -8,6 +9,15 @@ public class ApplicationUser : IdentityUser
     [Required]
     [StringLength(150)]
     public string AdSoyad { get; set; } = string.Empty;
+
+    // Profil fotoğrafı: wwwroot/uploads/profil-fotograflari altında GUID adla
+    // saklanır (herkese görünür avatar olduğu için, Talep/Görev belgelerinin
+    // aksine wwwroot DIŞINA değil, statik dosya olarak buraya konur).
+    [StringLength(260)]
+    public string? ProfilFotografAdi { get; set; }
+
+    [NotMapped]
+    public string? ProfilFotografUrl => ProfilFotografAdi is null ? null : $"/uploads/profil-fotograflari/{ProfilFotografAdi}";
 
     public DateTime KayitTarihi { get; set; } = DateTime.UtcNow;
 

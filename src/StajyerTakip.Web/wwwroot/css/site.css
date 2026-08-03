@@ -310,6 +310,47 @@ a {
   font-weight: 600;
 }
 
+/* ---- Profil fotografi (avatar) ---- */
+
+.stk-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #eef1f5;
+  color: var(--stk-text-muted);
+}
+
+.stk-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.stk-avatar-sm {
+  width: 32px;
+  height: 32px;
+}
+
+.stk-avatar-sm .stk-ikon {
+  width: 16px;
+  height: 16px;
+}
+
+.stk-avatar-lg {
+  width: 88px;
+  height: 88px;
+  border: 3px solid #ffffff;
+  box-shadow: var(--stk-golge-hover);
+}
+
+.stk-avatar-lg .stk-ikon {
+  width: 40px;
+  height: 40px;
+}
+
 /* ---- Soft durum rozetleri ---- */
 
 .stk-rozet {

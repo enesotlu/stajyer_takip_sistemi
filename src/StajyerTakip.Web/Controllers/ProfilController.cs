@@ -10,18 +10,27 @@ namespace StajyerTakip.Web.Controllers;
 [Authorize]
 public class ProfilController : Controller
 {
+    // Profil fotoğrafları herkese görünür avatar olduğu için (Talep/Görev
+    // belgelerinin aksine) wwwroot İÇİNDE, statik dosya olarak saklanır.
+    private const string FotografAltKlasoru = "profil-fotograflari";
+    private static readonly string[] IzinliUzantilar = { ".png", ".jpg", ".jpeg" };
+    private const long MaksimumFotografBoyutu = 3 * 1024 * 1024;
+
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IStajyerService _stajyerService;
     private readonly IMentorService _mentorService;
+    private readonly IWebHostEnvironment _ortam;
 
     public ProfilController(
         UserManager<ApplicationUser> userManager,
         IStajyerService stajyerService,
-        IMentorService mentorService)
+        IMentorService mentorService,
+        IWebHostEnvironment ortam)
     {
         _userManager = userManager;
         _stajyerService = stajyerService;
         _mentorService = mentorService;
+        _ortam = ortam;
     }
 
     public async Task<IActionResult> Index()
@@ -38,7 +47,8 @@ public class ProfilController : Controller
             AdSoyad = kullanici.AdSoyad,
             Email = kullanici.Email ?? string.Empty,
             KayitTarihi = kullanici.KayitTarihi,
-            Rol = roller.FirstOrDefault() ?? string.Empty
+            Rol = roller.FirstOrDefault() ?? string.Empty,
+            ProfilFotografUrl = kullanici.ProfilFotografUrl
         };
 
         if (roller.Contains(Roller.Stajyer))
@@ -62,5 +72,88 @@ public class ProfilController : Controller
         }
 
         return View(model);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> FotografYukle(IFormFile fotograf)
+    {
+        var kullanici = await _userManager.GetUserAsync(User);
+        if (kullanici is null)
+        {
+            return NotFound();
+        }
+
+        if (fotograf is null || fotograf.Length == 0)
+        {
+            TempData["HataMesaji"] = "Bir fotoğraf seçmelisin.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var uzanti = Path.GetExtension(fotograf.FileName).ToLowerInvariant();
+        if (!IzinliUzantilar.Contains(uzanti))
+        {
+            TempData["HataMesaji"] = "Bu dosya türüne izin verilmiyor. İzinli türler: PNG, JPG.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        if (fotograf.Length > MaksimumFotografBoyutu)
+        {
+            TempData["HataMesaji"] = "Fotoğraf boyutu 3 MB'ı aşamaz.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        var klasor = Path.Combine(_ortam.WebRootPath, "uploads", FotografAltKlasoru);
+        Directory.CreateDirectory(klasor);
+
+        var eskiDosyaAdi = kullanici.ProfilFotografAdi;
+        var yeniDosyaAdi = $"{Guid.NewGuid():N}{uzanti}";
+
+        await using (var akis = System.IO.File.Create(Path.Combine(klasor, yeniDosyaAdi)))
+        {
+            await fotograf.CopyToAsync(akis);
+        }
+
+        kullanici.ProfilFotografAdi = yeniDosyaAdi;
+        await _userManager.UpdateAsync(kullanici);
+
+        FotografSilVarsa(klasor, eskiDosyaAdi);
+
+        TempData["BilgiMesaji"] = "Profil fotoğrafın güncellendi.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> FotografKaldir()
+    {
+        var kullanici = await _userManager.GetUserAsync(User);
+        if (kullanici is null)
+        {
+            return NotFound();
+        }
+
+        var klasor = Path.Combine(_ortam.WebRootPath, "uploads", FotografAltKlasoru);
+        FotografSilVarsa(klasor, kullanici.ProfilFotografAdi);
+
+        kullanici.ProfilFotografAdi = null;
+        await _userManager.UpdateAsync(kullanici);
+
+        TempData["BilgiMesaji"] = "Profil fotoğrafın kaldırıldı.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    private static void FotografSilVarsa(string klasor, string? dosyaAdi)
+    {
+        if (string.IsNullOrEmpty(dosyaAdi))
+        {
+            return;
+        }
+
+        var tamYol = Path.Combine(klasor, dosyaAdi);
+        if (System.IO.File.Exists(tamYol))
+        {
+            System.IO.File.Delete(tamYol);
+        }
     }
 }

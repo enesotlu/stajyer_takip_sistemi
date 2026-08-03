@@ -8,6 +8,7 @@ public class ProfilViewModel
     public string Email { get; set; } = string.Empty;
     public string Rol { get; set; } = string.Empty;
     public DateTime KayitTarihi { get; set; }
+    public string? ProfilFotografUrl { get; set; }
 
     // Role göre yalnızca biri dolu olur.
     public Stajyer? StajyerProfili { get; set; }

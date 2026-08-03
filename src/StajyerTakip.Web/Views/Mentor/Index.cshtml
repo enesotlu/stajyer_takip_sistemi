@@ -23,6 +23,7 @@ else
         <table class="stk-tablo">
             <thead>
                 <tr>
+                    <th></th>
                     <th>Ad Soyad</th>
                     <th>Unvan</th>
                     <th>Departman</th>
@@ -33,6 +34,18 @@ else
                 @foreach (var mentor in Model)
                 {
                     <tr>
+                        <td>
+                            <div class="stk-avatar stk-avatar-sm">
+                                @if (mentor.Kullanici.ProfilFotografUrl is not null)
+                                {
+                                    <img src="@mentor.Kullanici.ProfilFotografUrl" alt="" />
+                                }
+                                else
+                                {
+                                    <partial name="_Ikon" model="@("kisi")" />
+                                }
+                            </div>
+                        </td>
                         <td class="stk-hucre-ad">@mentor.Kullanici.AdSoyad</td>
                         <td>@mentor.Unvan</td>
                         <td>@mentor.Departman.Ad</td>

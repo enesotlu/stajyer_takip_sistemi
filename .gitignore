@@ -486,3 +486,6 @@ $RECYCLE.BIN/
 
 # Kullanıcıların yüklediği dosyalar (CV/belgeler) versiyon kontrolüne girmez
 Uploads/
+
+# Kullanıcıların yüklediği profil fotoğrafları versiyon kontrolüne girmez
+src/StajyerTakip.Web/wwwroot/uploads/

@@ -39,6 +39,7 @@ else
         <table class="stk-tablo">
             <thead>
                 <tr>
+                    <th></th>
                     <th>Ad Soyad</th>
                     <th>Okul</th>
                     <th>Bölüm</th>
@@ -55,6 +56,18 @@ else
                 {
                     bool aktif = stajyer.BaslangicTarihi.Date <= DateTime.Today && DateTime.Today <= stajyer.BitisTarihi.Date;
                     <tr>
+                        <td>
+                            <div class="stk-avatar stk-avatar-sm">
+                                @if (stajyer.Kullanici.ProfilFotografUrl is not null)
+                                {
+                                    <img src="@stajyer.Kullanici.ProfilFotografUrl" alt="" />
+                                }
+                                else
+                                {
+                                    <partial name="_Ikon" model="@("kisi")" />
+                                }
+                            </div>
+                        </td>
                         <td class="stk-hucre-ad">@stajyer.Kullanici.AdSoyad</td>
                         <td>@stajyer.Okul</td>
                         <td>@stajyer.Bolum</td>
