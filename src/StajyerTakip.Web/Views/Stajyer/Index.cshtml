@@ -23,6 +23,10 @@
     </div>
     <button type="submit" class="btn btn-primary btn-sm">Filtrele</button>
     <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Temizle</a>
+    <a asp-action="ExcelIndir" asp-route-ad="@ViewBag.AramaAd" asp-route-tarih="@ViewBag.AramaTarih"
+       class="btn btn-outline-success btn-sm ms-auto">
+        <partial name="_Ikon" model="@("indir")" /> Excel'e Aktar
+    </a>
 </form>
 
 @if (Model.Count == 0)

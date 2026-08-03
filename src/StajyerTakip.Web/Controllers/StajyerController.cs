@@ -1,3 +1,4 @@
+using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -33,6 +34,62 @@ public class StajyerController : Controller
 
     public async Task<IActionResult> Index(string? ad, DateTime? tarih)
     {
+        var stajyerler = await FiltrelenmisListeAsync(ad, tarih);
+
+        ViewBag.AramaAd = ad;
+        ViewBag.AramaTarih = tarih?.ToString("yyyy-MM-dd");
+
+        return View(stajyerler);
+    }
+
+    // Index'teki ile aynı filtreler (isim, tarih, mentöre görünürlük) uygulanmış
+    // listeyi Excel'e aktarır - ekranda ne görünüyorsa dosyaya o iner.
+    public async Task<IActionResult> ExcelIndir(string? ad, DateTime? tarih)
+    {
+        var stajyerler = await FiltrelenmisListeAsync(ad, tarih);
+
+        using var workbook = new XLWorkbook();
+        var sayfa = workbook.Worksheets.Add("Stajyerler");
+
+        string[] basliklar = { "Ad Soyad", "Okul", "Bölüm", "Başlangıç", "Bitiş", "Durum", "Mentör", "Departman" };
+        for (var i = 0; i < basliklar.Length; i++)
+        {
+            sayfa.Cell(1, i + 1).Value = basliklar[i];
+        }
+        sayfa.Row(1).Style.Font.Bold = true;
+
+        var satir = 2;
+        foreach (var stajyer in stajyerler)
+        {
+            bool aktif = stajyer.BaslangicTarihi.Date <= DateTime.Today && DateTime.Today <= stajyer.BitisTarihi.Date;
+
+            sayfa.Cell(satir, 1).Value = stajyer.Kullanici.AdSoyad;
+            sayfa.Cell(satir, 2).Value = stajyer.Okul;
+            sayfa.Cell(satir, 3).Value = stajyer.Bolum;
+            sayfa.Cell(satir, 4).Value = stajyer.BaslangicTarihi;
+            sayfa.Cell(satir, 4).Style.DateFormat.Format = "dd.MM.yyyy";
+            sayfa.Cell(satir, 5).Value = stajyer.BitisTarihi;
+            sayfa.Cell(satir, 5).Style.DateFormat.Format = "dd.MM.yyyy";
+            sayfa.Cell(satir, 6).Value = aktif ? "Aktif" : "Pasif";
+            sayfa.Cell(satir, 7).Value = stajyer.Mentor?.Kullanici?.AdSoyad ?? stajyer.Mentor?.Unvan ?? "—";
+            sayfa.Cell(satir, 8).Value = stajyer.Departman.Ad;
+            satir++;
+        }
+
+        sayfa.Columns().AdjustToContents();
+
+        using var akis = new MemoryStream();
+        workbook.SaveAs(akis);
+
+        var dosyaAdi = $"stajyerler_{DateTime.Today:yyyy-MM-dd}.xlsx";
+        return File(
+            akis.ToArray(),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            dosyaAdi);
+    }
+
+    private async Task<List<Stajyer>> FiltrelenmisListeAsync(string? ad, DateTime? tarih)
+    {
         var stajyerler = await _stajyerService.GetAllAsync();
 
         // Mentör yalnızca kendi stajyerlerini görür.
@@ -57,10 +114,7 @@ public class StajyerController : Controller
                 .ToList();
         }
 
-        ViewBag.AramaAd = ad;
-        ViewBag.AramaTarih = tarih?.ToString("yyyy-MM-dd");
-
-        return View(stajyerler);
+        return stajyerler;
     }
 
     public async Task<IActionResult> Edit(int id)
