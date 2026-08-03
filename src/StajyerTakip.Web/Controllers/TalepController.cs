@@ -15,6 +15,8 @@ namespace StajyerTakip.Web.Controllers;
 [Authorize(Roles = Roller.Mentor)]
 public class TalepController : Controller
 {
+    private const string DosyaAltKlasoru = "Talepler";
+
     private readonly ITalepService _talepService;
     private readonly IStajyerService _stajyerService;
     private readonly IMentorService _mentorService;
@@ -62,7 +64,7 @@ public class TalepController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(TalepCreateViewModel model)
+    public async Task<IActionResult> Create(TalepCreateViewModel model, IFormFile? ekDosya)
     {
         var mentor = await GirisYapanMentorAsync();
         if (mentor is null)
@@ -76,19 +78,61 @@ public class TalepController : Controller
             return View(model);
         }
 
+        string? kayitliDosyaAdi = null;
+        string? orijinalDosyaAdi = null;
+
         try
         {
+            if (ekDosya is not null && ekDosya.Length > 0)
+            {
+                (kayitliDosyaAdi, orijinalDosyaAdi) =
+                    await DosyaYukleyici.KaydetAsync(ekDosya, _ortam.ContentRootPath, DosyaAltKlasoru);
+            }
+
             await _talepService.CreateAsync(
-                mentor.Id, model.StajyerId, model.Baslik, model.Aciklama, model.DosyaIstensin, model.SonTarih!.Value);
+                mentor.Id, model.StajyerId, model.Baslik, model.Aciklama, model.DosyaIstensin, model.SonTarih!.Value,
+                kayitliDosyaAdi, orijinalDosyaAdi);
             TempData["BilgiMesaji"] = "Talep oluşturuldu; stajyerin ekranına bildirim olarak düştü.";
             return RedirectToAction(nameof(Index));
         }
         catch (InvalidOperationException ex)
         {
+            DosyaYukleyici.SilVarsa(_ortam.ContentRootPath, DosyaAltKlasoru, kayitliDosyaAdi);
             ModelState.AddModelError(string.Empty, ex.Message);
             await PopulateStajyerListesiAsync(mentor.Id, model.StajyerId);
             return View(model);
         }
+    }
+
+    // Mentör kendi eklediği belgeyi tekrar indirebilir.
+    public async Task<IActionResult> EkDosyaIndir(int id)
+    {
+        var mentor = await GirisYapanMentorAsync();
+        if (mentor is null)
+        {
+            return NotFound();
+        }
+
+        var talep = await _talepService.GetByIdAsync(id);
+        if (talep is null || string.IsNullOrEmpty(talep.EkDosyaAdi))
+        {
+            return NotFound();
+        }
+
+        var stajyer = await _stajyerService.GetByIdAsync(talep.StajyerId);
+        if (stajyer is null || stajyer.MentorId != mentor.Id)
+        {
+            return Forbid();
+        }
+
+        var dosyaYolu = DosyaYukleyici.TamYol(_ortam.ContentRootPath, DosyaAltKlasoru, talep.EkDosyaAdi);
+        if (!System.IO.File.Exists(dosyaYolu))
+        {
+            return NotFound();
+        }
+
+        return PhysicalFile(dosyaYolu, "application/octet-stream",
+            talep.EkDosyaOrijinalAdi ?? talep.EkDosyaAdi);
     }
 
     // Stajyerin yüklediği cevap dosyasını indirir (yalnızca talebin sahibi mentör).

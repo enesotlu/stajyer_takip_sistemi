@@ -27,6 +27,11 @@ public class Gorev
     [Display(Name = "Durum")]
     public GorevDurumu Durum { get; set; } = GorevDurumu.Baslamadi;
 
+    // Mentörün ödevi atarken eklediği belge (örn. talimat dosyası, şablon) -
+    // stajyerin TeslimDosyaAdi'sinden ayrı, aynı güvenli GUID-adlandırma deseniyle saklanır.
+    public string? EkDosyaAdi { get; set; }
+    public string? EkDosyaOrijinalAdi { get; set; }
+
     // Stajyerin "Teslim Et" ile yüklediği dosya (opsiyonel) - Talep'teki
     // aynı güvenli GUID-adlandırma deseniyle wwwroot dışında saklanır.
     public string? TeslimDosyaAdi { get; set; }

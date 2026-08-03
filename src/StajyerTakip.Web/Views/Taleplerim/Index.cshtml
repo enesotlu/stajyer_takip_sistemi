@@ -56,6 +56,15 @@ else
                 <p>@talep.Aciklama</p>
             }
 
+            @if (!string.IsNullOrEmpty(talep.EkDosyaAdi))
+            {
+                <div class="mb-2">
+                    <a asp-action="EkDosyaIndir" asp-route-id="@talep.Id" class="stk-btn-hafif stk-btn-hafif-mavi">
+                        <partial name="_Ikon" model="@("indir")" /> @(talep.EkDosyaOrijinalAdi ?? "Mentörün eklediği belge")
+                    </a>
+                </div>
+            }
+
             @if (talep.MentorNotu is not null)
             {
                 <div class="stk-banner stk-banner-uyari mb-2">

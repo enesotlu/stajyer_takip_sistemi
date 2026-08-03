@@ -44,6 +44,14 @@ else
                             {
                                 <span class="stk-rozet stk-rozet-mavi">Dosya istendi</span>
                             }
+                            @if (!string.IsNullOrEmpty(talep.EkDosyaAdi))
+                            {
+                                <div class="mt-1">
+                                    <a asp-action="EkDosyaIndir" asp-route-id="@talep.Id" class="stk-btn-hafif stk-btn-hafif-mavi" title="@talep.EkDosyaOrijinalAdi">
+                                        <partial name="_Ikon" model="@("indir")" /> Eklediğin belge
+                                    </a>
+                                </div>
+                            }
                         </td>
                         <td>@talep.OlusturmaTarihi.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
                         <td>@(talep.SonTarih?.ToString("dd.MM.yyyy") ?? "—")</td>

@@ -106,6 +106,31 @@ public class TaleplerimController : Controller
             talep.CevapDosyaOrijinalAdi ?? talep.CevapDosyaAdi);
     }
 
+    // Stajyer, mentörün talebe eklediği belgeyi indirir.
+    public async Task<IActionResult> EkDosyaIndir(int id)
+    {
+        var stajyer = await BenimStajyerimAsync();
+        if (stajyer is null)
+        {
+            return NotFound();
+        }
+
+        var talep = await _talepService.GetByIdAsync(id);
+        if (talep is null || talep.StajyerId != stajyer.Id || string.IsNullOrEmpty(talep.EkDosyaAdi))
+        {
+            return NotFound();
+        }
+
+        var dosyaYolu = DosyaYukleyici.TamYol(_ortam.ContentRootPath, DosyaAltKlasoru, talep.EkDosyaAdi);
+        if (!System.IO.File.Exists(dosyaYolu))
+        {
+            return NotFound();
+        }
+
+        return PhysicalFile(dosyaYolu, "application/octet-stream",
+            talep.EkDosyaOrijinalAdi ?? talep.EkDosyaAdi);
+    }
+
     private async Task<Stajyer?> BenimStajyerimAsync()
     {
         var kullaniciId = _userManager.GetUserId(User);

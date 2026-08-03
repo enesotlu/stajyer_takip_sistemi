@@ -57,7 +57,8 @@ public class TalepService : ITalepService
     public Task<Talep?> GetByIdAsync(int id) => _unitOfWork.Talepler.GetByIdAsync(id);
 
     public async Task CreateAsync(
-        int mentorId, int stajyerId, string baslik, string? aciklama, bool dosyaIstensin, DateTime sonTarih)
+        int mentorId, int stajyerId, string baslik, string? aciklama, bool dosyaIstensin, DateTime sonTarih,
+        string? ekDosyaAdi = null, string? ekDosyaOrijinalAdi = null)
     {
         var stajyerBulunan = (await _unitOfWork.Stajyerler.FindAsync(s => s.Id == stajyerId, s => s.Kullanici))
             .SingleOrDefault() ?? throw new InvalidOperationException("Stajyer bulunamadı.");
@@ -78,6 +79,8 @@ public class TalepService : ITalepService
             Baslik = baslik,
             Aciklama = aciklama,
             DosyaIstensin = dosyaIstensin,
+            EkDosyaAdi = ekDosyaAdi,
+            EkDosyaOrijinalAdi = ekDosyaOrijinalAdi,
             OlusturmaTarihi = DateTime.UtcNow,
             SonTarih = sonTarih.Date,
             Durum = TalepDurumu.Bekliyor

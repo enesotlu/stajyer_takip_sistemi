@@ -98,6 +98,32 @@ public class GorevlerimController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    // Stajyer, mentörün ödeve eklediği belgeyi indirir.
+    public async Task<IActionResult> EkDosyaIndir(int id)
+    {
+        var kullaniciId = _userManager.GetUserId(User);
+        var stajyer = kullaniciId is null ? null : await _stajyerService.GetByKullaniciIdAsync(kullaniciId);
+        if (stajyer is null)
+        {
+            return NotFound();
+        }
+
+        var gorev = await _gorevService.GetByIdAsync(id);
+        if (gorev is null || gorev.StajyerId != stajyer.Id || string.IsNullOrEmpty(gorev.EkDosyaAdi))
+        {
+            return NotFound();
+        }
+
+        var dosyaYolu = DosyaYukleyici.TamYol(_ortam.ContentRootPath, DosyaAltKlasoru, gorev.EkDosyaAdi);
+        if (!System.IO.File.Exists(dosyaYolu))
+        {
+            return NotFound();
+        }
+
+        return PhysicalFile(dosyaYolu, "application/octet-stream",
+            gorev.EkDosyaOrijinalAdi ?? gorev.EkDosyaAdi);
+    }
+
     // Stajyer kendi teslim ettiği dosyayı tekrar indirebilir.
     public async Task<IActionResult> DosyaIndir(int id)
     {

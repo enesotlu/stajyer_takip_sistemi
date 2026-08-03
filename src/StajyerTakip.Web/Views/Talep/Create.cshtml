@@ -8,7 +8,7 @@
          model="@(new SayfaBaslikModel("Yeni Talep", "Stajyerinizden bir belge veya işlem isteyin; talep onun ekranına bildirim olarak düşer."))" />
 
 <div class="stk-form-kart">
-    <form asp-action="Create" method="post">
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
         <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
         <div class="mb-3">
@@ -42,6 +42,13 @@
             <input asp-for="DosyaIstensin" class="form-check-input" />
             <label asp-for="DosyaIstensin" class="form-check-label"></label>
             <div class="form-text">İşaretlersen stajyer, cevap verirken dosya yüklemek zorunda olur.</div>
+        </div>
+
+        <div class="mb-3">
+            <label for="ekDosya" class="form-label">Ek Belge</label>
+            <input type="file" id="ekDosya" name="ekDosya" class="form-control"
+                   accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" />
+            <div class="form-text">İsteğe bağlı. Doldurulacak form, şablon vb. ekleyebilirsiniz. İzinli türler: PDF, Word, PNG, JPG - en fazla 10 MB.</div>
         </div>
 
         <div class="stk-form-eylemler">

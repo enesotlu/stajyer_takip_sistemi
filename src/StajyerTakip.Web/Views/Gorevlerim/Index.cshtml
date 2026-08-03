@@ -41,6 +41,15 @@ else
                 <partial name="_GorevDurumRozet" model="gorev" />
             </div>
 
+            @if (!string.IsNullOrEmpty(gorev.EkDosyaAdi))
+            {
+                <div class="mt-2">
+                    <a asp-action="EkDosyaIndir" asp-route-id="@gorev.Id" class="stk-btn-hafif stk-btn-hafif-mavi">
+                        <partial name="_Ikon" model="@("indir")" /> @(gorev.EkDosyaOrijinalAdi ?? "Mentörün eklediği belge")
+                    </a>
+                </div>
+            }
+
             @if (gorev.MentorNotu is not null)
             {
                 <div class="stk-banner stk-banner-uyari mt-3 mb-0">

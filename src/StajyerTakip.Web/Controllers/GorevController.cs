@@ -59,7 +59,7 @@ public class GorevController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(Gorev gorev)
+    public async Task<IActionResult> Create(Gorev gorev, IFormFile? ekDosya)
     {
         if (!await BuStajyerBanaMiAitAsync(gorev.StajyerId))
         {
@@ -72,13 +72,26 @@ public class GorevController : Controller
             return View(gorev);
         }
 
+        string? kayitliDosyaAdi = null;
+        string? orijinalDosyaAdi = null;
+
         try
         {
+            if (ekDosya is not null && ekDosya.Length > 0)
+            {
+                (kayitliDosyaAdi, orijinalDosyaAdi) =
+                    await DosyaYukleyici.KaydetAsync(ekDosya, _ortam.ContentRootPath, DosyaAltKlasoru);
+            }
+
+            gorev.EkDosyaAdi = kayitliDosyaAdi;
+            gorev.EkDosyaOrijinalAdi = orijinalDosyaAdi;
+
             await _gorevService.CreateAsync(gorev);
             return RedirectToAction(nameof(Index));
         }
         catch (InvalidOperationException ex)
         {
+            DosyaYukleyici.SilVarsa(_ortam.ContentRootPath, DosyaAltKlasoru, kayitliDosyaAdi);
             ModelState.AddModelError(nameof(Gorev.TeslimTarihi), ex.Message);
             await PopulateStajyerListesiAsync(gorev.StajyerId);
             return View(gorev);
@@ -190,6 +203,30 @@ public class GorevController : Controller
 
         return PhysicalFile(dosyaYolu, "application/octet-stream",
             gorev.TeslimDosyaOrijinalAdi ?? gorev.TeslimDosyaAdi);
+    }
+
+    // Mentör kendi eklediği belgeyi tekrar indirebilir.
+    public async Task<IActionResult> EkDosyaIndir(int id)
+    {
+        var gorev = await _gorevService.GetByIdAsync(id);
+        if (gorev is null || string.IsNullOrEmpty(gorev.EkDosyaAdi))
+        {
+            return NotFound();
+        }
+
+        if (!await BuStajyerBanaMiAitAsync(gorev.StajyerId))
+        {
+            return Forbid();
+        }
+
+        var dosyaYolu = DosyaYukleyici.TamYol(_ortam.ContentRootPath, DosyaAltKlasoru, gorev.EkDosyaAdi);
+        if (!System.IO.File.Exists(dosyaYolu))
+        {
+            return NotFound();
+        }
+
+        return PhysicalFile(dosyaYolu, "application/octet-stream",
+            gorev.EkDosyaOrijinalAdi ?? gorev.EkDosyaAdi);
     }
 
     [HttpPost]

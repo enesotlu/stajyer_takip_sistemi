@@ -8,7 +8,7 @@
          model="@(new SayfaBaslikModel("Yeni Ödev Ata", "Stajyerinize başlık, açıklama ve teslim tarihiyle ödev atayın."))" />
 
 <div class="stk-form-kart">
-    <form asp-action="Create" method="post">
+    <form asp-action="Create" method="post" enctype="multipart/form-data">
         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
         <div class="mb-3">
@@ -35,6 +35,13 @@
             <label asp-for="TeslimTarihi" class="form-label"></label>
             <input asp-for="TeslimTarihi" class="form-control" />
             <span asp-validation-for="TeslimTarihi" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label for="ekDosya" class="form-label">Ek Belge</label>
+            <input type="file" id="ekDosya" name="ekDosya" class="form-control"
+                   accept=".pdf,.doc,.docx,.png,.jpg,.jpeg" />
+            <div class="form-text">İsteğe bağlı. Talimat dosyası, şablon vb. ekleyebilirsiniz. İzinli türler: PDF, Word, PNG, JPG - en fazla 10 MB.</div>
         </div>
 
         <div class="stk-form-eylemler">

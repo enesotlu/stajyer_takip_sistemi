@@ -28,6 +28,7 @@ else
                     <th>Başlık</th>
                     <th>Teslim Tarihi</th>
                     <th>Durum</th>
+                    <th>Ek Belge</th>
                     <th>Teslim</th>
                     <th></th>
                 </tr>
@@ -40,6 +41,18 @@ else
                         <td>@gorev.Baslik</td>
                         <td>@gorev.TeslimTarihi.ToString("dd.MM.yyyy")</td>
                         <td><partial name="_GorevDurumRozet" model="gorev" /></td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(gorev.EkDosyaAdi))
+                            {
+                                <a asp-action="EkDosyaIndir" asp-route-id="@gorev.Id" class="stk-btn-hafif stk-btn-hafif-mavi" title="@gorev.EkDosyaOrijinalAdi">
+                                    <partial name="_Ikon" model="@("indir")" /> Dosya
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
                         <td>
                             @if (gorev.Durum == GorevDurumu.Tamamlandi)
                             {

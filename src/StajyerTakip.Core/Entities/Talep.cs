@@ -25,6 +25,11 @@ public class Talep
     [Display(Name = "Dosya istensin (CV, belge vb.)")]
     public bool DosyaIstensin { get; set; }
 
+    // Mentörün talebi açarken eklediği belge (örn. doldurulacak form, şablon) -
+    // stajyerin CevapDosyaAdi'sinden ayrı, aynı güvenli GUID-adlandırma deseniyle saklanır.
+    public string? EkDosyaAdi { get; set; }
+    public string? EkDosyaOrijinalAdi { get; set; }
+
     public DateTime OlusturmaTarihi { get; set; }
 
     // Stajyerin cevaplamak zorunda oldugu son gun. Yeni taleplerde zorunludur

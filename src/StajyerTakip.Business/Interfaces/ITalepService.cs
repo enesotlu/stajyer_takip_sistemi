@@ -13,9 +13,11 @@ public interface ITalepService
     Task<Talep?> GetByIdAsync(int id);
 
     // Mentör yalnızca KENDİ stajyerine talep açabilir. sonTarih, stajyerin
-    // cevaplamak zorunda olduğu son gündür.
+    // cevaplamak zorunda olduğu son gündür. ekDosyaAdi/ekDosyaOrijinalAdi,
+    // mentörün talebe eklediği belgedir (örn. doldurulacak form, şablon).
     Task CreateAsync(
-        int mentorId, int stajyerId, string baslik, string? aciklama, bool dosyaIstensin, DateTime sonTarih);
+        int mentorId, int stajyerId, string baslik, string? aciklama, bool dosyaIstensin, DateTime sonTarih,
+        string? ekDosyaAdi = null, string? ekDosyaOrijinalAdi = null);
 
     // Mentör, henüz cevaplanmamış kendi talebinin bilgilerini düzenler.
     Task UpdateAsync(
