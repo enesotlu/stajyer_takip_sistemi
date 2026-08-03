@@ -327,6 +327,50 @@ a {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  cursor: pointer;
+}
+
+/* ---- Fotograf buyutme (lightbox) ---- */
+
+.stk-lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 16, 26, 0.82);
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+  padding: var(--stk-s5);
+}
+
+.stk-lightbox.stk-acik {
+  display: flex;
+}
+
+.stk-lightbox img {
+  max-width: min(90vw, 480px);
+  max-height: 80vh;
+  border-radius: var(--stk-radius);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.stk-lightbox-kapat {
+  position: absolute;
+  top: var(--stk-s5);
+  right: var(--stk-s5);
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.stk-lightbox-kapat:hover {
+  background: rgba(255, 255, 255, 0.28);
 }
 
 .stk-avatar-sm {
